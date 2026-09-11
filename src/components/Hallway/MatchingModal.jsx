@@ -9,7 +9,6 @@ export const MatchingModal = ({
   onCancel,
   matchmakingSize = 2,
   matchmakingStatus = '',
-  queueCount = 1,
   showSizeFallback = false,
   onSwitchTo2Player,
   onOpenPrivate
@@ -53,7 +52,7 @@ export const MatchingModal = ({
       }}
     >
       <div 
-        className="w-full max-w-[460px] bg-[#0a0a0a] rounded-[36px] p-6 sm:p-8 shadow-2xl relative border border-white/10 overflow-hidden"
+        className="w-full max-w-[420px] bg-[#0a0a0a] rounded-[32px] p-6 sm:p-8 shadow-2xl relative border border-white/10 overflow-hidden"
         style={{ animation: 'slideUpModal 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards' }}
       >
         {/* Pull Handle for mobile */}
@@ -70,8 +69,8 @@ export const MatchingModal = ({
         </button>
 
         {/* Character Preview with expression shuffle (size 140 matching user profile modal) */}
-        <div className="mt-1 mb-2 text-center px-2 flex flex-col items-center">
-          <div className="w-36 h-36 flex items-center justify-center mb-2">
+        <div className="mt-2 mb-2 text-center px-2 flex flex-col items-center">
+          <div className="w-36 h-36 flex items-center justify-center mb-3">
             <BloubAvatar 
               shape={profile?.shape}
               color={profile?.color}
@@ -87,61 +86,51 @@ export const MatchingModal = ({
           >
             Finding Match
           </h3>
-          <p className="text-white/40 text-sm mt-1.5 min-h-[20px]">
+          <p className="text-white/40 text-sm mt-2 min-h-[20px]">
             {matchmakingStatus || 'Scanning for active peers...'}
           </p>
-
-          {/* Queue Count Pill */}
-          <div className="mt-3 px-4 py-1.5 rounded-full bg-white/[0.06] border border-white/10 text-white/60 font-mono text-xs flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>{queueCount} / {matchmakingSize || 2} player{queueCount === 1 ? '' : 's'} ready</span>
-          </div>
         </div>
 
-        {/* Fallback Suggestion Card when matchmaking takes longer */}
+        {/* Fallback Notice & Action when matchmaking takes longer */}
         {showSizeFallback && (
-          <div className="w-full bg-white/[0.04] border border-white/10 rounded-2xl p-4 mt-5 text-center animate-fade-in shadow-xl">
-            <div className="flex items-center justify-center gap-1.5 text-white/90 text-xs font-mono font-bold mb-1.5">
-              <span className="material-symbols-rounded text-sm text-amber-400">hourglass_empty</span>
-              <span>Matching is taking longer</span>
-            </div>
-            <p className="text-[12px] text-white/50 mb-3 leading-relaxed">
+          <div className="w-full bg-white/[0.03] border border-white/10 rounded-2xl p-5 mt-6 text-center animate-fade-in">
+            <h4 className="text-white text-base font-semibold mb-1.5">
+              Taking longer than usual
+            </h4>
+            <p className="text-white/40 text-xs mb-4 leading-relaxed">
               {matchmakingSize > 2
-                ? `Waiting for ${matchmakingSize} players is taking longer. Switch to a 2-Player Duel to play immediately?`
-                : 'No other players currently searching in the queue. You can create a Private Table to invite a friend, or keep searching.'}
+                ? `Few players are currently in the ${matchmakingSize}-player queue. Switch to a 2-Player Duel to play immediately?`
+                : 'No peers found in the public queue right now. You can create a private table to invite friends.'}
             </p>
-            <div className="flex flex-col gap-2">
+            <div>
               {matchmakingSize > 2 ? (
                 <button
                   type="button"
                   onClick={onSwitchTo2Player}
-                  className="w-full h-[46px] rounded-full bg-white hover:bg-white/90 text-black font-semibold text-xs transition-all flex items-center justify-center gap-1.5 shadow-md cursor-pointer"
+                  className="w-full h-[48px] rounded-full bg-white hover:bg-white/90 text-black font-bold text-sm transition-all flex items-center justify-center cursor-pointer shadow-lg active:scale-98"
                 >
-                  <span className="material-symbols-rounded text-base">bolt</span>
-                  <span>Switch to 2 Players</span>
+                  Switch to 2-Player Duel
                 </button>
               ) : (
                 <button
                   type="button"
                   onClick={onOpenPrivate}
-                  className="w-full h-[46px] rounded-full bg-white hover:bg-white/90 text-black font-semibold text-xs transition-all flex items-center justify-center gap-1.5 shadow-md cursor-pointer"
+                  className="w-full h-[48px] rounded-full bg-white hover:bg-white/90 text-black font-bold text-sm transition-all flex items-center justify-center cursor-pointer shadow-lg active:scale-98"
                 >
-                  <span className="material-symbols-rounded text-base">lock</span>
-                  <span>Create Private Table</span>
+                  Create Private Table
                 </button>
               )}
             </div>
           </div>
         )}
 
-        {/* Cancel Search Button */}
+        {/* Cancel Search Button (clean Bloom style without inside icon) */}
         <button
           type="button"
           onClick={onCancel}
-          className="w-full h-[50px] rounded-full bg-white/[0.06] hover:bg-white/10 border border-white/10 text-white/70 hover:text-white font-semibold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98 mt-6"
+          className="w-full h-[48px] rounded-full bg-white/[0.06] hover:bg-white/10 border border-white/10 text-white/70 hover:text-white font-semibold text-sm transition-all flex items-center justify-center cursor-pointer active:scale-98 mt-6"
         >
-          <span className="material-symbols-rounded text-lg">close</span>
-          <span>Cancel Search</span>
+          Cancel Search
         </button>
       </div>
     </div>

@@ -141,7 +141,6 @@ export const HallwayView = () => {
         onCancel={cancelMatchmaking}
         matchmakingSize={matchmakingSize}
         matchmakingStatus={matchmakingStatus}
-        queueCount={queueCount}
         showSizeFallback={showSizeFallback}
         onSwitchTo2Player={switchTo2PlayerMatch}
         onOpenPrivate={() => {
