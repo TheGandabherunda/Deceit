@@ -4,7 +4,7 @@ import { useProfile } from '../../context/ProfileContext';
 import { BloubAvatar } from '../Bloub/BloubAvatar';
 
 export const TableHeader = ({ onOpenRules, onOpenSettings }) => {
-  const { roomCode, isHost, isPublic, togglePublic, players, roundNumber, gameState, startGame, leaveRoom, isStartAudioPlaying } = useGame();
+  const { roomCode, isHost, isPublic, togglePublic, players, roundNumber, gameState, startGame, leaveRoom, isStartAudioPlaying, tableTarget } = useGame();
   const { profile, truncatedId, setIsProfileModalOpen } = useProfile();
   const [copied, setCopied] = useState(false);
 
@@ -14,6 +14,20 @@ export const TableHeader = ({ onOpenRules, onOpenSettings }) => {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  const getTargetDetails = (target) => {
+    switch (target) {
+      case 'K':
+        return { name: 'King', color: 'text-yellow-400', dot: 'bg-yellow-400', glow: 'drop-shadow-[0_0_8px_rgba(234,179,8,0.4)]' };
+      case 'Q':
+        return { name: 'Queen', color: 'text-rose-400', dot: 'bg-rose-400', glow: 'drop-shadow-[0_0_8px_rgba(225,29,72,0.4)]' };
+      case 'A':
+      default:
+        return { name: 'Ace', color: 'text-white', dot: 'bg-white', glow: 'drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]' };
+    }
+  };
+
+  const targetDetails = getTargetDetails(tableTarget);
 
   return (
     <header className="bg-black/40 backdrop-blur-xl px-4 py-3 border-b border-white/10 flex items-center justify-between z-40 relative md:h-[72px]">
@@ -75,10 +89,21 @@ export const TableHeader = ({ onOpenRules, onOpenSettings }) => {
             </div>
           </div>
         ) : (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 px-3.5 py-1 rounded-full bg-white/[0.04] border border-white/10 shadow-sm">
             <span className="text-xs text-white/60 font-mono">
               Round <strong className="text-white font-bold">{roundNumber}</strong>
             </span>
+            <span className="text-white/20 select-none">•</span>
+            <div className="flex items-center gap-1.5">
+              <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${targetDetails.dot}`} />
+              <span className="text-[11px] text-white/40 font-mono">Target:</span>
+              <span 
+                className={`text-sm sm:text-base font-normal tracking-wide ${targetDetails.color} ${targetDetails.glow}`}
+                style={{ fontFamily: '"Gloock", serif', fontWeight: 400 }}
+              >
+                {targetDetails.name}
+              </span>
+            </div>
           </div>
         )}
       </div>
