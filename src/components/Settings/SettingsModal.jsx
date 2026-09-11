@@ -5,7 +5,6 @@ import { sound } from '../../services/sound';
 export const SettingsModal = ({ isOpen, onClose }) => {
   const [masterMuted, setMasterMuted] = useState(sound.masterMuted);
   const [bgMusicEnabled, setBgMusicEnabled] = useState(sound.bgMusicEnabled);
-  const [bgMusicVolume, setBgMusicVolume] = useState(sound.bgMusicVolume);
   const [sfxVolume, setSfxVolume] = useState(sound.sfxVolume);
 
   // Sync state when opened or when external sound changes occur
@@ -13,7 +12,6 @@ export const SettingsModal = ({ isOpen, onClose }) => {
     if (isOpen) {
       setMasterMuted(sound.masterMuted);
       setBgMusicEnabled(sound.bgMusicEnabled);
-      setBgMusicVolume(sound.bgMusicVolume);
       setSfxVolume(sound.sfxVolume);
     }
   }, [isOpen]);
@@ -23,7 +21,6 @@ export const SettingsModal = ({ isOpen, onClose }) => {
       if (e.detail) {
         setMasterMuted(e.detail.masterMuted);
         setBgMusicEnabled(e.detail.bgMusicEnabled);
-        setBgMusicVolume(e.detail.bgMusicVolume);
         setSfxVolume(e.detail.sfxVolume);
       }
     };
@@ -53,11 +50,6 @@ export const SettingsModal = ({ isOpen, onClose }) => {
   const handleToggleBgMusic = (checked) => {
     setBgMusicEnabled(checked);
     sound.setBgMusicEnabled(checked);
-  };
-
-  const handleChangeBgVolume = (val) => {
-    setBgMusicVolume(val);
-    sound.setBgMusicVolume(val);
   };
 
   const handleChangeSfxVolume = (val) => {
@@ -129,50 +121,30 @@ export const SettingsModal = ({ isOpen, onClose }) => {
           </div>
 
           {/* Background Music Card */}
-          <div className={`p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-3 transition-opacity ${
+          <div className={`flex items-center justify-between p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 transition-opacity ${
             masterMuted ? 'opacity-35 pointer-events-none' : ''
           }`}>
-            <div className="flex items-center justify-between">
-              <div className="flex flex-col pr-4">
-                <span className="text-sm font-semibold text-white">Background Music</span>
-                <span className="text-xs text-white/40 mt-0.5">Low-volume ambient music during game sessions</span>
-              </div>
-              <button
-                type="button"
-                role="switch"
-                disabled={masterMuted}
-                aria-checked={bgMusicEnabled}
-                onClick={() => handleToggleBgMusic(!bgMusicEnabled)}
-                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                  bgMusicEnabled && !masterMuted ? 'bg-white' : 'bg-white/15'
+            <div className="flex flex-col pr-4">
+              <span className="text-sm font-semibold text-white">Background Music</span>
+              <span className="text-xs text-white/40 mt-0.5">Subtle ambient music during active game</span>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              disabled={masterMuted}
+              aria-checked={bgMusicEnabled}
+              onClick={() => handleToggleBgMusic(!bgMusicEnabled)}
+              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                bgMusicEnabled && !masterMuted ? 'bg-white' : 'bg-white/15'
+              }`}
+            >
+              <span
+                aria-hidden="true"
+                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-black shadow-lg ring-0 transition duration-200 ease-in-out ${
+                  bgMusicEnabled && !masterMuted ? 'translate-x-5' : 'translate-x-0'
                 }`}
-              >
-                <span
-                  aria-hidden="true"
-                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-black shadow-lg ring-0 transition duration-200 ease-in-out ${
-                    bgMusicEnabled && !masterMuted ? 'translate-x-5' : 'translate-x-0'
-                  }`}
-                />
-              </button>
-            </div>
-
-            {/* Background Music Volume Slider */}
-            <div className={`pt-2 transition-opacity ${!bgMusicEnabled || masterMuted ? 'opacity-30 pointer-events-none' : ''}`}>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-white/70">Music Volume</span>
-                <span className="text-xs font-mono text-white/50">{Math.round(bgMusicVolume * 100)}%</span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                disabled={!bgMusicEnabled || masterMuted}
-                value={bgMusicVolume}
-                onChange={(e) => handleChangeBgVolume(parseFloat(e.target.value))}
-                className="w-full h-1.5 bg-white/15 rounded-lg appearance-none cursor-pointer accent-white hover:bg-white/25 transition-all"
               />
-            </div>
+            </button>
           </div>
 
           {/* Sound Effects (SFX) Card */}

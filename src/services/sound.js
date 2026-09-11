@@ -40,11 +40,13 @@ class SoundFX {
     this.sfxVolume = typeof window !== 'undefined' ? parseFloat(localStorage.getItem('deceit_sfx_volume') || '0.7') : 0.7;
 
     // Background Music state (/sounds/background.mp3)
+    // Fixed subtle 1.5% volume per user request
     this.bgMusicAudioUrl = '/sounds/background.mp3';
     this.bgMusicEnabled = typeof window !== 'undefined' ? localStorage.getItem('deceit_bg_enabled') !== 'false' : true;
-    this.bgMusicVolume = typeof window !== 'undefined' ? parseFloat(localStorage.getItem('deceit_bg_volume') || '0.15') : 0.15;
+    this.bgMusicVolume = 0.015; // Exactly 1.5% subtle ambient background volume
     this.bgMusicAudio = null;
     this.isBgMusicPlaying = false;
+    this.bgMusicFadeInterval = null;
     this.initBgMusic();
 
     // Global UI Hover Audio state
@@ -71,12 +73,12 @@ class SoundFX {
     try {
       this.bgMusicAudio = new Audio(this.bgMusicAudioUrl);
       this.bgMusicAudio.loop = true;
-      this.bgMusicAudio.volume = Math.max(0, Math.min(1, this.bgMusicVolume));
+      this.bgMusicAudio.volume = 0;
       this.bgMusicAudio.preload = 'auto';
     } catch (e) {}
   }
 
-  startBgMusic() {
+  startBgMusic(fadeInDurationMs = 2000) {
     this.isBgMusicPlaying = true;
     if (!this.bgMusicAudio) this.initBgMusic();
     if (!this.bgMusicAudio) return;
@@ -85,22 +87,81 @@ class SoundFX {
       return;
     }
 
-    this.bgMusicAudio.volume = Math.max(0, Math.min(1, this.bgMusicVolume));
-    console.log(`[Deceit:Audio] 🎵 Playing background music (volume: ${Math.round(this.bgMusicVolume * 100)}%)...`);
+    if (this.bgMusicFadeInterval) {
+      clearInterval(this.bgMusicFadeInterval);
+      this.bgMusicFadeInterval = null;
+    }
+
+    const targetVolume = this.bgMusicVolume; // 0.015 (1.5%)
+    this.bgMusicAudio.volume = 0;
+    console.log(`[Deceit:Audio] 🎵 Fading in background music (target volume: ${targetVolume * 100}%, fade: ${fadeInDurationMs}ms)...`);
+
     const p = this.bgMusicAudio.play();
     if (p !== undefined) {
-      p.catch((err) => {
+      p.then(() => {
+        if (!this.isBgMusicPlaying || !this.bgMusicAudio) return;
+        const steps = 25;
+        const stepInterval = Math.max(25, Math.floor(fadeInDurationMs / steps));
+        const volStep = targetVolume / steps;
+        let currentVol = 0;
+
+        this.bgMusicFadeInterval = setInterval(() => {
+          if (!this.isBgMusicPlaying || !this.bgMusicAudio) {
+            clearInterval(this.bgMusicFadeInterval);
+            this.bgMusicFadeInterval = null;
+            return;
+          }
+          currentVol = Math.min(targetVolume, currentVol + volStep);
+          this.bgMusicAudio.volume = currentVol;
+          if (currentVol >= targetVolume) {
+            clearInterval(this.bgMusicFadeInterval);
+            this.bgMusicFadeInterval = null;
+          }
+        }, stepInterval);
+      }).catch((err) => {
         console.warn('[Deceit:Audio] 🎵 Autoplay policy waiting for user interaction to resume bg music:', err?.message);
       });
     }
   }
 
-  stopBgMusic() {
+  stopBgMusic(fadeOutDurationMs = 0) {
     this.isBgMusicPlaying = false;
-    if (this.bgMusicAudio) {
+    if (this.bgMusicFadeInterval) {
+      clearInterval(this.bgMusicFadeInterval);
+      this.bgMusicFadeInterval = null;
+    }
+
+    if (!this.bgMusicAudio) return;
+
+    if (fadeOutDurationMs > 0 && !this.bgMusicAudio.paused && this.bgMusicAudio.volume > 0) {
+      const steps = 15;
+      const stepInterval = Math.max(15, Math.floor(fadeOutDurationMs / steps));
+      const currentVol = this.bgMusicAudio.volume;
+      const volStep = currentVol / steps;
+
+      this.bgMusicFadeInterval = setInterval(() => {
+        if (!this.bgMusicAudio) {
+          clearInterval(this.bgMusicFadeInterval);
+          this.bgMusicFadeInterval = null;
+          return;
+        }
+        const nextVol = Math.max(0, this.bgMusicAudio.volume - volStep);
+        this.bgMusicAudio.volume = nextVol;
+        if (nextVol <= 0) {
+          clearInterval(this.bgMusicFadeInterval);
+          this.bgMusicFadeInterval = null;
+          try {
+            this.bgMusicAudio.pause();
+            this.bgMusicAudio.currentTime = 0;
+            this.bgMusicAudio.volume = 0;
+          } catch (e) {}
+        }
+      }, stepInterval);
+    } else {
       try {
         this.bgMusicAudio.pause();
         this.bgMusicAudio.currentTime = 0;
+        this.bgMusicAudio.volume = 0;
       } catch (e) {}
     }
   }
@@ -111,24 +172,16 @@ class SoundFX {
       localStorage.setItem('deceit_bg_enabled', String(this.bgMusicEnabled));
     }
     if (!this.bgMusicEnabled) {
-      if (this.bgMusicAudio) {
-        try { this.bgMusicAudio.pause(); } catch (e) {}
-      }
+      this.stopBgMusic(300);
     } else if (this.isBgMusicPlaying && !this.masterMuted) {
-      this.startBgMusic();
+      this.startBgMusic(1500);
     }
     this.notifySettingsChanged();
   }
 
   setBgMusicVolume(vol) {
-    const clamped = Math.max(0, Math.min(1, vol));
-    this.bgMusicVolume = clamped;
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('deceit_bg_volume', String(clamped));
-    }
-    if (this.bgMusicAudio) {
-      this.bgMusicAudio.volume = clamped;
-    }
+    // Kept locked to subtle 0.015 (1.5%) per user request
+    this.bgMusicVolume = 0.015;
     this.notifySettingsChanged();
   }
 
@@ -423,6 +476,7 @@ class SoundFX {
   // Room entrance / join audio (start.mp3)
   playStartAudio(onComplete = null) {
     this.stopStartAudio();
+    this.stopBgMusic();
     this.startAudioCancelled = false;
     if (this.muted) {
       console.log('[Deceit:Audio] 🚪 Entrance audio (start.mp3) skipped (muted).');
@@ -614,6 +668,7 @@ class SoundFX {
   // Order: spin.mp3 -> immediately clock.mp3 -> 4.5s suspense.mp3 -> shot.mp3 (+ shell.mp3) or empty.mp3
   playRouletteSequence({ isDead, onClockStart, onSuspenseStart, onTriggerPull, onShellEject, onSequenceEnd }) {
     console.log(`[Deceit:Audio] 🎲 Russian Roulette Audio Sequence initiated. isDead=${isDead}`);
+    this.stopBgMusic(300);
     this.stopRouletteSequence();
     this.isRouletteCancelled = false;
 
@@ -932,6 +987,7 @@ class SoundFX {
 
   // Win audio (win.mp3) - Played for winner
   playWin() {
+    this.stopBgMusic();
     this.stopWin();
     this.stopFail();
     if (this.muted) {
@@ -972,6 +1028,7 @@ class SoundFX {
 
   // Fail audio (fail.mp3) - Played for loser
   playFail() {
+    this.stopBgMusic();
     this.stopWin();
     this.stopFail();
     if (this.muted) {

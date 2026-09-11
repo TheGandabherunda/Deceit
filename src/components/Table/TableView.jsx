@@ -34,18 +34,37 @@ export const TableView = () => {
     isShaking,
     isFlashActive,
     isStartAudioPlaying,
+    isRouletteActive,
+    soleSurvivor,
     disconnectedPeer
   } = useGame();
 
   const opponents = players.filter(p => p.pk !== pubkey);
 
-  // Background Music: Play low-volume ambient music as soon as player enters the table
+  // Background Music:
+  // - Starts ONLY while in playing, after table entry music (start.mp3) stops.
+  // - Smoothly fades in to subtle 1.5% volume.
+  // - Stops immediately during shooting, suspense, and roulette cinematic.
+  // - Stops upon match completion before win/lose sound.
+  // - Stops on unmount.
   useEffect(() => {
-    sound.startBgMusic();
+    const shouldPlayBgMusic = 
+      (gameState === 'playing' || gameState === 'lobby') && 
+      !isStartAudioPlaying && 
+      !isRouletteActive && 
+      !soleSurvivor && 
+      gameState !== 'ended';
+
+    if (shouldPlayBgMusic) {
+      sound.startBgMusic(2000);
+    } else {
+      sound.stopBgMusic(400);
+    }
+
     return () => {
       sound.stopBgMusic();
     };
-  }, []);
+  }, [gameState, isStartAudioPlaying, isRouletteActive, soleSurvivor]);
 
   return (
     <div className={`h-[100dvh] w-screen overflow-x-hidden flex flex-col antialiased bg-[#050505] text-white relative select-none animate-fade-in ${
