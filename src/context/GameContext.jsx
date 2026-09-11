@@ -105,6 +105,11 @@ export const GameProvider = ({ children }) => {
   const adjustDominanceScoreRef = useRef(null);
   const resolveDisconnectionWinnerRef = useRef(null);
   const leaveRoomRef = useRef(null);
+  const processedEventIdsRef = useRef(new Set());
+  const processedActionsRef = useRef(new Set());
+  const revealTimeoutRef = useRef(null);
+  const rouletteNextRoundTimeoutRef = useRef(null);
+  const rouletteGameOverTimeoutRef = useRef(null);
 
   useEffect(() => { roomCodeRef.current = roomCode; }, [roomCode]);
   useEffect(() => { isHostRef.current = isHost; }, [isHost]);
@@ -209,6 +214,20 @@ export const GameProvider = ({ children }) => {
       setChambersRemaining(6);
       setRoundNumber(1);
       setSoleSurvivor(null);
+      if (revealTimeoutRef.current) {
+        clearTimeout(revealTimeoutRef.current);
+        revealTimeoutRef.current = null;
+      }
+      if (rouletteNextRoundTimeoutRef.current) {
+        clearTimeout(rouletteNextRoundTimeoutRef.current);
+        rouletteNextRoundTimeoutRef.current = null;
+      }
+      if (rouletteGameOverTimeoutRef.current) {
+        clearTimeout(rouletteGameOverTimeoutRef.current);
+        rouletteGameOverTimeoutRef.current = null;
+      }
+      processedEventIdsRef.current.clear();
+      processedActionsRef.current.clear();
     }
 
     try {
@@ -274,6 +293,20 @@ export const GameProvider = ({ children }) => {
       gameStateRef.current = 'lobby';
       setChambersRemaining(6);
       setSoleSurvivor(null);
+      if (revealTimeoutRef.current) {
+        clearTimeout(revealTimeoutRef.current);
+        revealTimeoutRef.current = null;
+      }
+      if (rouletteNextRoundTimeoutRef.current) {
+        clearTimeout(rouletteNextRoundTimeoutRef.current);
+        rouletteNextRoundTimeoutRef.current = null;
+      }
+      if (rouletteGameOverTimeoutRef.current) {
+        clearTimeout(rouletteGameOverTimeoutRef.current);
+        rouletteGameOverTimeoutRef.current = null;
+      }
+      processedEventIdsRef.current.clear();
+      processedActionsRef.current.clear();
     }
 
     try {
@@ -814,6 +847,16 @@ export const GameProvider = ({ children }) => {
     console.log(`[Deceit:Round:Deal] Host dealing round ${roundNum}. Living players: ${living.length}`);
     if (living.length <= 1) return;
 
+    if (revealTimeoutRef.current) {
+      clearTimeout(revealTimeoutRef.current);
+      revealTimeoutRef.current = null;
+    }
+    if (rouletteNextRoundTimeoutRef.current) {
+      clearTimeout(rouletteNextRoundTimeoutRef.current);
+      rouletteNextRoundTimeoutRef.current = null;
+    }
+    processedActionsRef.current.add(`deal_round_${roundNum}`);
+
     const livingPks = living.map(p => p.pk);
     const { target, hands, commitments } = dealHands(livingPks);
 
@@ -1078,6 +1121,21 @@ export const GameProvider = ({ children }) => {
     setLastPlay(null);
     setPileCount(0);
 
+    if (revealTimeoutRef.current) {
+      clearTimeout(revealTimeoutRef.current);
+      revealTimeoutRef.current = null;
+    }
+    if (rouletteNextRoundTimeoutRef.current) {
+      clearTimeout(rouletteNextRoundTimeoutRef.current);
+      rouletteNextRoundTimeoutRef.current = null;
+    }
+    if (rouletteGameOverTimeoutRef.current) {
+      clearTimeout(rouletteGameOverTimeoutRef.current);
+      rouletteGameOverTimeoutRef.current = null;
+    }
+    processedEventIdsRef.current.clear();
+    processedActionsRef.current.clear();
+
     const resetPlayers = playersRef.current.map(p => ({
       ...p,
       isAlive: true,
@@ -1131,6 +1189,7 @@ export const GameProvider = ({ children }) => {
     }
 
     const turnId = `turn_${Date.now()}`;
+    processedActionsRef.current.add(`play_${turnId}`);
     const newPlay = {
       playerPk,
       claimedRank,
@@ -1219,6 +1278,13 @@ export const GameProvider = ({ children }) => {
 
     console.log(`[Deceit:Roulette:Outcome] Executing outcome for victim ${victimPk?.slice(0, 8)}: isDead=${isDead}, personal gun: ${chambersBefore} -> ${chambersAfter}, isHost=${isHostRef.current}`);
     
+    // Cancel any pending reveal transition timeout since gun pull result is executing now
+    if (revealTimeoutRef.current) {
+      clearTimeout(revealTimeoutRef.current);
+      revealTimeoutRef.current = null;
+    }
+    setPendingReveal(null);
+
     // 1. Host ALWAYS broadcasts GUN_PULL_RESULT immediately to all peers first!
     if (isHostRef.current) {
       console.log(`[Deceit:Roulette:Out] Host broadcasting GUN_PULL_RESULT:`, {
@@ -1301,7 +1367,12 @@ export const GameProvider = ({ children }) => {
           sound.stopChallengeTimer();
           sound.stopRouletteSequence();
 
-          setTimeout(() => {
+          if (rouletteGameOverTimeoutRef.current) {
+            clearTimeout(rouletteGameOverTimeoutRef.current);
+            rouletteGameOverTimeoutRef.current = null;
+          }
+          rouletteGameOverTimeoutRef.current = setTimeout(() => {
+            rouletteGameOverTimeoutRef.current = null;
             setIsRouletteActive(false);
             setSoleSurvivor(winner);
             setGameState('ended');
@@ -1330,7 +1401,12 @@ export const GameProvider = ({ children }) => {
             console.log('[Deceit:Roulette:Outcome] Game is no longer playing. Cancelling next round deal.');
             return;
           }
-          setTimeout(() => {
+          if (rouletteNextRoundTimeoutRef.current) {
+            clearTimeout(rouletteNextRoundTimeoutRef.current);
+            rouletteNextRoundTimeoutRef.current = null;
+          }
+          rouletteNextRoundTimeoutRef.current = setTimeout(() => {
+            rouletteNextRoundTimeoutRef.current = null;
             if (gameStateRef.current !== 'playing' || soleSurvivorRef.current) return;
             console.log(`[Deceit:Roulette:Outcome] Dismissing roulette modal, dealing round ${roundNumberRef.current + 1}...`);
             setIsRouletteActive(false);
@@ -1346,6 +1422,10 @@ export const GameProvider = ({ children }) => {
   // Russian Roulette Penalty Phase
   const startRevolverRoulette = useCallback((victimPk, reason) => {
     sound.stopChallengeTimer();
+    if (revealTimeoutRef.current) {
+      clearTimeout(revealTimeoutRef.current);
+      revealTimeoutRef.current = null;
+    }
     if (gameStateRef.current === 'ended' || soleSurvivorRef.current) {
       console.log(`[Deceit:Roulette:Start] Suppressed because game has ended or sole survivor declared.`);
       return;
@@ -1450,7 +1530,12 @@ export const GameProvider = ({ children }) => {
     });
 
     // After brief reveal stinger (3800ms), move to the gun penalty phase
-    setTimeout(() => {
+    if (revealTimeoutRef.current) {
+      clearTimeout(revealTimeoutRef.current);
+      revealTimeoutRef.current = null;
+    }
+    revealTimeoutRef.current = setTimeout(() => {
+      revealTimeoutRef.current = null;
       console.log(`[Deceit:Game:Transition] Transitioning from reveal modal to Russian Roulette for ${designatedLoserPk?.slice(0, 8)}...`);
       if (startRevolverRouletteRef.current) {
         startRevolverRouletteRef.current(designatedLoserPk, isTruth ? 'Challenger failed challenge' : 'Caught lying');
@@ -1465,6 +1550,10 @@ export const GameProvider = ({ children }) => {
       accuserPk: accuserPk?.slice(0, 8),
       accusedPk: accusedPk?.slice(0, 8)
     });
+
+    if (turnId) {
+      processedActionsRef.current.add(`reveal_${turnId}`);
+    }
 
     // Run verification & display modal locally immediately for the revealer!
     if (verifyRevealedCardsRef.current) {
@@ -1488,6 +1577,10 @@ export const GameProvider = ({ children }) => {
     if (gameStateRef.current === 'ended' || soleSurvivorRef.current) {
       console.log(`[Deceit:Game:Liar] Suppressed because game has ended or sole survivor declared.`);
       return;
+    }
+
+    if (targetTurnId) {
+      processedActionsRef.current.add(`liar_${targetTurnId}`);
     }
 
     sound.playCallLiar();
@@ -1595,6 +1688,23 @@ export const GameProvider = ({ children }) => {
       try {
         if (event.pubkey === pubkey) {
           // Ignore own echoed events
+          return;
+        }
+
+        // Deduplicate incoming Nostr events across relays by cryptographic event.id
+        if (event.id) {
+          if (processedEventIdsRef.current.has(event.id)) {
+            return;
+          }
+          processedEventIdsRef.current.add(event.id);
+          if (processedEventIdsRef.current.size > 2000) {
+            const first = processedEventIdsRef.current.values().next().value;
+            processedEventIdsRef.current.delete(first);
+          }
+        }
+
+        // Guard against replayed historical events (> 45s old) from relays
+        if (event.created_at && event.created_at < Math.floor(Date.now() / 1000) - 45) {
           return;
         }
 
@@ -1837,6 +1947,27 @@ export const GameProvider = ({ children }) => {
           }
 
           if (type === 'DEAL_ROUND') {
+            const dealKey = `deal_round_${parsed.roundNumber}`;
+            if (processedActionsRef.current.has(dealKey) || (parsed.roundNumber < roundNumberRef.current)) {
+              console.log(`[Deceit:Game:In] Ignoring duplicate or stale DEAL_ROUND ${parsed.roundNumber}`);
+              return;
+            }
+            processedActionsRef.current.add(dealKey);
+
+            // Clear any lingering timeouts from prior rounds
+            if (revealTimeoutRef.current) {
+              clearTimeout(revealTimeoutRef.current);
+              revealTimeoutRef.current = null;
+            }
+            if (rouletteNextRoundTimeoutRef.current) {
+              clearTimeout(rouletteNextRoundTimeoutRef.current);
+              rouletteNextRoundTimeoutRef.current = null;
+            }
+            if (rouletteGameOverTimeoutRef.current) {
+              clearTimeout(rouletteGameOverTimeoutRef.current);
+              rouletteGameOverTimeoutRef.current = null;
+            }
+
             setRoundNumber(parsed.roundNumber);
             setTableTarget(parsed.tableTarget);
             setChambersRemaining(parsed.chambersLeft || 6);
@@ -1882,6 +2013,13 @@ export const GameProvider = ({ children }) => {
             triggerBanner(`Round ${parsed.roundNumber}: Target is ${parsed.tableTarget === 'A' ? 'Aces' : parsed.tableTarget === 'K' ? 'Kings' : 'Queens'}!`);
 
           } else if (type === 'PLAY_CARDS') {
+            const playKey = `play_${parsed.turnId}`;
+            if (parsed.turnId && processedActionsRef.current.has(playKey)) {
+              console.log(`[Deceit:Game:In] Ignoring duplicate PLAY_CARDS for turn ${parsed.turnId}`);
+              return;
+            }
+            if (parsed.turnId) processedActionsRef.current.add(playKey);
+
             sound.playCardTake();
 
             // Check if local player's previous play went uncalled!
@@ -1920,6 +2058,13 @@ export const GameProvider = ({ children }) => {
             }
 
           } else if (type === 'CALL_LIAR') {
+            const liarKey = `liar_${parsed.targetTurnId}`;
+            if (parsed.targetTurnId && processedActionsRef.current.has(liarKey)) {
+              console.log(`[Deceit:Game:In] Ignoring duplicate CALL_LIAR for turn ${parsed.targetTurnId}`);
+              return;
+            }
+            if (parsed.targetTurnId) processedActionsRef.current.add(liarKey);
+
             sound.stopChallengeTimer();
             localLastPlayTruthRef.current = null; // Challenged! Uncalled bonus does not apply
             sound.playCallLiar();
@@ -1940,18 +2085,45 @@ export const GameProvider = ({ children }) => {
             }
 
           } else if (type === 'REVEAL_CARDS') {
+            const revealKey = `reveal_${parsed.turnId}`;
+            if (parsed.turnId && processedActionsRef.current.has(revealKey)) {
+              console.log(`[Deceit:Game:In] Ignoring duplicate REVEAL_CARDS for turn ${parsed.turnId}`);
+              return;
+            }
+            if (parsed.turnId) processedActionsRef.current.add(revealKey);
+
             console.log(`[Deceit:Game:In] Received REVEAL_CARDS:`, parsed);
             if (verifyRevealedCardsRef.current) {
               verifyRevealedCardsRef.current(parsed.revealedCards || [], parsed.accuserPk, parsed.accusedPk);
             }
 
           } else if (type === 'GUN_PULL_RESULT') {
+            const gunKey = `gun_${parsed.timestamp || ''}_${parsed.victimPk}_${parsed.chambersAfter}`;
+            if (processedActionsRef.current.has(gunKey)) {
+              console.log(`[Deceit:Game:In] Ignoring duplicate GUN_PULL_RESULT`);
+              return;
+            }
+            processedActionsRef.current.add(gunKey);
+
+            if (revealTimeoutRef.current) {
+              clearTimeout(revealTimeoutRef.current);
+              revealTimeoutRef.current = null;
+            }
+            setPendingReveal(null);
+
             console.log(`[Deceit:Game:In] Received GUN_PULL_RESULT from host:`, parsed);
             if (!isHostRef.current && executeRouletteOutcomeRef.current) {
               executeRouletteOutcomeRef.current(parsed.victimPk, parsed.isDead, parsed.chambersBefore, parsed.chambersAfter);
             }
 
           } else if (type === 'SAFE_ESCAPE') {
+            const escapeKey = `escape_${parsed.winnerPk}_${parsed.loserPk}_${roundNumberRef.current}`;
+            if (processedActionsRef.current.has(escapeKey)) {
+              console.log(`[Deceit:Game:In] Ignoring duplicate SAFE_ESCAPE`);
+              return;
+            }
+            processedActionsRef.current.add(escapeKey);
+
             sound.stopChallengeTimer();
             const winnerName = playersRef.current.find(p => p.pk === parsed.winnerPk)?.name || 'Opponent';
             const loserName = playersRef.current.find(p => p.pk === parsed.loserPk)?.name || 'Challenger';
@@ -1985,10 +2157,12 @@ export const GameProvider = ({ children }) => {
       subRef.current = null;
     }
 
+    // Only listen for live events in this table session (25s buffer for in-flight signals during table entry/reconnect)
+    const subSince = Math.floor(Date.now() / 1000) - 25;
     const requests = relays.flatMap(url => [
-      { url, filter: { kinds: [KINDS.SIGNAL, KINDS.GAME], '#d': [`deceit-${roomCode}`] } },
-      { url, filter: { kinds: [KINDS.SIGNAL, KINDS.GAME], '#h': [roomCode] } },
-      { url, filter: { kinds: [KINDS.SIGNAL, KINDS.GAME], '#p': [pubkey] } }
+      { url, filter: { kinds: [KINDS.SIGNAL, KINDS.GAME], '#d': [`deceit-${roomCode}`], since: subSince } },
+      { url, filter: { kinds: [KINDS.SIGNAL, KINDS.GAME], '#h': [roomCode], since: subSince } },
+      { url, filter: { kinds: [KINDS.SIGNAL, KINDS.GAME], '#p': [pubkey], since: subSince } }
     ]);
 
     try {
@@ -2162,6 +2336,21 @@ export const GameProvider = ({ children }) => {
     setLastPlay(null);
     setPendingReveal(null);
     setIsRouletteActive(false);
+
+    if (revealTimeoutRef.current) {
+      clearTimeout(revealTimeoutRef.current);
+      revealTimeoutRef.current = null;
+    }
+    if (rouletteNextRoundTimeoutRef.current) {
+      clearTimeout(rouletteNextRoundTimeoutRef.current);
+      rouletteNextRoundTimeoutRef.current = null;
+    }
+    if (rouletteGameOverTimeoutRef.current) {
+      clearTimeout(rouletteGameOverTimeoutRef.current);
+      rouletteGameOverTimeoutRef.current = null;
+    }
+    processedEventIdsRef.current.clear();
+    processedActionsRef.current.clear();
   }, [pubkey, publishSignal]);
 
   useEffect(() => { leaveRoomRef.current = leaveRoom; }, [leaveRoom]);
