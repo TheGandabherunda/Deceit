@@ -80,9 +80,11 @@ class SoundFX {
   }
 
   startBgMusic(fadeInDurationMs = 2000) {
+    this.bgMusicRequested = true;
     this.isBgMusicPlaying = true;
     if (!this.bgMusicAudio) this.initBgMusic();
     if (!this.bgMusicAudio) return;
+
     if (this.masterMuted || !this.bgMusicEnabled) {
       console.log('[Deceit:Audio] 🎵 Background music suppressed (muted or disabled in settings).');
       return;
@@ -93,21 +95,27 @@ class SoundFX {
       this.bgMusicFadeInterval = null;
     }
 
-    const targetVolume = this.bgMusicVolume; // 0.015 (1.5%)
-    this.bgMusicAudio.volume = 0;
+    const targetVolume = this.bgMusicVolume; // 0.012 (1.2%)
+
+    // If audio is already actively playing at target volume, avoid jarring volume drops
+    if (!this.bgMusicAudio.paused && this.bgMusicAudio.volume >= targetVolume) {
+      return;
+    }
+
+    let currentVol = this.bgMusicAudio.paused ? 0 : this.bgMusicAudio.volume;
+    this.bgMusicAudio.volume = currentVol;
     console.log(`[Deceit:Audio] 🎵 Fading in background music (target volume: ${targetVolume * 100}%, fade: ${fadeInDurationMs}ms)...`);
 
     const p = this.bgMusicAudio.play();
     if (p !== undefined) {
       p.then(() => {
-        if (!this.isBgMusicPlaying || !this.bgMusicAudio) return;
-        const steps = 25;
+        if (!this.isBgMusicPlaying || !this.bgMusicAudio || this.masterMuted || !this.bgMusicEnabled) return;
+        const steps = 20;
         const stepInterval = Math.max(25, Math.floor(fadeInDurationMs / steps));
-        const volStep = targetVolume / steps;
-        let currentVol = 0;
+        const volStep = (targetVolume - currentVol) / steps;
 
         this.bgMusicFadeInterval = setInterval(() => {
-          if (!this.isBgMusicPlaying || !this.bgMusicAudio) {
+          if (!this.isBgMusicPlaying || !this.bgMusicAudio || this.masterMuted || !this.bgMusicEnabled) {
             clearInterval(this.bgMusicFadeInterval);
             this.bgMusicFadeInterval = null;
             return;
@@ -115,6 +123,7 @@ class SoundFX {
           currentVol = Math.min(targetVolume, currentVol + volStep);
           this.bgMusicAudio.volume = currentVol;
           if (currentVol >= targetVolume) {
+            this.bgMusicAudio.volume = targetVolume;
             clearInterval(this.bgMusicFadeInterval);
             this.bgMusicFadeInterval = null;
           }
@@ -125,7 +134,10 @@ class SoundFX {
     }
   }
 
-  stopBgMusic(fadeOutDurationMs = 0) {
+  stopBgMusic(fadeOutDurationMs = 0, permanent = false) {
+    if (permanent) {
+      this.bgMusicRequested = false;
+    }
     this.isBgMusicPlaying = false;
     if (this.bgMusicFadeInterval) {
       clearInterval(this.bgMusicFadeInterval);
@@ -153,7 +165,6 @@ class SoundFX {
           this.bgMusicFadeInterval = null;
           try {
             this.bgMusicAudio.pause();
-            this.bgMusicAudio.currentTime = 0;
             this.bgMusicAudio.volume = 0;
           } catch (e) {}
         }
@@ -161,7 +172,6 @@ class SoundFX {
     } else {
       try {
         this.bgMusicAudio.pause();
-        this.bgMusicAudio.currentTime = 0;
         this.bgMusicAudio.volume = 0;
       } catch (e) {}
     }
@@ -187,9 +197,10 @@ class SoundFX {
       this.isBgMusicPlaying = false;
     } else {
       // User turned background music back ON!
-      // If table requested music and master is not muted, start playing immediately!
-      if (this.bgMusicRequested && !this.masterMuted) {
-        this.startBgMusic(1500);
+      if (!this.masterMuted) {
+        if (this.bgMusicRequested || (typeof window !== 'undefined' && (window.location.hash.includes('table') || document.querySelector('header')))) {
+          this.startBgMusic(1000);
+        }
       }
     }
     this.notifySettingsChanged();
@@ -222,8 +233,10 @@ class SoundFX {
       }
       this.isBgMusicPlaying = false;
     } else {
-      if (this.bgMusicRequested && this.bgMusicEnabled) {
-        this.startBgMusic(1500);
+      if (this.bgMusicEnabled) {
+        if (this.bgMusicRequested || (typeof window !== 'undefined' && (window.location.hash.includes('table') || document.querySelector('header')))) {
+          this.startBgMusic(1000);
+        }
       }
     }
     this.notifySettingsChanged();
@@ -415,11 +428,8 @@ class SoundFX {
   }
 
   toggleMute() {
-    this.muted = !this.muted;
-    if (this.muted) {
-      this.stopAllAudio();
-    }
-    return this.muted;
+    this.setMasterMuted(!this.masterMuted);
+    return this.masterMuted;
   }
 
   // Play audio asset with volume control and safe procedural fallback

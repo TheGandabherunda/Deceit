@@ -41,15 +41,16 @@ export const SettingsModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
   if (typeof document === 'undefined') return null;
 
-  const handleToggleMasterMute = (checked) => {
-    const newMuted = !checked;
-    setMasterMuted(newMuted);
-    sound.setMasterMuted(newMuted);
+  const handleToggleMasterMute = () => {
+    const nextMuted = !masterMuted;
+    setMasterMuted(nextMuted);
+    sound.setMasterMuted(nextMuted);
   };
 
-  const handleToggleBgMusic = (checked) => {
-    setBgMusicEnabled(checked);
-    sound.setBgMusicEnabled(checked);
+  const handleToggleBgMusic = () => {
+    const nextEnabled = !bgMusicEnabled;
+    setBgMusicEnabled(nextEnabled);
+    sound.setBgMusicEnabled(nextEnabled);
   };
 
   const handleChangeSfxVolume = (val) => {
@@ -106,7 +107,7 @@ export const SettingsModal = ({ isOpen, onClose }) => {
               type="button"
               role="switch"
               aria-checked={!masterMuted}
-              onClick={() => handleToggleMasterMute(!masterMuted)}
+              onClick={handleToggleMasterMute}
               className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
                 !masterMuted ? 'bg-white' : 'bg-white/15'
               }`}
@@ -133,7 +134,7 @@ export const SettingsModal = ({ isOpen, onClose }) => {
               role="switch"
               disabled={masterMuted}
               aria-checked={bgMusicEnabled}
-              onClick={() => handleToggleBgMusic(!bgMusicEnabled)}
+              onClick={handleToggleBgMusic}
               className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
                 bgMusicEnabled && !masterMuted ? 'bg-white' : 'bg-white/15'
               }`}
