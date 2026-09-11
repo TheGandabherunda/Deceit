@@ -255,7 +255,9 @@ export const GameProvider = ({ children }) => {
       setGameState('lobby');
       gameStateRef.current = 'lobby';
       setChambersRemaining(6);
+      chambersRef.current = 6;
       setRoundNumber(1);
+      roundNumberRef.current = 1;
       setSoleSurvivor(null);
       if (revealTimeoutRef.current) {
         clearTimeout(revealTimeoutRef.current);
@@ -340,6 +342,9 @@ export const GameProvider = ({ children }) => {
       setGameState('lobby');
       gameStateRef.current = 'lobby';
       setChambersRemaining(6);
+      chambersRef.current = 6;
+      setRoundNumber(1);
+      roundNumberRef.current = 1;
       setSoleSurvivor(null);
       if (revealTimeoutRef.current) {
         clearTimeout(revealTimeoutRef.current);
@@ -956,7 +961,7 @@ export const GameProvider = ({ children }) => {
       clearTimeout(rouletteNextRoundTimeoutRef.current);
       rouletteNextRoundTimeoutRef.current = null;
     }
-    processedActionsRef.current.add(`deal_round_${roundNum}`);
+    processedActionsRef.current.add(`${roomCodeRef.current || ''}_deal_round_${roundNum}`);
 
     const livingPks = living.map(p => p.pk);
     const { target, hands, commitments } = dealHands(livingPks);
@@ -1031,7 +1036,9 @@ export const GameProvider = ({ children }) => {
     setGameState('playing');
     gameStateRef.current = 'playing';
     setChambersRemaining(6);
+    chambersRef.current = 6;
     setRoundNumber(1);
+    roundNumberRef.current = 1;
     setPileCount(0);
     setLastPlay(null);
     setPendingReveal(null);
@@ -2057,7 +2064,9 @@ export const GameProvider = ({ children }) => {
             setIsRouletteActive(false);
             setRouletteResult(null);
             setChambersRemaining(6);
+            chambersRef.current = 6;
             setRoundNumber(1);
+            roundNumberRef.current = 1;
             setLocalHand([]);
             setSelectedCardIds([]);
             setLastPlay(null);
@@ -2104,9 +2113,14 @@ export const GameProvider = ({ children }) => {
           console.log(`[Deceit:Game:In] Received action "${type}" from ${event.pubkey.slice(0, 8)}...:`, parsed);
 
           if (type === 'DEAL_ROUND') {
-            const dealKey = `deal_round_${parsed.roundNumber}`;
-            if (processedActionsRef.current.has(dealKey) || (parsed.roundNumber < roundNumberRef.current)) {
-              console.log(`[Deceit:Game:In] Ignoring duplicate or stale DEAL_ROUND ${parsed.roundNumber}`);
+            const dealKey = `${roomCodeRef.current || ''}_deal_round_${parsed.roundNumber}`;
+            // Stale check ONLY applies if game is already actively playing, not when starting from lobby or round 1
+            if (gameStateRef.current === 'playing' && parsed.roundNumber < roundNumberRef.current) {
+              console.log(`[Deceit:Game:In] Ignoring stale DEAL_ROUND ${parsed.roundNumber} (currently playing round ${roundNumberRef.current})`);
+              return;
+            }
+            if (processedActionsRef.current.has(dealKey)) {
+              console.log(`[Deceit:Game:In] Ignoring duplicate DEAL_ROUND ${parsed.roundNumber}`);
               return;
             }
             processedActionsRef.current.add(dealKey);
@@ -2126,8 +2140,10 @@ export const GameProvider = ({ children }) => {
             }
 
             setRoundNumber(parsed.roundNumber);
+            roundNumberRef.current = parsed.roundNumber;
             setTableTarget(parsed.tableTarget);
             setChambersRemaining(parsed.chambersLeft || 6);
+            chambersRef.current = parsed.chambersLeft || 6;
             setPileCount(0);
             setLastPlay(null);
             setSelectedCardIds([]);
@@ -2150,6 +2166,7 @@ export const GameProvider = ({ children }) => {
                 if (hand) {
                   console.log(`[Deceit:Hand] Peer decrypted local hand (${hand.length} cards):`, hand.map(c => c.rank));
                   setLocalHand(hand);
+                  localHandRef.current = hand;
                   const expectedCommitments = parsed.commitments?.[pubkey] || [];
                   const valid = hand.every((c, i) => createCardCommitment(c) === expectedCommitments[i]);
                   if (!valid) {
@@ -2165,6 +2182,7 @@ export const GameProvider = ({ children }) => {
             sound.stopStartAudio();
             setIsStartAudioPlaying(false);
             setGameState('playing');
+            gameStateRef.current = 'playing';
             console.log(`[Deceit:Gameplay] 🎴 Peer received DEAL_ROUND ${parsed.roundNumber}. Playing card shuffle sound (cards-shuffle.mp3) and displaying respective cards.`);
             sound.playCardShuffle();
             triggerBanner(`Round ${parsed.roundNumber}: Target is ${parsed.tableTarget === 'A' ? 'Aces' : parsed.tableTarget === 'K' ? 'Kings' : 'Queens'}!`);
@@ -2486,6 +2504,10 @@ export const GameProvider = ({ children }) => {
     gameStateRef.current = 'none';
     setSoleSurvivor(null);
     soleSurvivorRef.current = null;
+    setRoundNumber(1);
+    roundNumberRef.current = 1;
+    setChambersRemaining(6);
+    chambersRef.current = 6;
     setPlayers([]);
     setLocalHand([]);
     setSelectedCardIds([]);
