@@ -99,7 +99,7 @@ export const SettingsModal = ({ isOpen, onClose }) => {
           {/* Master Sound Switch */}
           <div className="flex items-center justify-between p-3.5 rounded-2xl bg-white/[0.03] border border-white/10">
             <div className="flex flex-col pr-4">
-              <span className="text-sm font-semibold text-white">Website Audio</span>
+              <span className="text-sm font-semibold text-white">Game Sound</span>
               <span className="text-xs text-white/40 mt-0.5">Mute or enable all sound across the game</span>
             </div>
             <button

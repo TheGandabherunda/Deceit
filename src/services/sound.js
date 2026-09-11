@@ -16,7 +16,8 @@ import liarAudio from '../assets/liar.mp3';
 class SoundFX {
   constructor() {
     this.ctx = null;
-    this.muted = false;
+    this.masterMuted = typeof window !== 'undefined' ? localStorage.getItem('deceit_master_muted') === 'true' : false;
+    this.muted = this.masterMuted;
     this.timerAudioObj = null;
     this.timerTimeout = null;
     this.timerCancelled = false;
@@ -36,7 +37,6 @@ class SoundFX {
     this.hasUserInteracted = false;
 
     // Master Settings state
-    this.masterMuted = typeof window !== 'undefined' ? localStorage.getItem('deceit_master_muted') === 'true' : false;
     this.sfxVolume = typeof window !== 'undefined' ? parseFloat(localStorage.getItem('deceit_sfx_volume') || '0.7') : 0.7;
 
     // Background Music state (/sounds/background.mp3)
@@ -45,6 +45,7 @@ class SoundFX {
     this.bgMusicEnabled = typeof window !== 'undefined' ? localStorage.getItem('deceit_bg_enabled') !== 'false' : true;
     this.bgMusicVolume = 0.015; // Exactly 1.5% subtle ambient background volume
     this.bgMusicAudio = null;
+    this.bgMusicRequested = false; // Tracks if game view wants background music
     this.isBgMusicPlaying = false;
     this.bgMusicFadeInterval = null;
     this.initBgMusic();
@@ -171,10 +172,25 @@ class SoundFX {
     if (typeof window !== 'undefined') {
       localStorage.setItem('deceit_bg_enabled', String(this.bgMusicEnabled));
     }
+    console.log(`[Deceit:Audio] 🎵 setBgMusicEnabled: ${this.bgMusicEnabled}, bgMusicRequested: ${this.bgMusicRequested}, masterMuted: ${this.masterMuted}`);
     if (!this.bgMusicEnabled) {
-      this.stopBgMusic(300);
-    } else if (this.isBgMusicPlaying && !this.masterMuted) {
-      this.startBgMusic(1500);
+      if (this.bgMusicFadeInterval) {
+        clearInterval(this.bgMusicFadeInterval);
+        this.bgMusicFadeInterval = null;
+      }
+      if (this.bgMusicAudio) {
+        try {
+          this.bgMusicAudio.pause();
+          this.bgMusicAudio.volume = 0;
+        } catch (e) {}
+      }
+      this.isBgMusicPlaying = false;
+    } else {
+      // User turned background music back ON!
+      // If table requested music and master is not muted, start playing immediately!
+      if (this.bgMusicRequested && !this.masterMuted) {
+        this.startBgMusic(1500);
+      }
     }
     this.notifySettingsChanged();
   }
@@ -187,17 +203,27 @@ class SoundFX {
 
   setMasterMuted(muted) {
     this.masterMuted = Boolean(muted);
+    this.muted = this.masterMuted;
     if (typeof window !== 'undefined') {
       localStorage.setItem('deceit_master_muted', String(this.masterMuted));
     }
+    console.log(`[Deceit:Audio] 🔇 Game Sound setMasterMuted: ${this.masterMuted}`);
     if (this.masterMuted) {
       this.stopAllAudio();
-      if (this.bgMusicAudio) {
-        try { this.bgMusicAudio.pause(); } catch (e) {}
+      if (this.bgMusicFadeInterval) {
+        clearInterval(this.bgMusicFadeInterval);
+        this.bgMusicFadeInterval = null;
       }
+      if (this.bgMusicAudio) {
+        try {
+          this.bgMusicAudio.pause();
+          this.bgMusicAudio.volume = 0;
+        } catch (e) {}
+      }
+      this.isBgMusicPlaying = false;
     } else {
-      if (this.isBgMusicPlaying && this.bgMusicEnabled) {
-        this.startBgMusic();
+      if (this.bgMusicRequested && this.bgMusicEnabled) {
+        this.startBgMusic(1500);
       }
     }
     this.notifySettingsChanged();
@@ -1074,8 +1100,8 @@ if (typeof window !== 'undefined') {
   const unlockAudio = () => {
     sound.hasUserInteracted = true;
     sound.init();
-    if (sound.isBgMusicPlaying && sound.bgMusicEnabled && !sound.masterMuted) {
-      sound.startBgMusic();
+    if (sound.bgMusicRequested && sound.bgMusicEnabled && !sound.masterMuted) {
+      sound.startBgMusic(1500);
     }
     window.removeEventListener('click', unlockAudio);
     window.removeEventListener('keydown', unlockAudio);
@@ -1089,7 +1115,7 @@ if (typeof window !== 'undefined') {
 
   // Resume background music on any user gesture if requested to play but delayed by browser autoplay policy
   const resumeBgOnGesture = () => {
-    if (sound.isBgMusicPlaying && sound.bgMusicEnabled && !sound.masterMuted && sound.bgMusicAudio && sound.bgMusicAudio.paused) {
+    if (sound.bgMusicRequested && sound.bgMusicEnabled && !sound.masterMuted && sound.bgMusicAudio && sound.bgMusicAudio.paused) {
       sound.bgMusicAudio.play().catch(() => {});
     }
   };
