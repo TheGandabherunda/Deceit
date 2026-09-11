@@ -8,6 +8,7 @@ import { RevolverCinematic } from './Modals/RevolverCinematic';
 import { GameOverModal } from './Modals/GameOverModal';
 import { RulesModal } from '../Hallway/RulesModal';
 import { SettingsModal } from '../Settings/SettingsModal';
+import AmbientLight from '../AmbientLight';
 import { useGame } from '../../context/GameContext';
 import { useNostr } from '../../context/NostrContext';
 import { sound } from '../../services/sound';
@@ -70,6 +71,9 @@ export const TableView = () => {
     }`}>
       {/* Screen flash on gunshot */}
       {isFlashActive && <div className="flash-overlay" />}
+
+      {/* Atmospheric Table Lighting */}
+      <AmbientLight target={gameState === 'lobby' ? 'A' : (tableTarget || 'A')} />
 
       {/* Persistent Navigation Header */}
       <TableHeader 

@@ -36,30 +36,10 @@ export const OpponentSeat = ({
         </div>
       )}
 
-      {/* 1. Player Name & Status Badge ABOVE Bloub */}
-      <div 
-        className={`mb-1 px-2.5 py-0.5 rounded-full flex items-center gap-1.5 transition-all ${
-          isActiveTurn 
-            ? 'bg-white/10 border border-white/40 shadow-[0_0_16px_rgba(255,255,255,0.25)] scale-105' 
-            : 'bg-white/[0.04] border border-white/10'
-        } ${!isAlive ? 'opacity-40 grayscale' : ''}`}
-      >
-        <span className="text-xs font-semibold text-white max-w-[95px] truncate">
-          {name}
-        </span>
-        {isHost && (
-          <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-white/15 text-white/80 font-mono">
-            Host
-          </span>
-        )}
-        <PlayerGunBadge 
-          chambersRemaining={player.chambersRemaining !== undefined ? player.chambersRemaining : 6} 
-          isAlive={isAlive} 
-        />
-        {isActiveTurn && isAlive && !isLobby && (
-          <div className="w-1.5 h-1.5 rounded-full bg-white animate-ping ml-0.5" />
-        )}
-      </div>
+      {/* 1. Just Player Name ABOVE Bloub */}
+      <span className={`text-xs font-semibold text-white max-w-[110px] truncate mb-1 transition-opacity ${!isAlive ? 'opacity-40' : ''}`}>
+        {name}
+      </span>
 
       {/* 2. Increased Bloub Character Avatar */}
       <div className={`relative mb-0.5 transition-all duration-300 ${!isAlive ? 'opacity-70' : ''}`}>
@@ -116,6 +96,16 @@ export const OpponentSeat = ({
           </div>
         )}
       </div>
+
+      {/* Opponent Gun Badge */}
+      {!isLobby && isAlive && (
+        <div className="mt-1 scale-90">
+          <PlayerGunBadge 
+            chambersRemaining={player.chambersRemaining !== undefined ? player.chambersRemaining : 6} 
+            isAlive={isAlive} 
+          />
+        </div>
+      )}
     </div>
   );
 };

@@ -185,14 +185,6 @@ export const BloubAvatar = ({
       } ${className}`}
       style={{ width: size, height: size }}
     >
-      {/* Dynamic Focus Aura */}
-      {isFocusTarget && (
-        <div 
-          className="absolute inset-0 rounded-full animate-ping opacity-25 pointer-events-none"
-          style={{ backgroundColor: color }}
-        />
-      )}
-
       <svg
         ref={svgRef}
         width={size}
