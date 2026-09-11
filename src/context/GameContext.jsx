@@ -1656,7 +1656,6 @@ export const GameProvider = ({ children }) => {
 
     if (targetTurnId) {
       processedActionsRef.current.add(`liar_${targetTurnId}`);
-      resolvedTurnIdsRef.current.add(targetTurnId);
     }
 
     sound.playCallLiar();
@@ -2185,11 +2184,7 @@ export const GameProvider = ({ children }) => {
 
           } else if (type === 'REVEAL_CARDS') {
             const revealKey = `reveal_${parsed.turnId}`;
-            if (
-              !parsed.turnId ||
-              processedActionsRef.current.has(revealKey) ||
-              (resolvedTurnIdsRef.current.has(parsed.turnId) && !pendingRevealRef.current)
-            ) {
+            if (!parsed.turnId || processedActionsRef.current.has(revealKey)) {
               console.log(`[Deceit:Game:In] Ignoring duplicate REVEAL_CARDS for turn ${parsed.turnId}`);
               return;
             }
