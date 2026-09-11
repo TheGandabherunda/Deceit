@@ -81,15 +81,15 @@ export const TableHeader = ({ onOpenRules, onOpenSettings }) => {
           </div>
         ) : (
           <div className="flex items-center gap-2.5">
-            <span className="text-xs text-white/60 font-mono">
-              Round <strong className="text-white font-bold">{roundNumber}</strong>
-            </span>
-            <span className="text-white/20 select-none">•</span>
             <span 
               className="text-base sm:text-lg text-white font-normal"
               style={{ fontFamily: '"Gloock", serif', fontWeight: 400 }}
             >
               {targetName}
+            </span>
+            <span className="text-white/20 select-none">•</span>
+            <span className="text-xs text-white/60 font-mono">
+              Round <strong className="text-white font-bold">{roundNumber}</strong>
             </span>
           </div>
         )}
