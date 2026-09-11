@@ -58,7 +58,7 @@ export const RevolverCinematic = () => {
               shape={victimShape}
               color={victimColor}
               expression={victimExpression}
-              gazeTarget={{ x: 0, y: -0.6 }} // looking down at the spinning cylinder
+              gazeTarget={isDead ? null : { x: 0, y: 0.5 }}
               size={100}
               className={isDead ? 'opacity-80' : ''}
             />

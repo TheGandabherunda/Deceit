@@ -101,17 +101,19 @@ export const BloubAvatar = ({
 
       // Liveliness (wander, blinking, breathing)
       const live = liveliness(st.clock, {
-        wander: isDeadEye ? 0.08 : 0.8,
+        wander: isDeadEye ? 0 : 0.8,
         blink: !isDeadEye,
         float: !isDeadEye
       });
 
-      // Composite head orientation
-      const headGaze = {
-        yaw: (exp.gaze?.yaw || 0) + st.currentYaw + live.dYaw,
-        pitch: (exp.gaze?.pitch || 0) + st.currentPitch + live.dPitch,
-        roll: (exp.gaze?.roll || 0) + live.dRoll
-      };
+      // Composite head orientation: Dead characters face front directly at screen
+      const headGaze = isDeadEye
+        ? { yaw: 0, pitch: 0, roll: 0 }
+        : {
+            yaw: (exp.gaze?.yaw || 0) + st.currentYaw + live.dYaw,
+            pitch: (exp.gaze?.pitch || 0) + st.currentPitch + live.dPitch,
+            roll: (exp.gaze?.roll || 0) + live.dRoll
+          };
 
       // 1. Update Body Silhouette
       const pts = toPoints(
@@ -136,9 +138,9 @@ export const BloubAvatar = ({
       // Left Eye
       if (eye0Ref.current && poses[0].depth > -0.1) {
         const eyeCfg = exp.eyes[0] || { w: 0.186, h: 0.412 };
-        const w = (eyeCfg.w || 0.186) * RAYON;
-        const h = (eyeCfg.h || 0.412) * RAYON;
-        const eyeD = isDeadEye ? crossPath(w, h, 0.32) : capsulePath(w, h);
+        const w = (eyeCfg.w || (isDeadEye ? 0.52 : 0.186)) * RAYON;
+        const h = (eyeCfg.h || (isDeadEye ? 0.52 : 0.412)) * RAYON;
+        const eyeD = isDeadEye ? crossPath(w, h, 0.30) : capsulePath(w, h);
         const p = poses[0];
         const a = r2(p.a);
         const b = r2(p.b * effectiveLid);
@@ -155,9 +157,9 @@ export const BloubAvatar = ({
       // Right Eye
       if (eye1Ref.current && poses[1].depth > -0.1) {
         const eyeCfg = exp.eyes[1] || { w: 0.186, h: 0.412 };
-        const w = (eyeCfg.w || 0.186) * RAYON;
-        const h = (eyeCfg.h || 0.412) * RAYON;
-        const eyeD = isDeadEye ? crossPath(w, h, 0.32) : capsulePath(w, h);
+        const w = (eyeCfg.w || (isDeadEye ? 0.52 : 0.186)) * RAYON;
+        const h = (eyeCfg.h || (isDeadEye ? 0.52 : 0.412)) * RAYON;
+        const eyeD = isDeadEye ? crossPath(w, h, 0.30) : capsulePath(w, h);
         const p = poses[1];
         const a = r2(p.a);
         const b = r2(p.b * effectiveLid);

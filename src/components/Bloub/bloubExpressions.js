@@ -46,21 +46,21 @@ export const EXPRESSIONS = {
     eyes: pair(0.32, 0.16, 28, 0.95)
   },
 
-  // Dead / Defeat: Slumped lifeless head with X X eyes
+  // Dead / Defeat: Lifeless head front-facing screen with large X X eyes
   dead: {
     id: 'dead',
     isDead: true,
-    gaze: { yaw: 0, pitch: 10, roll: 8 },
-    split: 18,
-    eyes: pair(0.38, 0.38, 0, 1)
+    gaze: { yaw: 0, pitch: 0, roll: 0 },
+    split: 16.5,
+    eyes: pair(0.52, 0.52, 0, 1)
   },
 
   defeat: {
     id: 'defeat',
     isDead: true,
-    gaze: { yaw: 0, pitch: 12, roll: -6 },
-    split: 18,
-    eyes: pair(0.38, 0.38, 0, 1)
+    gaze: { yaw: 0, pitch: 0, roll: 0 },
+    split: 16.5,
+    eyes: pair(0.52, 0.52, 0, 1)
   },
 
   // Victory / Triumphant: Confident raised gaze, victorious squint
