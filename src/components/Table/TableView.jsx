@@ -74,7 +74,7 @@ export const TableView = () => {
       {isFlashActive && <div className="flash-overlay" />}
 
       {/* Atmospheric Table Lighting */}
-      <AmbientLight />
+      <AmbientLight target={gameState === 'lobby' ? 'A' : (tableTarget || 'A')} />
 
       {/* Persistent Navigation Header */}
       <TableHeader 
@@ -128,7 +128,7 @@ export const TableView = () => {
           </div>
         )}
 
-        {/* Middle Row: [Middle-Left Opponent (4-player)] [Center Table Surface] [Middle-Right Opponent (4-player)] */}
+        {/* Middle Row: [Middle-Left Opponent (4-player)] [Center Cards Area] [Middle-Right Opponent (4-player)] */}
         <div className="w-full max-w-5xl my-auto flex items-center justify-center gap-3 md:gap-6 relative z-10">
           {opponents.length === 3 && (
             <div className="hidden lg:flex flex-shrink-0 z-20">
@@ -141,8 +141,8 @@ export const TableView = () => {
             </div>
           )}
 
-          {/* Center Table Surface */}
-          <div className="flex-1 max-w-3xl bg-white/[0.02] border border-white/10 rounded-[44px] p-6 md:p-8 relative flex flex-col items-center justify-center shadow-2xl backdrop-blur-sm min-h-[220px]">
+          {/* Center Table Area - Open layout without outer container box */}
+          <div className="flex-1 max-w-3xl relative flex flex-col items-center justify-center min-h-[220px]">
             {gameState === 'lobby' ? (
               /* Lobby Center Interface - Bloom Style */
               <div className="flex flex-col items-center text-center max-w-md my-auto py-3">
@@ -197,32 +197,24 @@ export const TableView = () => {
                 )}
               </div>
             ) : (
-              /* Active Round Center Dead Zone Interface */
-              <>
+              /* Active Round Center - Only Cards in the Middle */
+              <div className="flex flex-col items-center justify-center relative w-full my-auto py-2">
                 {/* Action Notification Banner */}
                 {actionBanner && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-30">
-                    <div className="px-4 py-1.5 rounded-full bg-[#0a0a0a] border border-white/20 text-white font-mono text-xs shadow-2xl flex items-center gap-2">
+                  <div className="mb-4 transition-all animate-fade-in">
+                    <div className="px-4 py-1.5 rounded-full bg-[#0a0a0a]/90 backdrop-blur-md border border-white/20 text-white font-mono text-xs shadow-2xl flex items-center gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
                       <span>{actionBanner}</span>
                     </div>
                   </div>
                 )}
 
-                {/* Center Dead Zone Elements */}
-                <div className="w-full max-w-lg flex items-center justify-around py-1">
+                {/* Only Cards in the Middle (Target Card & Card Pile) */}
+                <div className="flex items-center justify-center gap-8 sm:gap-12 md:gap-16">
                   <TargetCardDisplay target={tableTarget} />
-
-                  <div className="flex flex-col items-center gap-1.5">
-                    <div className="w-10 h-10 rounded-full border border-white/15 bg-white/[0.04] flex items-center justify-center shadow-lg">
-                      <span className="material-symbols-rounded text-base text-white/50">casino</span>
-                    </div>
-                    <span className="text-[9px] font-mono uppercase tracking-widest text-white/40">Dead Zone</span>
-                  </div>
-
                   <CardPile pileCount={pileCount} />
                 </div>
-              </>
+              </div>
             )}
           </div>
 
