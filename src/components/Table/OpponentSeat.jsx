@@ -88,13 +88,11 @@ export const OpponentSeat = ({
         {isLobby ? (
           <div className="h-7 flex items-center justify-center text-[10px] font-mono uppercase tracking-wider">
             {player.isReady ? (
-              <span className="flex items-center gap-1.5 text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/30">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-emerald-400 font-medium">
                 Ready
               </span>
             ) : (
-              <span className="flex items-center gap-1.5 text-white/40 bg-white/[0.03] px-2 py-0.5 rounded-full border border-white/10">
-                <span className="w-1.5 h-1.5 rounded-full bg-white/30" />
+              <span className="text-white/40">
                 Not Ready
               </span>
             )}

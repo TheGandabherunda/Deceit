@@ -71,13 +71,8 @@ export const TableHeader = ({ onOpenRules, onOpenSettings }) => {
       {/* Middle: Round Info or Lobby Start */}
       <div className="flex items-center gap-3">
         {gameState === 'lobby' ? (
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/10 text-xs font-mono text-white/70">
-              <span className={`w-1.5 h-1.5 rounded-full ${players.length >= 2 && players.every(p => p.isReady) ? 'bg-emerald-400 animate-ping' : 'bg-white/40 animate-pulse'}`} />
-              <span>
-                Lobby: <strong className="text-white">{players.filter(p => p.isReady).length}/{players.length} Ready</strong>
-              </span>
-            </div>
+          <div className="text-xs font-mono text-white/50">
+            Lobby: <strong className="text-white">{players.filter(p => p.isReady).length}/{players.length} Ready</strong>
           </div>
         ) : (
           <div className="flex items-center gap-2.5">

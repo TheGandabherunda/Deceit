@@ -126,13 +126,11 @@ export const LocalPlayerSeat = () => {
                 </span>
                 <div className="text-[10px] font-mono">
                   {me.isReady ? (
-                    <span className="text-emerald-400 font-bold flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="text-emerald-400 font-bold">
                       Ready
                     </span>
                   ) : (
-                    <span className="text-white/40 flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-white/30" />
+                    <span className="text-white/40">
                       Not Ready
                     </span>
                   )}

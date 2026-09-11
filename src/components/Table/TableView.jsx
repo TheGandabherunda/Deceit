@@ -171,23 +171,20 @@ export const TableView = () => {
 
                 {/* Minimal Status Indicator */}
                 {isStartAudioPlaying ? (
-                  <div className="mt-5 px-5 py-2 rounded-full bg-white text-black font-semibold text-xs animate-pulse tracking-wide">
+                  <div className="mt-4 text-xs font-semibold text-white animate-pulse tracking-wide">
                     Entering match...
                   </div>
                 ) : players.length < 2 ? (
-                  <div className="mt-5 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/10 text-white/50 font-mono text-xs flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-white/40 animate-pulse" />
-                    <span>Waiting for opponents ({players.length}/4 seated)</span>
+                  <div className="mt-4 text-xs font-mono text-white/40">
+                    Waiting for opponents ({players.length}/4 seated)
                   </div>
                 ) : players.every(p => p.isReady) ? (
-                  <div className="mt-5 px-5 py-2 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-semibold text-xs flex items-center gap-2 animate-pulse">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                    <span>All players ready • Dealing Round 1</span>
+                  <div className="mt-4 text-xs font-medium text-emerald-400 animate-pulse">
+                    All players ready • Dealing Round 1
                   </div>
                 ) : (
-                  <div className="mt-5 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/10 text-white/60 font-mono text-xs flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    <span>{players.filter(p => p.isReady).length}/{players.length} players ready</span>
+                  <div className="mt-4 text-xs font-mono text-white/50">
+                    {players.filter(p => p.isReady).length}/{players.length} players ready
                   </div>
                 )}
               </div>
