@@ -23,8 +23,8 @@ export const ProfileModal = ({ isOpen, onClose }) => {
     const el = colorScrollRef.current;
     if (!el) return;
     const { scrollLeft, scrollWidth, clientWidth } = el;
-    setCanScrollLeft(scrollLeft > 6);
-    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 6);
+    setCanScrollLeft(scrollLeft > 4);
+    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 4);
   };
 
   useEffect(() => {
@@ -170,26 +170,24 @@ export const ProfileModal = ({ isOpen, onClose }) => {
               </span>
             </div>
 
-            <div className="flex items-center gap-1.5 w-full">
-              {/* Left Arrow (outside the colors, visible when colors are available to scroll left) */}
-              <button
-                type="button"
-                onClick={handleScrollLeft}
-                aria-label="Scroll left to more colors"
-                className={`w-8 h-8 shrink-0 rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white flex items-center justify-center transition-all cursor-pointer ${
-                  canScrollLeft
-                    ? 'opacity-100 pointer-events-auto'
-                    : 'opacity-0 pointer-events-none'
-                }`}
-              >
-                <span className="material-symbols-rounded text-lg leading-none">chevron_left</span>
-              </button>
+            <div className="flex items-center w-full min-w-0">
+              {/* Left Arrow (only rendered when colors are available to scroll left) */}
+              {canScrollLeft && (
+                <button
+                  type="button"
+                  onClick={handleScrollLeft}
+                  aria-label="Scroll left to more colors"
+                  className="w-8 h-8 shrink-0 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all cursor-pointer active:scale-95 mr-1"
+                >
+                  <span className="material-symbols-rounded text-lg leading-none">chevron_left</span>
+                </button>
+              )}
 
-              {/* Color Scroll Track (no background container) */}
+              {/* Color Scroll Track - min-w-0 and py-3 prevents any clipping or horizontal overflow */}
               <div
                 ref={colorScrollRef}
                 onScroll={updateScrollArrows}
-                className="flex-1 py-1.5 flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth"
+                className="flex-1 min-w-0 py-3 px-1.5 flex items-center gap-2.5 overflow-x-auto no-scrollbar scroll-smooth"
               >
                 {COLORS.map((c) => {
                   const isSelected = selectedColor.toLowerCase() === c.hex.toLowerCase();
@@ -216,19 +214,17 @@ export const ProfileModal = ({ isOpen, onClose }) => {
                 })}
               </div>
 
-              {/* Right Arrow (outside the colors, visible when colors are available to scroll right) */}
-              <button
-                type="button"
-                onClick={handleScrollRight}
-                aria-label="Scroll right to more colors"
-                className={`w-8 h-8 shrink-0 rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white flex items-center justify-center transition-all cursor-pointer ${
-                  canScrollRight
-                    ? 'opacity-100 pointer-events-auto'
-                    : 'opacity-0 pointer-events-none'
-                }`}
-              >
-                <span className="material-symbols-rounded text-lg leading-none">chevron_right</span>
-              </button>
+              {/* Right Arrow (only rendered when colors are available to scroll right) */}
+              {canScrollRight && (
+                <button
+                  type="button"
+                  onClick={handleScrollRight}
+                  aria-label="Scroll right to more colors"
+                  className="w-8 h-8 shrink-0 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all cursor-pointer active:scale-95 ml-1"
+                >
+                  <span className="material-symbols-rounded text-lg leading-none">chevron_right</span>
+                </button>
+              )}
             </div>
           </div>
 
