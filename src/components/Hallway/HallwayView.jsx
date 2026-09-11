@@ -4,6 +4,7 @@ import { MatchingModal } from './MatchingModal';
 import { PrivateRoomModal } from './PrivateRoomModal';
 import { TableSizeModal } from './TableSizeModal';
 import { RulesModal } from './RulesModal';
+import { SettingsModal } from '../Settings/SettingsModal';
 import AmbientLight from '../AmbientLight';
 import { useNostr } from '../../context/NostrContext';
 import { useGame } from '../../context/GameContext';
@@ -27,6 +28,7 @@ export const HallwayView = () => {
   const [isPrivateOpen, setIsPrivateOpen] = useState(false);
   const [isTableSizeOpen, setIsTableSizeOpen] = useState(false);
   const [isRulesOpen, setIsRulesOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // Mouse cursor tracking for the home screen hero Bloub avatar
   const bloubContainerRef = useRef(null);
@@ -63,6 +65,7 @@ export const HallwayView = () => {
       <HallwayHeader
         onOpenPrivate={() => setIsPrivateOpen(true)}
         onOpenRules={() => setIsRulesOpen(true)}
+        onOpenSettings={() => setIsSettingsOpen(true)}
       />
 
       {/* Main Center Interface */}
@@ -160,6 +163,10 @@ export const HallwayView = () => {
       <RulesModal
         isOpen={isRulesOpen}
         onClose={() => setIsRulesOpen(false)}
+      />
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
       />
     </div>
   );

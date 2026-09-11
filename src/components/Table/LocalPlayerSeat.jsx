@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CardView } from './CardView';
 import { PlayerGunBadge } from './PlayerGunBadge';
+import { BloubAvatar } from '../Bloub/BloubAvatar';
 import { useGame } from '../../context/GameContext';
 import { useNostr } from '../../context/NostrContext';
 import { useProfile } from '../../context/ProfileContext';
@@ -106,12 +107,14 @@ export const LocalPlayerSeat = () => {
         {/* Lobby Action Controls & Profile Chip */}
         <div className="flex items-center gap-4 flex-wrap justify-center">
           {/* Local Player Badge */}
-          <div className="px-4 py-1.5 rounded-full flex items-center gap-3 bg-white/[0.04] border border-white/10">
-            <div 
-              className="w-7 h-7 rounded-full flex items-center justify-center font-serif text-xs font-bold text-black border border-white/20 shadow-sm"
-              style={{ backgroundColor: profile?.color || '#3b93f0' }}
-            >
-              {displayName ? displayName.substring(0, 2).toUpperCase() : 'ME'}
+          <div className="px-4 py-1.5 rounded-full flex items-center gap-3 bg-white/[0.04] border border-white/10 shadow-lg">
+            <div className="w-8 h-8 flex items-center justify-center shrink-0">
+              <BloubAvatar
+                shape={profile?.shape}
+                color={profile?.color}
+                expression="idle"
+                size={32}
+              />
             </div>
             <div className="flex flex-col text-left">
               <div className="flex items-center gap-1.5">
@@ -141,9 +144,8 @@ export const LocalPlayerSeat = () => {
 
           {/* Universal Collaborative Lobby Ready Actions */}
           {isStartAudioPlaying ? (
-            <div className="flex items-center gap-2.5 px-6 py-2.5 rounded-full bg-white/[0.04] border border-white/10 text-white/70 font-mono text-xs animate-pulse">
-              <span className="w-2 h-2 rounded-full bg-white animate-ping" />
-              <span>Entering table...</span>
+            <div className="flex items-center gap-2.5 px-6 py-2.5 rounded-full bg-white text-black font-semibold text-xs tracking-wider animate-pulse">
+              <span>Entering match...</span>
             </div>
           ) : players.length < 2 ? (
             <div className="flex items-center gap-2.5 px-6 py-2.5 rounded-full bg-white/[0.04] border border-white/10">
@@ -156,31 +158,17 @@ export const LocalPlayerSeat = () => {
               </span>
             </div>
           ) : (
-            <div className="flex flex-col sm:flex-row items-center gap-3">
-              <button
-                onClick={togglePlayerReady}
-                className={`h-11 px-8 rounded-full font-bold text-xs uppercase tracking-wider transition-all shadow-xl flex items-center gap-2 cursor-pointer active:scale-95 ${
-                  me.isReady
-                    ? 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/40'
-                    : 'bg-white hover:bg-white/90 text-black'
-                }`}
-              >
-                <span className="material-symbols-rounded text-base">
-                  {me.isReady ? 'check_circle' : 'radio_button_unchecked'}
-                </span>
-                <span>
-                  {me.isReady 
-                    ? `Ready (${players.filter(p => p.isReady).length}/${players.length})` 
-                    : "I'm Ready"}
-                </span>
-              </button>
-
-              <span className="text-[11px] font-mono text-white/40">
-                {players.every(p => p.isReady) 
-                  ? 'All players ready! Starting...' 
-                  : `Waiting for all players (${players.filter(p => p.isReady).length}/${players.length} ready)`}
-              </span>
-            </div>
+            <button
+              type="button"
+              onClick={togglePlayerReady}
+              className={`h-[48px] px-8 rounded-full font-bold text-sm transition-all shadow-xl flex items-center justify-center cursor-pointer active:scale-98 ${
+                me.isReady
+                  ? 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30'
+                  : 'bg-white hover:bg-white/90 text-black'
+              }`}
+            >
+              {me.isReady ? 'Ready' : 'Ready Up'}
+            </button>
           )}
         </div>
       </div>
@@ -235,13 +223,13 @@ export const LocalPlayerSeat = () => {
         <div className={`px-4 py-1.5 rounded-full flex items-center gap-3 bg-white/[0.04] border transition-all ${
           isMyTurn ? 'border-white/50 shadow-[0_0_20px_rgba(255,255,255,0.15)]' : 'border-white/10'
         }`}>
-          <div 
-            className={`w-7 h-7 rounded-full flex items-center justify-center font-serif text-xs font-bold border border-white/20 shadow-sm ${
-              me.isAlive ? 'text-black' : 'bg-white/10 text-white/40'
-            }`}
-            style={{ backgroundColor: me.isAlive ? (profile?.color || '#3b93f0') : undefined }}
-          >
-            {me.isAlive ? (displayName ? displayName.substring(0, 2).toUpperCase() : 'ME') : '☠'}
+          <div className="w-8 h-8 flex items-center justify-center shrink-0">
+            <BloubAvatar
+              shape={profile?.shape}
+              color={profile?.color}
+              expression={!me.isAlive ? 'dead' : 'idle'}
+              size={32}
+            />
           </div>
 
           <div className="flex flex-col text-left">

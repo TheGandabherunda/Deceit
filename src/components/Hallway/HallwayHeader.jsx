@@ -3,7 +3,7 @@ import { useNostr } from '../../context/NostrContext';
 import { useProfile } from '../../context/ProfileContext';
 import { BloubAvatar } from '../Bloub/BloubAvatar';
 
-export const HallwayHeader = ({ onOpenPrivate, onOpenRules }) => {
+export const HallwayHeader = ({ onOpenPrivate, onOpenRules, onOpenSettings }) => {
   const { isRelayConnected } = useNostr();
   const { profile, truncatedId, setIsProfileModalOpen } = useProfile();
 
@@ -45,19 +45,27 @@ export const HallwayHeader = ({ onOpenPrivate, onOpenRules }) => {
         </button>
       </div>
 
-      {/* Right Controls: Rules & Private Table */}
-      <div className="flex items-center gap-2.5 z-20">
+      {/* Right Controls: Rules, Settings & Private Table */}
+      <div className="flex items-center gap-2 z-20">
         <button
           onClick={onOpenRules}
           title="Game Rules"
-          className="text-white/50 hover:text-white transition-colors p-2 flex items-center justify-center rounded-full hover:bg-white/10"
+          className="text-white/50 hover:text-white transition-colors p-2 flex items-center justify-center rounded-full hover:bg-white/10 cursor-pointer"
         >
           <span className="material-symbols-rounded text-[20px]">help_outline</span>
         </button>
 
+        <button
+          onClick={onOpenSettings}
+          title="Audio Settings"
+          className="text-white/50 hover:text-white transition-colors p-2 flex items-center justify-center rounded-full hover:bg-white/10 cursor-pointer"
+        >
+          <span className="material-symbols-rounded text-[20px]">settings</span>
+        </button>
+
         <button 
           onClick={onOpenPrivate}
-          className="bg-white/10 hover:bg-white/15 text-white px-4 py-2 rounded-full font-medium sm:font-semibold transition-all items-center flex text-xs sm:text-sm shadow-md active:scale-95 cursor-pointer"
+          className="bg-white/10 hover:bg-white/15 text-white px-4 py-2 rounded-full font-medium sm:font-semibold transition-all items-center flex text-xs sm:text-sm shadow-md active:scale-95 cursor-pointer ml-1"
           title="Create or Join a Private Table"
         >
           <span>Private Table</span>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { TableHeader } from './TableHeader';
 import { OpponentsLayer } from './OpponentsLayer';
 import { TargetCardDisplay } from './DeadZone/TargetCardDisplay';
@@ -10,6 +10,7 @@ import { GameOverModal } from './Modals/GameOverModal';
 import AmbientLight from '../AmbientLight';
 import { useGame } from '../../context/GameContext';
 import { useNostr } from '../../context/NostrContext';
+import { sound } from '../../services/sound';
 
 export const TableView = () => {
   const { pubkey } = useNostr();
@@ -33,6 +34,18 @@ export const TableView = () => {
   } = useGame();
 
   const opponents = players.filter(p => p.pk !== pubkey);
+
+  // Background Music: Play low-volume ambient music during active game sessions
+  useEffect(() => {
+    if (gameState === 'playing') {
+      sound.startBgMusic();
+    } else {
+      sound.stopBgMusic();
+    }
+    return () => {
+      sound.stopBgMusic();
+    };
+  }, [gameState]);
 
   return (
     <div className={`h-[100dvh] w-screen overflow-x-hidden flex flex-col antialiased bg-[#050505] text-white relative select-none animate-fade-in ${
@@ -109,43 +122,55 @@ export const TableView = () => {
           {/* Center Table Surface */}
           <div className="flex-1 max-w-3xl bg-white/[0.02] border border-white/10 rounded-[44px] p-6 md:p-8 relative flex flex-col items-center justify-center shadow-2xl backdrop-blur-sm min-h-[220px]">
             {gameState === 'lobby' ? (
-              /* Lobby Center Interface */
-              <div className="flex flex-col items-center text-center max-w-md my-auto py-2">
-                <div className="px-3.5 py-1 rounded-full bg-white/10 text-white/80 font-mono text-[11px] uppercase tracking-wider mb-3 border border-white/10 flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
-                  <span>{isPublic ? 'Public Table' : 'Private Table'} • {players.length}/4 Seats Occupied</span>
-                </div>
-
-                <h2 className="text-2xl font-serif font-bold text-white mb-1 tracking-tight">
-                  {isPublic ? 'Public Match' : `Table ${roomCode}`}
+              /* Lobby Center Interface - Bloom Style */
+              <div className="flex flex-col items-center text-center max-w-md my-auto py-3">
+                <h2 
+                  className="text-3xl sm:text-4xl text-white font-serif tracking-normal mb-1.5"
+                  style={{ fontFamily: '"Gloock", serif', fontWeight: 400 }}
+                >
+                  {isPublic ? 'Table Arena' : 'Private Table'}
                 </h2>
-                <p className="text-xs text-white/50 mb-4">
+                <p className="text-xs sm:text-sm text-white/40 max-w-xs leading-relaxed">
                   {isPublic 
-                    ? (players.length < 2 ? 'Waiting for matchmaking players to take a seat...' : 'Seated and waiting for all players to ready up.')
-                    : (players.length < 2 ? `Share code ${roomCode} with friends to take a seat.` : 'Seated and waiting for all players to ready up.')}
+                    ? (players.length < 2 ? 'Waiting for players to join and take a seat.' : 'All seats occupied. Ready up to begin.')
+                    : (players.length < 2 ? 'Share the room code with friends to join the match.' : 'All players seated. Ready up to deal the cards.')}
                 </p>
 
+                {/* Private Table Code pill with click to copy */}
+                {!isPublic && roomCode && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(roomCode);
+                    }}
+                    className="mt-3.5 px-4 py-1.5 rounded-full bg-white/[0.06] hover:bg-white/10 border border-white/10 text-white/80 font-mono text-xs flex items-center gap-2 transition-all cursor-pointer group active:scale-95"
+                    title="Click to copy room code"
+                  >
+                    <span className="text-white/40">CODE</span>
+                    <span className="font-bold tracking-widest text-white">{roomCode}</span>
+                    <span className="material-symbols-rounded text-sm text-white/40 group-hover:text-white">content_copy</span>
+                  </button>
+                )}
+
+                {/* Minimal Status Indicator */}
                 {isStartAudioPlaying ? (
-                  <div className="flex items-center gap-2.5 px-6 py-2.5 rounded-full bg-white/[0.04] border border-white/10 text-white/70 font-mono text-xs animate-pulse">
-                    <span className="w-2 h-2 rounded-full bg-white animate-ping" />
-                    <span>Entering table...</span>
+                  <div className="mt-5 px-5 py-2 rounded-full bg-white text-black font-semibold text-xs animate-pulse tracking-wide">
+                    Entering match...
                   </div>
                 ) : players.length < 2 ? (
-                  <div className="flex items-center gap-2 text-white/40 font-mono text-xs px-4 py-2 rounded-full bg-white/[0.02] border border-white/10">
+                  <div className="mt-5 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/10 text-white/50 font-mono text-xs flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-white/40 animate-pulse" />
-                    <span>Waiting for at least 1 more player to join...</span>
+                    <span>Waiting for opponents ({players.length}/4 seated)</span>
                   </div>
                 ) : players.every(p => p.isReady) ? (
-                  <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs px-5 py-2.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 animate-pulse">
+                  <div className="mt-5 px-5 py-2 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-semibold text-xs flex items-center gap-2 animate-pulse">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                    <span>All players ready! Dealing round 1...</span>
+                    <span>All players ready • Dealing Round 1</span>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2.5 text-white/70 font-mono text-xs px-5 py-2.5 rounded-full bg-white/[0.04] border border-white/10">
-                    <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                    <span>
-                      Waiting for players to ready up (<strong className="text-white">{players.filter(p => p.isReady).length}/{players.length}</strong>)
-                    </span>
+                  <div className="mt-5 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/10 text-white/60 font-mono text-xs flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span>{players.filter(p => p.isReady).length}/{players.length} players ready</span>
                   </div>
                 )}
               </div>

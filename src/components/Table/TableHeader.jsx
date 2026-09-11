@@ -3,25 +3,21 @@ import { useGame } from '../../context/GameContext';
 import { useProfile } from '../../context/ProfileContext';
 import { sound } from '../../services/sound';
 import { RulesModal } from '../Hallway/RulesModal';
+import { SettingsModal } from '../Settings/SettingsModal';
 import { BloubAvatar } from '../Bloub/BloubAvatar';
 
 export const TableHeader = () => {
   const { roomCode, isHost, isPublic, togglePublic, players, roundNumber, gameState, startGame, leaveRoom, isStartAudioPlaying } = useGame();
   const { profile, truncatedId, setIsProfileModalOpen } = useProfile();
   const [copied, setCopied] = useState(false);
-  const [isMuted, setIsMuted] = useState(sound.muted);
   const [isRulesOpen, setIsRulesOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const copyRoomCode = () => {
     if (!roomCode) return;
     navigator.clipboard.writeText(roomCode);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleToggleSound = () => {
-    const nextMuted = sound.toggleMute();
-    setIsMuted(nextMuted);
   };
 
   return (
@@ -107,24 +103,25 @@ export const TableHeader = () => {
         </button>
 
         <button
-          onClick={handleToggleSound}
-          className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white flex items-center justify-center text-xs transition-colors"
-          title={isMuted ? 'Unmute Audio' : 'Mute Audio'}
+          onClick={() => setIsSettingsOpen(true)}
+          className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white flex items-center justify-center text-xs transition-colors cursor-pointer"
+          title="Settings"
         >
           <span className="material-symbols-rounded text-[18px]">
-            {isMuted ? 'volume_off' : 'volume_up'}
+            settings
           </span>
         </button>
 
         <button
           onClick={leaveRoom}
-          className="px-3 py-1 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white/60 hover:text-white text-xs font-semibold transition-colors"
+          className="px-3 py-1 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white/60 hover:text-white text-xs font-semibold transition-colors cursor-pointer"
         >
           Leave
         </button>
       </div>
 
       <RulesModal isOpen={isRulesOpen} onClose={() => setIsRulesOpen(false)} />
+      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
     </header>
   );
 };

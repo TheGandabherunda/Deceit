@@ -35,6 +35,18 @@ class SoundFX {
     this.activeAudios = new Set();
     this.hasUserInteracted = false;
 
+    // Master Settings state
+    this.masterMuted = typeof window !== 'undefined' ? localStorage.getItem('deceit_master_muted') === 'true' : false;
+    this.sfxVolume = typeof window !== 'undefined' ? parseFloat(localStorage.getItem('deceit_sfx_volume') || '0.7') : 0.7;
+
+    // Background Music state (/sounds/background.mp3)
+    this.bgMusicAudioUrl = '/sounds/background.mp3';
+    this.bgMusicEnabled = typeof window !== 'undefined' ? localStorage.getItem('deceit_bg_enabled') !== 'false' : true;
+    this.bgMusicVolume = typeof window !== 'undefined' ? parseFloat(localStorage.getItem('deceit_bg_volume') || '0.15') : 0.15;
+    this.bgMusicAudio = null;
+    this.isBgMusicPlaying = false;
+    this.initBgMusic();
+
     // Global UI Hover Audio state
     this.hoverAudioUrl = '/sounds/hover.mp3';
     this.hoverBuffer = null;
@@ -52,6 +64,106 @@ class SoundFX {
     this.clickPoolIdx = 0;
     this.lastClickTime = 0;
     this.loadClickBuffer();
+  }
+
+  initBgMusic() {
+    if (typeof window === 'undefined') return;
+    try {
+      this.bgMusicAudio = new Audio(this.bgMusicAudioUrl);
+      this.bgMusicAudio.loop = true;
+      this.bgMusicAudio.volume = Math.max(0, Math.min(1, this.bgMusicVolume));
+      this.bgMusicAudio.preload = 'auto';
+    } catch (e) {}
+  }
+
+  startBgMusic() {
+    this.isBgMusicPlaying = true;
+    if (!this.bgMusicAudio) this.initBgMusic();
+    if (!this.bgMusicAudio) return;
+    if (this.masterMuted || !this.bgMusicEnabled) return;
+
+    this.bgMusicAudio.volume = Math.max(0, Math.min(1, this.bgMusicVolume));
+    const p = this.bgMusicAudio.play();
+    if (p !== undefined) {
+      p.catch(() => {});
+    }
+  }
+
+  stopBgMusic() {
+    this.isBgMusicPlaying = false;
+    if (this.bgMusicAudio) {
+      try {
+        this.bgMusicAudio.pause();
+        this.bgMusicAudio.currentTime = 0;
+      } catch (e) {}
+    }
+  }
+
+  setBgMusicEnabled(enabled) {
+    this.bgMusicEnabled = Boolean(enabled);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('deceit_bg_enabled', String(this.bgMusicEnabled));
+    }
+    if (!this.bgMusicEnabled) {
+      if (this.bgMusicAudio) {
+        try { this.bgMusicAudio.pause(); } catch (e) {}
+      }
+    } else if (this.isBgMusicPlaying && !this.masterMuted) {
+      this.startBgMusic();
+    }
+    this.notifySettingsChanged();
+  }
+
+  setBgMusicVolume(vol) {
+    const clamped = Math.max(0, Math.min(1, vol));
+    this.bgMusicVolume = clamped;
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('deceit_bg_volume', String(clamped));
+    }
+    if (this.bgMusicAudio) {
+      this.bgMusicAudio.volume = clamped;
+    }
+    this.notifySettingsChanged();
+  }
+
+  setMasterMuted(muted) {
+    this.masterMuted = Boolean(muted);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('deceit_master_muted', String(this.masterMuted));
+    }
+    if (this.masterMuted) {
+      this.stopAllAudio();
+      if (this.bgMusicAudio) {
+        try { this.bgMusicAudio.pause(); } catch (e) {}
+      }
+    } else {
+      if (this.isBgMusicPlaying && this.bgMusicEnabled) {
+        this.startBgMusic();
+      }
+    }
+    this.notifySettingsChanged();
+  }
+
+  setSfxVolume(vol) {
+    const clamped = Math.max(0, Math.min(1, vol));
+    this.sfxVolume = clamped;
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('deceit_sfx_volume', String(clamped));
+    }
+    this.notifySettingsChanged();
+  }
+
+  notifySettingsChanged() {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('deceit:sound-settings-change', {
+        detail: {
+          masterMuted: this.masterMuted,
+          bgMusicEnabled: this.bgMusicEnabled,
+          bgMusicVolume: this.bgMusicVolume,
+          sfxVolume: this.sfxVolume
+        }
+      }));
+    }
   }
 
   loadHoverBuffer() {
@@ -113,10 +225,12 @@ class SoundFX {
   }
 
   playHover() {
-    if (this.muted) return;
+    if (this.muted || this.masterMuted || this.sfxVolume <= 0) return;
     const now = Date.now();
     if (now - this.lastHoverTime < 25) return;
     this.lastHoverTime = now;
+
+    const vol = 0.45 * this.sfxVolume;
 
     // 1. Web Audio API with decoded buffer (ultra-low latency)
     if (this.ctx && this.ctx.state === 'running' && this.hoverBuffer) {
@@ -124,7 +238,7 @@ class SoundFX {
         const source = this.ctx.createBufferSource();
         source.buffer = this.hoverBuffer;
         const gain = this.ctx.createGain();
-        gain.gain.setValueAtTime(0.45, this.ctx.currentTime);
+        gain.gain.setValueAtTime(vol, this.ctx.currentTime);
         source.connect(gain);
         gain.connect(this.ctx.destination);
         source.start(0);
@@ -137,6 +251,7 @@ class SoundFX {
       if (this.hoverAudioPool && this.hoverAudioPool.length > 0) {
         const audio = this.hoverAudioPool[this.hoverPoolIdx];
         this.hoverPoolIdx = (this.hoverPoolIdx + 1) % this.hoverAudioPool.length;
+        audio.volume = Math.min(1.0, Math.max(0.0, vol));
         audio.currentTime = 0;
         const p = audio.play();
         if (p !== undefined) p.catch(() => {});
@@ -145,10 +260,12 @@ class SoundFX {
   }
 
   playClick() {
-    if (this.muted) return;
+    if (this.muted || this.masterMuted || this.sfxVolume <= 0) return;
     const now = Date.now();
     if (now - this.lastClickTime < 20) return;
     this.lastClickTime = now;
+
+    const vol = 0.55 * this.sfxVolume;
 
     // 1. Web Audio API with decoded buffer (ultra-low latency)
     if (this.ctx && this.ctx.state === 'running' && this.clickBuffer) {
@@ -156,7 +273,7 @@ class SoundFX {
         const source = this.ctx.createBufferSource();
         source.buffer = this.clickBuffer;
         const gain = this.ctx.createGain();
-        gain.gain.setValueAtTime(0.55, this.ctx.currentTime);
+        gain.gain.setValueAtTime(vol, this.ctx.currentTime);
         source.connect(gain);
         gain.connect(this.ctx.destination);
         source.start(0);
@@ -169,6 +286,7 @@ class SoundFX {
       if (this.clickAudioPool && this.clickAudioPool.length > 0) {
         const audio = this.clickAudioPool[this.clickPoolIdx];
         this.clickPoolIdx = (this.clickPoolIdx + 1) % this.clickAudioPool.length;
+        audio.volume = Math.min(1.0, Math.max(0.0, vol));
         audio.currentTime = 0;
         const p = audio.play();
         if (p !== undefined) p.catch(() => {});
@@ -221,12 +339,12 @@ class SoundFX {
 
   // Play audio asset with volume control and safe procedural fallback
   playAudioFile(src, volume = 1.0, fallbackFn = null, soundName = 'audio') {
-    if (this.muted) {
+    if (this.muted || this.masterMuted || this.sfxVolume <= 0) {
       return;
     }
     try {
       const audio = new Audio(src);
-      audio.volume = Math.min(1.0, Math.max(0.0, volume));
+      audio.volume = Math.min(1.0, Math.max(0.0, volume * this.sfxVolume));
       this.activeAudios.add(audio);
 
       const cleanup = () => this.activeAudios.delete(audio);
@@ -884,6 +1002,20 @@ class SoundFX {
       this.failAudioObj = null;
     }
   }
+  stopAllAudio() {
+    this.stopTimer();
+    this.stopStartAudio();
+    this.stopWin();
+    this.stopFail();
+    this.stopBgMusic();
+    for (const audio of this.activeAudios) {
+      try {
+        audio.pause();
+        audio.currentTime = 0;
+      } catch (e) {}
+    }
+    this.activeAudios.clear();
+  }
 }
 
 export const sound = new SoundFX();
@@ -892,6 +1024,9 @@ if (typeof window !== 'undefined') {
   const unlockAudio = () => {
     sound.hasUserInteracted = true;
     sound.init();
+    if (sound.isBgMusicPlaying && sound.bgMusicEnabled && !sound.masterMuted) {
+      sound.startBgMusic();
+    }
     window.removeEventListener('click', unlockAudio);
     window.removeEventListener('keydown', unlockAudio);
     window.removeEventListener('touchstart', unlockAudio);
@@ -938,6 +1073,11 @@ if (typeof window !== 'undefined') {
     if (!e.target || !(e.target instanceof Element)) return;
     const target = e.target.closest(CLICK_SELECTOR);
     if (!target) return;
+
+    // Exclude cards from default click sound (user explicitly requested: "remove card click sound not card-take sound")
+    if (target.closest('.playing-card, [data-card]')) {
+      return;
+    }
 
     // Skip disabled elements
     if (target.disabled || target.getAttribute('aria-disabled') === 'true') {
