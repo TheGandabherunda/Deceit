@@ -43,6 +43,15 @@ class SoundFX {
     this.hoverPoolIdx = 0;
     this.lastHoverTime = 0;
     this.loadHoverBuffer();
+
+    // Global UI Click Audio state
+    this.clickAudioUrl = '/sounds/click.mp3';
+    this.clickBuffer = null;
+    this.rawClickData = null;
+    this.clickAudioPool = [];
+    this.clickPoolIdx = 0;
+    this.lastClickTime = 0;
+    this.loadClickBuffer();
   }
 
   loadHoverBuffer() {
@@ -70,6 +79,35 @@ class SoundFX {
         a.volume = 0.45;
         a.preload = 'auto';
         this.hoverAudioPool.push(a);
+      }
+    } catch (e) {}
+  }
+
+  loadClickBuffer() {
+    if (typeof window === 'undefined') return;
+    try {
+      fetch(this.clickAudioUrl)
+        .then((res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.arrayBuffer();
+        })
+        .then((data) => {
+          if (this.ctx) {
+            this.ctx.decodeAudioData(data.slice(0), (buffer) => {
+              this.clickBuffer = buffer;
+            }, () => {});
+          } else {
+            this.rawClickData = data;
+          }
+        })
+        .catch(() => {});
+
+      // Pre-create audio element pool for instant response
+      for (let i = 0; i < 6; i++) {
+        const a = new Audio(this.clickAudioUrl);
+        a.volume = 0.55;
+        a.preload = 'auto';
+        this.clickAudioPool.push(a);
       }
     } catch (e) {}
   }
@@ -106,6 +144,38 @@ class SoundFX {
     } catch (e) {}
   }
 
+  playClick() {
+    if (this.muted) return;
+    const now = Date.now();
+    if (now - this.lastClickTime < 20) return;
+    this.lastClickTime = now;
+
+    // 1. Web Audio API with decoded buffer (ultra-low latency)
+    if (this.ctx && this.ctx.state === 'running' && this.clickBuffer) {
+      try {
+        const source = this.ctx.createBufferSource();
+        source.buffer = this.clickBuffer;
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(0.55, this.ctx.currentTime);
+        source.connect(gain);
+        gain.connect(this.ctx.destination);
+        source.start(0);
+        return;
+      } catch (e) {}
+    }
+
+    // 2. HTMLAudioElement pool fallback
+    try {
+      if (this.clickAudioPool && this.clickAudioPool.length > 0) {
+        const audio = this.clickAudioPool[this.clickPoolIdx];
+        this.clickPoolIdx = (this.clickPoolIdx + 1) % this.clickAudioPool.length;
+        audio.currentTime = 0;
+        const p = audio.play();
+        if (p !== undefined) p.catch(() => {});
+      }
+    } catch (e) {}
+  }
+
   init() {
     if (!this.hasUserInteracted) return;
     if (!this.ctx && typeof window !== 'undefined') {
@@ -127,6 +197,15 @@ class SoundFX {
         this.ctx.decodeAudioData(dataCopy, (buffer) => {
           this.hoverBuffer = buffer;
           this.rawHoverData = null;
+        }, () => {});
+      } catch (e) {}
+    }
+    if (this.ctx && this.rawClickData && !this.clickBuffer) {
+      try {
+        const dataCopy = this.rawClickData.slice(0);
+        this.ctx.decodeAudioData(dataCopy, (buffer) => {
+          this.clickBuffer = buffer;
+          this.rawClickData = null;
         }, () => {});
       } catch (e) {}
     }
@@ -851,4 +930,20 @@ if (typeof window !== 'undefined') {
   window.addEventListener('mouseleave', () => {
     lastHoveredElement = null;
   });
+
+  // Global click audio for all icons and interactive UI elements
+  const CLICK_SELECTOR = 'button, a, input, select, textarea, [role="button"], [role="radio"], [role="tab"], .cursor-pointer, [tabindex]:not([tabindex="-1"]), .material-symbols-rounded';
+
+  document.addEventListener('click', (e) => {
+    if (!e.target || !(e.target instanceof Element)) return;
+    const target = e.target.closest(CLICK_SELECTOR);
+    if (!target) return;
+
+    // Skip disabled elements
+    if (target.disabled || target.getAttribute('aria-disabled') === 'true') {
+      return;
+    }
+
+    sound.playClick();
+  }, { capture: true, passive: true });
 }
