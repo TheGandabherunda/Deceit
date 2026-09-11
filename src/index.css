@@ -9,12 +9,36 @@
   --sar: env(safe-area-inset-right, 0px);
 }
 
+/* ==========================================================================
+   STRICT TYPOGRAPHY: ONLY GLOOCK & INTER
+   ========================================================================== */
+*, html, body, input, button, select, textarea {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.font-serif,
+.font-gloock,
+.font-display {
+  font-family: 'Gloock', serif !important;
+}
+
+.font-sans,
+.font-inter,
+.font-mono {
+  font-family: 'Inter', sans-serif !important;
+  font-feature-settings: "tnum" 1, "cv05" 1;
+}
+
+.material-symbols-rounded {
+  font-family: 'Material Symbols Rounded' !important;
+}
+
 html {
   -webkit-text-size-adjust: 100%;
 }
 
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter', sans-serif !important;
   background-color: #050505;
   color: #e5e5e5;
   height: 100dvh;

@@ -11,6 +11,9 @@ export default {
         sans: ['Inter', 'sans-serif'],
         serif: ['Gloock', 'serif'],
         mono: ['Inter', 'sans-serif'],
+        display: ['Gloock', 'serif'],
+        gloock: ['Gloock', 'serif'],
+        inter: ['Inter', 'sans-serif'],
       },
       colors: {
         slate: {
