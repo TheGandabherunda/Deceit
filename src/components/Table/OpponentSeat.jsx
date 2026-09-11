@@ -46,7 +46,6 @@ export const OpponentSeat = ({
           directGaze={directGaze}
           isFocusTarget={isFocusTarget}
           size={78}
-          className="drop-shadow-xl"
         />
 
         {/* Eliminated badge corner pill */}

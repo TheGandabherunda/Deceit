@@ -228,19 +228,19 @@ export const SHAPE_BY_ID = new Map(SHAPES.map((s) => [s.id, s]));
 export const DEFAULT_SHAPE = 'cercle';
 
 export const COLORS = [
-  { id: 'encre', label: 'Obsidian', hex: '#0a0a0c' },
-  { id: 'rouge', label: 'Crimson', hex: '#e8483f' },
-  { id: 'orange', label: 'Amber Flame', hex: '#f08a24' },
-  { id: 'ambre', label: 'Goldenrod', hex: '#f0b429' },
-  { id: 'vert', label: 'Emerald', hex: '#3ecf8e' },
-  { id: 'turquoise', label: 'Teal', hex: '#2fbfa0' },
-  { id: 'bleu', label: 'Cobalt', hex: '#3b93f0' },
-  { id: 'violet', label: 'Amethyst', hex: '#8b5cf6' },
-  { id: 'rose', label: 'Rose', hex: '#e152b0' },
-  { id: 'gris', label: 'Slate', hex: '#a3a3a3' },
-  { id: 'creme', label: 'Ivory', hex: '#f1efe9' },
-  { id: 'brun', label: 'Bronze', hex: '#8b5e3c' }
+  { id: 'cobalt', label: 'Cobalt', hex: '#2563eb' },
+  { id: 'emerald', label: 'Emerald', hex: '#059669' },
+  { id: 'orange', label: 'Orange', hex: '#ea580c' },
+  { id: 'teal', label: 'Teal', hex: '#0d9488' },
+  { id: 'magenta', label: 'Magenta', hex: '#db2777' },
+  { id: 'cyan', label: 'Cyan', hex: '#0284c7' },
+  { id: 'forest', label: 'Forest', hex: '#15803d' },
+  { id: 'navy', label: 'Navy', hex: '#1e3a8a' },
+  { id: 'bronze', label: 'Bronze', hex: '#9a3412' },
+  { id: 'olive', label: 'Olive', hex: '#4d7c0f' },
+  { id: 'slate', label: 'Slate', hex: '#475569' },
+  { id: 'obsidian', label: 'Obsidian', hex: '#18181b' }
 ];
 
 export const COLOR_BY_ID = new Map(COLORS.map((c) => [c.id, c]));
-export const DEFAULT_COLOR = '#3b93f0';
+export const DEFAULT_COLOR = '#2563eb';

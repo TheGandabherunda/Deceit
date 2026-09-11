@@ -198,7 +198,7 @@ export const BloubAvatar = ({
         width={size}
         height={size}
         viewBox={`${-DEMI_VIEWBOX} ${-DEMI_VIEWBOX} ${DEMI_VIEWBOX * 2} ${DEMI_VIEWBOX * 2}`}
-        className="w-full h-full drop-shadow-lg overflow-visible"
+        className="w-full h-full overflow-visible"
         role="img"
         aria-label="Character Avatar"
       >

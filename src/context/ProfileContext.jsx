@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNostr } from './NostrContext';
-import { DEFAULT_SHAPE, DEFAULT_COLOR } from '../components/Bloub/bloubShapes';
+import { DEFAULT_SHAPE, DEFAULT_COLOR, COLORS } from '../components/Bloub/bloubShapes';
 
 const ProfileContext = createContext(null);
 
@@ -14,9 +14,12 @@ export const ProfileProvider = ({ children }) => {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
+        const validColor = COLORS.some((c) => c.hex.toLowerCase() === parsed.color?.toLowerCase())
+          ? parsed.color
+          : DEFAULT_COLOR;
         return {
           name: parsed.name || localStorage.getItem('deceit_name') || 'Player',
-          color: parsed.color || DEFAULT_COLOR,
+          color: validColor,
           shape: parsed.shape || DEFAULT_SHAPE
         };
       }

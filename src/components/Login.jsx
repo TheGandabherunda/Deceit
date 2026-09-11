@@ -48,7 +48,6 @@ const Login = ({ onComplete }) => {
               color={color}
               expression="idle"
               size={105}
-              className="drop-shadow-2xl"
             />
           </div>
           <div className="flex items-center gap-1.5">
@@ -94,23 +93,34 @@ const Login = ({ onComplete }) => {
 
           {/* Color Choices */}
           <div>
-            <label className="block text-xs font-mono uppercase tracking-wider text-white/60 mb-1.5 ml-1">
-              Profile Color
-            </label>
-            <div className="flex items-center justify-between gap-1.5 px-1">
-              {COLORS.slice(0, 8).map((c) => (
+            <div className="flex items-center justify-between mb-1.5 px-1">
+              <label className="block text-xs font-mono uppercase tracking-wider text-white/60">
+                Profile Color
+              </label>
+              <span className="text-[11px] font-mono text-white/40">
+                {COLORS.find((c) => c.hex.toLowerCase() === color.toLowerCase())?.label || ''}
+              </span>
+            </div>
+            <div className="grid grid-cols-6 gap-2 px-1">
+              {COLORS.map((c) => (
                 <button
                   key={c.id}
                   type="button"
                   onClick={() => setColor(c.hex)}
-                  className={`w-7 h-7 rounded-full transition-transform cursor-pointer ${
+                  className={`h-7 rounded-lg transition-transform cursor-pointer flex items-center justify-center ${
                     color.toLowerCase() === c.hex.toLowerCase()
-                      ? 'ring-2 ring-white ring-offset-2 ring-offset-black scale-110'
-                      : 'opacity-70 hover:opacity-100 hover:scale-105'
+                      ? 'ring-2 ring-white ring-offset-2 ring-offset-black scale-105'
+                      : 'opacity-80 hover:opacity-100 hover:scale-105'
                   }`}
                   style={{ backgroundColor: c.hex }}
                   title={c.label}
-                />
+                >
+                  {color.toLowerCase() === c.hex.toLowerCase() && (
+                    <span className="material-symbols-rounded text-xs text-white">
+                      check
+                    </span>
+                  )}
+                </button>
               ))}
             </div>
           </div>

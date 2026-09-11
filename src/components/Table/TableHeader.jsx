@@ -76,32 +76,23 @@ export const TableHeader = () => {
 
       {/* Right: Player Profile, Rules, Sound & Leave */}
       <div className="flex items-center gap-2">
-        {/* Player Profile Pill */}
+        {/* Player Profile (Bloub & Name only, no background, no padding, no stroke, no icon) */}
         <button
           type="button"
           onClick={() => setIsProfileModalOpen(true)}
           title="Customize character & profile"
-          className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 transition-all cursor-pointer shadow-sm group mr-1"
+          className="flex items-center gap-2 transition-opacity cursor-pointer group hover:opacity-85 mr-1 select-none"
         >
-          <div className="relative w-5 h-5 flex items-center justify-center">
-            <div 
-              className="absolute inset-0 rounded-full blur-[2px] opacity-40 group-hover:opacity-70 transition-opacity"
-              style={{ backgroundColor: profile.color }}
+          <div className="w-8 h-8 flex items-center justify-center shrink-0">
+            <BloubAvatar
+              shape={profile.shape}
+              color={profile.color}
+              expression="idle"
+              size={32}
             />
-            <div className="w-5 h-5 rounded-full overflow-hidden flex items-center justify-center border border-white/20 relative z-10">
-              <BloubAvatar
-                shape={profile.shape}
-                color={profile.color}
-                expression="idle"
-                size={20}
-              />
-            </div>
           </div>
-          <span className="text-xs font-semibold text-white group-hover:text-white/90 transition-colors max-w-[90px] truncate hidden sm:inline">
+          <span className="text-xs sm:text-sm font-semibold text-white group-hover:text-white/80 transition-colors max-w-[90px] truncate hidden sm:inline">
             {profile.name || 'Player'}
-          </span>
-          <span className="material-symbols-rounded text-xs text-white/30 group-hover:text-white/70 transition-colors">
-            tune
           </span>
         </button>
 

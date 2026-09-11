@@ -76,7 +76,6 @@ export const ProfileModal = ({ isOpen, onClose }) => {
               color={selectedColor}
               expression="idle"
               size={100}
-              className="drop-shadow-2xl"
             />
           </div>
 
@@ -112,21 +111,12 @@ export const ProfileModal = ({ isOpen, onClose }) => {
               <label className="text-xs font-mono uppercase tracking-wider text-white/60">
                 Character Color
               </label>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-mono text-white/50">{selectedColor}</span>
-                <label className="relative cursor-pointer w-5 h-5 rounded-full border border-white/30 overflow-hidden inline-block" title="Custom color picker">
-                  <input
-                    type="color"
-                    value={selectedColor}
-                    onChange={(e) => setSelectedColor(e.target.value)}
-                    className="absolute -top-2 -left-2 w-10 h-10 cursor-pointer opacity-0"
-                  />
-                  <div className="w-full h-full" style={{ backgroundColor: selectedColor }} />
-                </label>
-              </div>
+              <span className="text-xs font-mono text-white/50">
+                {COLORS.find((c) => c.hex.toLowerCase() === selectedColor.toLowerCase())?.label || ''}
+              </span>
             </div>
 
-            {/* Color Swatches Grid */}
+            {/* Solid Color Swatches Grid */}
             <div className="grid grid-cols-6 gap-2">
               {COLORS.map((c) => (
                 <button
@@ -142,7 +132,7 @@ export const ProfileModal = ({ isOpen, onClose }) => {
                   title={c.label}
                 >
                   {selectedColor.toLowerCase() === c.hex.toLowerCase() && (
-                    <span className="material-symbols-rounded text-sm text-white drop-shadow-md">
+                    <span className="material-symbols-rounded text-sm text-white">
                       check
                     </span>
                   )}
