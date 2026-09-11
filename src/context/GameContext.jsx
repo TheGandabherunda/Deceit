@@ -352,16 +352,26 @@ export const GameProvider = ({ children }) => {
     setQueueCount(1);
     setMatchmakingStatus(`Scanning for ${targetSize}-player public tables...`);
 
+    // Clean up any lingering previous matchmaking subscriptions or intervals
     if (fallbackTimeoutRef.current) {
       clearTimeout(fallbackTimeoutRef.current);
       fallbackTimeoutRef.current = null;
     }
+    if (matchmakingSubRef.current) {
+      try { matchmakingSubRef.current.close(); } catch (e) {}
+      matchmakingSubRef.current = null;
+    }
+    if (matchmakingIntervalRef.current) {
+      clearInterval(matchmakingIntervalRef.current);
+      matchmakingIntervalRef.current = null;
+    }
 
     // If searching for 3 or 4 players, setup fallback timeout after 8 seconds
     if (targetSize > 2) {
+      console.log(`[Deceit:Matchmaking] ⏱️ Started 8s fallback timeout for targetSize ${targetSize}`);
       fallbackTimeoutRef.current = setTimeout(() => {
         if (isMatchmakingRef.current) {
-          console.log(`[Deceit:Matchmaking] Few players waiting for ${targetSize}-player match. Offering 2-player fallback.`);
+          console.log(`[Deceit:Matchmaking] ⏰ 8s timeout reached: Few players for ${targetSize}-player match. Displaying fallback dialog.`);
           setShowSizeFallback(true);
         }
       }, 8000);
@@ -415,8 +425,6 @@ export const GameProvider = ({ children }) => {
         matchmakingIntervalRef.current = null;
       }
     };
-
-    cleanupMatchmaking();
 
     const sendQueuePing = async () => {
       if (!isMatchmakingRef.current) return;
