@@ -1,18 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { CardView } from './CardView';
-import { PlayerGunBadge } from './PlayerGunBadge';
-import { BloubAvatar } from '../Bloub/BloubAvatar';
 import { useGame } from '../../context/GameContext';
 import { useNostr } from '../../context/NostrContext';
-import { useProfile } from '../../context/ProfileContext';
 import { sound } from '../../services/sound';
 
 export const LocalPlayerSeat = () => {
-  const { pubkey, displayName } = useNostr();
-  const { profile } = useProfile();
+  const { pubkey } = useNostr();
   const { 
     gameState,
-    isHost,
     roomCode,
     isPublic,
     startGame,
@@ -96,80 +91,12 @@ export const LocalPlayerSeat = () => {
   if (gameState === 'lobby') {
     return (
       <div className="w-full flex flex-col items-center select-none pt-1 pb-2 z-20">
-        {/* Entrance State: No covered cards in beginning, clean seated status */}
-        <div className="h-10 flex flex-col items-center justify-center mb-2">
-          <div className="flex items-center gap-2 text-white/50 font-mono text-xs">
-            <span className="w-1.5 h-1.5 rounded-full bg-white/40 animate-pulse" />
-            <span>{isHost ? (players.length < 2 ? 'Invite players to take a seat to deal cards' : 'All seats ready • Deal cards to start') : 'Seated at table • Waiting for host to deal'}</span>
-          </div>
-        </div>
-
-        {/* Lobby Action Controls & Profile Chip */}
-        <div className="flex items-center gap-4 flex-wrap justify-center">
-          {/* Local Player Badge */}
-          <div className="px-4 py-2 rounded-2xl flex items-center gap-3 bg-white/[0.04] border border-white/10 shadow-lg">
-            <div className="flex flex-col items-center">
-              <span className="text-xs font-semibold text-white mb-0.5">
-                {displayName || 'You'}
-              </span>
-              <BloubAvatar
-                shape={profile?.shape}
-                color={profile?.color}
-                expression="idle"
-                size={46}
-              />
-            </div>
-            <div className="flex flex-col text-left">
-              <div className="flex items-center gap-1.5">
-                <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-white/10 text-white/70 font-mono">
-                  {isHost ? 'Host' : 'You'}
-                </span>
-                <div className="text-[10px] font-mono">
-                  {me.isReady ? (
-                    <span className="text-emerald-400 font-bold">
-                      Ready
-                    </span>
-                  ) : (
-                    <span className="text-white/40">
-                      Not Ready
-                    </span>
-                  )}
-                </div>
-              </div>
-              <div className="mt-1">
-                <PlayerGunBadge chambersRemaining={me.chambersRemaining ?? 6} isAlive={true} />
-              </div>
-            </div>
-          </div>
-
-          {/* Universal Collaborative Lobby Ready Actions */}
-          {isStartAudioPlaying ? (
-            <div className="flex items-center gap-2.5 px-6 py-2.5 rounded-full bg-white text-black font-semibold text-xs tracking-wider animate-pulse">
-              <span>Entering match...</span>
-            </div>
-          ) : players.length < 2 ? (
-            <div className="flex items-center gap-2.5 px-6 py-2.5 rounded-full bg-white/[0.04] border border-white/10">
-              <span className="text-xs font-mono text-white/50">
-                {isPublic ? (
-                  <span>Waiting for another player to join the table...</span>
-                ) : (
-                  <span>Share code <strong className="text-white tracking-widest">{roomCode}</strong> to invite players</span>
-                )}
-              </span>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={togglePlayerReady}
-              className={`h-[48px] px-8 rounded-full font-bold text-sm transition-all shadow-xl flex items-center justify-center cursor-pointer active:scale-98 ${
-                me.isReady
-                  ? 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30'
-                  : 'bg-white hover:bg-white/90 text-black'
-              }`}
-            >
-              {me.isReady ? 'Ready' : 'Ready Up'}
-            </button>
-          )}
+        <div className="flex items-center gap-2 text-xs font-mono text-white/70 select-none">
+          <span className="font-semibold text-white">You</span>
+          <span className="text-white/30">•</span>
+          <span className={me.isReady ? 'text-emerald-400 font-bold' : 'text-white/40'}>
+            {me.isReady ? 'Ready' : 'Not Ready'}
+          </span>
         </div>
       </div>
     );
@@ -217,45 +144,25 @@ export const LocalPlayerSeat = () => {
         )}
       </div>
 
-      {/* Action Controls & Profile Chip */}
+      {/* Action Controls & Local Player Reference */}
       <div className="flex items-center gap-3 flex-wrap justify-center">
-        {/* Local Player Badge with Name ABOVE Bloub */}
-        <div className={`px-3.5 py-1.5 rounded-2xl flex items-center gap-3 bg-white/[0.04] border transition-all ${
-          isMyTurn ? 'border-white/50 shadow-[0_0_20px_rgba(255,255,255,0.15)]' : 'border-white/10'
-        }`}>
-          <div className="flex flex-col items-center">
-            <span className="text-xs font-semibold text-white mb-0.5">
-              {displayName || 'You'}
-            </span>
-            <BloubAvatar
-              shape={profile?.shape}
-              color={profile?.color}
-              expression={!me.isAlive ? 'dead' : 'idle'}
-              size={46}
-            />
+        {/* Local Player Reference - Clean, no bloub, no pill container */}
+        <div className="flex items-center gap-2 text-xs font-mono text-white/70 select-none">
+          <span className="font-semibold text-white">You</span>
+          <span className="text-white/30">•</span>
+          <div className="flex items-center gap-1">
+            <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current text-white/80" fill="currentColor">
+              <path d="M12 2C9.8 2 8 4 8 7.5V17C8 18.1 8.9 19 10 19H14C15.1 19 16 18.1 16 17V7.5C16 4 14.2 2 12 2ZM10 20.5C10 20.2 10.2 20 10.5 20H13.5C13.8 20 14 20.2 14 20.5V21.5C14 21.8 13.8 22 13.5 22H10.5C10.2 22 10 21.8 10 21.5V20.5Z" />
+            </svg>
+            <span className="font-semibold">{me.isAlive ? `${me.chambersRemaining ?? 6}/6` : '0/6'}</span>
           </div>
-
-          <div className="flex flex-col text-left">
-            <div className="flex items-center gap-1.5">
-              <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-white/10 text-white/70 font-mono">
-                {isHost ? 'Host' : 'You'}
-              </span>
-              <span className="text-[10px] font-mono text-white/40">
-                {me.isAlive ? `${localHand.length} cards` : 'Dead'}
-              </span>
-            </div>
-            <div className="mt-1">
-              <PlayerGunBadge 
-                chambersRemaining={me.chambersRemaining ?? 6} 
-                isAlive={me.isAlive} 
-              />
-            </div>
-          </div>
-
           {isMyTurn && me.isAlive && (
-            <span className="text-[10px] font-mono font-bold text-white ml-1 animate-pulse">
-              Your Turn
-            </span>
+            <>
+              <span className="text-white/30">•</span>
+              <span className="text-[11px] font-bold text-white animate-pulse">
+                Your Turn
+              </span>
+            </>
           )}
         </div>
 
