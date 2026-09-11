@@ -27,13 +27,20 @@ export const LocalPlayerSeat = () => {
     actionBanner,
     soleSurvivor,
     isStartAudioPlaying,
-    isRouletteActive
+    isRouletteActive,
+    pendingReveal
   } = useGame();
+
+  const [isCallingLiar, setIsCallingLiar] = useState(false);
+
+  useEffect(() => {
+    setIsCallingLiar(false);
+  }, [lastPlay?.turnId, activePlayerPk, gameState]);
 
   const isMyTurn = activePlayerPk === pubkey;
   const me = players.find(p => p.pk === pubkey) || { isAlive: true, cardCount: localHand.length };
-  const canCallLiar = isMyTurn && lastPlay && lastPlay.playerPk !== pubkey;
-  const canPlayCards = isMyTurn && selectedCardIds.length >= 1 && selectedCardIds.length <= 3 && me.isAlive;
+  const canCallLiar = isMyTurn && lastPlay && lastPlay.playerPk !== pubkey && !pendingReveal && !isRouletteActive && !isCallingLiar;
+  const canPlayCards = isMyTurn && selectedCardIds.length >= 1 && selectedCardIds.length <= 3 && me.isAlive && !pendingReveal && !isRouletteActive && !isCallingLiar;
 
   const prevPlayer = lastPlay ? players.find(p => p.pk === lastPlay.playerPk) : null;
   const isOpponentHandEmptied = gameState === 'playing' && !soleSurvivor && !isRouletteActive && isMyTurn && prevPlayer && prevPlayer.isAlive && prevPlayer.pk !== pubkey && prevPlayer.cardCount === 0 && me.isAlive;
@@ -294,11 +301,14 @@ export const LocalPlayerSeat = () => {
               <>
                 {/* Challenge Final Cards Button */}
                 <button
+                  disabled={isCallingLiar}
                   onClick={() => {
+                    if (isCallingLiar) return;
+                    setIsCallingLiar(true);
                     sound.stopChallengeTimer();
                     handleCallLiar(pubkey, lastPlay.playerPk, lastPlay.turnId, lastPlay.cardHashes);
                   }}
-                  className="h-11 px-6 rounded-full bg-white hover:bg-white/90 text-black font-bold text-xs uppercase tracking-wider transition-all shadow-xl flex items-center gap-1.5 animate-pulse"
+                  className="h-11 px-6 rounded-full bg-white hover:bg-white/90 disabled:opacity-30 disabled:pointer-events-none text-black font-bold text-xs uppercase tracking-wider transition-all shadow-xl flex items-center gap-1.5 animate-pulse"
                 >
                   <span className="material-symbols-rounded text-sm">gavel</span>
                   <span>Call Liar! (Challenge)</span>
@@ -338,11 +348,14 @@ export const LocalPlayerSeat = () => {
                 {/* Call Liar Button */}
                 {canCallLiar && (
                   <button
+                    disabled={!canCallLiar || isCallingLiar}
                     onClick={() => {
+                      if (isCallingLiar) return;
+                      setIsCallingLiar(true);
                       sound.stopChallengeTimer();
                       handleCallLiar(pubkey, lastPlay.playerPk, lastPlay.turnId, lastPlay.cardHashes);
                     }}
-                    className="h-11 px-6 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-lg flex items-center gap-1.5"
+                    className="h-11 px-6 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-lg flex items-center gap-1.5 disabled:opacity-30 disabled:pointer-events-none"
                   >
                     <span className="material-symbols-rounded text-sm">gavel</span>
                     <span>Call Liar!</span>

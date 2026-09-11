@@ -1654,9 +1654,16 @@ export const GameProvider = ({ children }) => {
       return;
     }
 
-    if (targetTurnId) {
-      processedActionsRef.current.add(`liar_${targetTurnId}`);
+    if (
+      !targetTurnId ||
+      processedActionsRef.current.has(`liar_${targetTurnId}`) ||
+      resolvedTurnIdsRef.current.has(targetTurnId)
+    ) {
+      console.log(`[Deceit:Game:Liar] Suppressed duplicate CALL_LIAR for turn ${targetTurnId}`);
+      return;
     }
+
+    processedActionsRef.current.add(`liar_${targetTurnId}`);
 
     sound.playCallLiar();
     const accuserName = playersRef.current.find(p => p.pk === accuserPk)?.name || 'Someone';
@@ -2333,8 +2340,8 @@ export const GameProvider = ({ children }) => {
         const lastSeen = lastSeenMapRef.current[opp.pk] || gameStartTimeRef.current;
         const silentMs = now - lastSeen;
 
-        // Detect silence after 4s (2 missed heartbeats), strictly enforce 30s total wait
-        if (silentMs >= 4000) {
+        // Detect silence after 8s (4 missed heartbeats, tab switch tolerance), strictly enforce 30s total wait
+        if (silentMs >= 8000) {
           const remaining = Math.max(0, 30 - Math.floor(silentMs / 1000));
 
           if (!disconnectedPeerRef.current || disconnectedPeerRef.current.pk !== opp.pk) {
