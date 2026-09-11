@@ -27,26 +27,23 @@ export const TableHeader = () => {
         <span className="font-serif font-black tracking-tight text-base text-white">
           DECEIT
         </span>
-        <div className="h-4 w-[1px] bg-white/20" />
         
         {/* Room Code Badge - ONLY VISIBLE IN PRIVATE ROOMS */}
-        {!isPublic ? (
-          <button
-            onClick={copyRoomCode}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 hover:bg-white/15 text-white font-mono text-xs transition-all border border-white/10 active:scale-95 cursor-pointer"
-            title="Click to copy private room code"
-          >
-            <span className="opacity-60 text-[10px]">ROOM</span>
-            <span className="font-bold tracking-widest">{roomCode || '----'}</span>
-            <span className="material-symbols-rounded text-[14px] opacity-70">
-              {copied ? 'check' : 'content_copy'}
-            </span>
-          </button>
-        ) : (
-          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] text-white/70 font-mono text-xs border border-white/10">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="tracking-wider uppercase text-[10px] font-bold">Public Match</span>
-          </div>
+        {!isPublic && (
+          <>
+            <div className="h-4 w-[1px] bg-white/20" />
+            <button
+              onClick={copyRoomCode}
+              className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 hover:bg-white/15 text-white font-mono text-xs transition-all border border-white/10 active:scale-95 cursor-pointer"
+              title="Click to copy private room code"
+            >
+              <span className="opacity-60 text-[10px]">ROOM</span>
+              <span className="font-bold tracking-widest">{roomCode || '----'}</span>
+              <span className="material-symbols-rounded text-[14px] opacity-70">
+                {copied ? 'check' : 'content_copy'}
+              </span>
+            </button>
+          </>
         )}
       </div>
 
