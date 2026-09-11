@@ -138,8 +138,8 @@ export const BloubAvatar = ({
       // Left Eye
       if (eye0Ref.current && poses[0].depth > -0.1) {
         const eyeCfg = exp.eyes[0] || { w: 0.186, h: 0.412 };
-        const w = (eyeCfg.w || (isDeadEye ? 0.52 : 0.186)) * RAYON;
-        const h = (eyeCfg.h || (isDeadEye ? 0.52 : 0.412)) * RAYON;
+        const w = (eyeCfg.w || (isDeadEye ? 0.48 : 0.186)) * RAYON;
+        const h = (eyeCfg.h || (isDeadEye ? 0.48 : 0.412)) * RAYON;
         const eyeD = isDeadEye ? crossPath(w, h, 0.30) : capsulePath(w, h);
         const p = poses[0];
         const a = r2(p.a);
@@ -157,8 +157,8 @@ export const BloubAvatar = ({
       // Right Eye
       if (eye1Ref.current && poses[1].depth > -0.1) {
         const eyeCfg = exp.eyes[1] || { w: 0.186, h: 0.412 };
-        const w = (eyeCfg.w || (isDeadEye ? 0.52 : 0.186)) * RAYON;
-        const h = (eyeCfg.h || (isDeadEye ? 0.52 : 0.412)) * RAYON;
+        const w = (eyeCfg.w || (isDeadEye ? 0.48 : 0.186)) * RAYON;
+        const h = (eyeCfg.h || (isDeadEye ? 0.48 : 0.412)) * RAYON;
         const eyeD = isDeadEye ? crossPath(w, h, 0.30) : capsulePath(w, h);
         const p = poses[1];
         const a = r2(p.a);
