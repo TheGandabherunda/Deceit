@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TableHeader } from './TableHeader';
 import { OpponentsLayer } from './OpponentsLayer';
-import { TargetCardDisplay } from './DeadZone/TargetCardDisplay';
 import { CardPile } from './DeadZone/CardPile';
 import { LocalPlayerSeat } from './LocalPlayerSeat';
 import { RevealSummaryModal } from './Modals/RevealSummaryModal';
@@ -209,9 +208,8 @@ export const TableView = () => {
                   </div>
                 )}
 
-                {/* Only Cards in the Middle (Target Card & Card Pile) */}
-                <div className="flex items-center justify-center gap-8 sm:gap-12 md:gap-16">
-                  <TargetCardDisplay target={tableTarget} />
+                {/* Only Cards Stack in the Middle */}
+                <div className="flex items-center justify-center">
                   <CardPile pileCount={pileCount} />
                 </div>
               </div>
