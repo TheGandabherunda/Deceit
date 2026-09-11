@@ -26,7 +26,8 @@ export const LocalPlayerSeat = () => {
     tableTarget,
     actionBanner,
     soleSurvivor,
-    isStartAudioPlaying
+    isStartAudioPlaying,
+    isRouletteActive
   } = useGame();
 
   const isMyTurn = activePlayerPk === pubkey;
@@ -35,8 +36,8 @@ export const LocalPlayerSeat = () => {
   const canPlayCards = isMyTurn && selectedCardIds.length >= 1 && selectedCardIds.length <= 3 && me.isAlive;
 
   const prevPlayer = lastPlay ? players.find(p => p.pk === lastPlay.playerPk) : null;
-  const isOpponentHandEmptied = gameState === 'playing' && !soleSurvivor && isMyTurn && prevPlayer && prevPlayer.pk !== pubkey && prevPlayer.cardCount === 0 && me.isAlive;
-  const isMyHandEmptied = gameState === 'playing' && !soleSurvivor && !isMyTurn && prevPlayer && prevPlayer.pk === pubkey && prevPlayer.cardCount === 0 && me.isAlive;
+  const isOpponentHandEmptied = gameState === 'playing' && !soleSurvivor && !isRouletteActive && isMyTurn && prevPlayer && prevPlayer.isAlive && prevPlayer.pk !== pubkey && prevPlayer.cardCount === 0 && me.isAlive;
+  const isMyHandEmptied = gameState === 'playing' && !soleSurvivor && !isRouletteActive && !isMyTurn && prevPlayer && prevPlayer.isAlive && prevPlayer.pk === pubkey && prevPlayer.cardCount === 0 && me.isAlive;
 
   const [challengeTimer, setChallengeTimer] = useState(12);
 

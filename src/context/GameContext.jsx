@@ -240,19 +240,21 @@ export const GameProvider = ({ children }) => {
       }));
     } catch (e) {}
 
-    const initialPlayers = [{
-      pk: pubkey,
-      name: displayName || 'Host',
-      isAlive: true,
-      cardCount: 0,
-      isHost: true,
-      chambersRemaining: 6,
-      isReady: false,
-      dominanceScore: 0
-    }];
-    setPlayers(initialPlayers);
-    playersRef.current = initialPlayers;
-    console.log(`[Deceit:Roster] Initial host roster:`, initialPlayers.map(p => p.name));
+    if (!isResume || !playersRef.current || playersRef.current.length === 0) {
+      const initialPlayers = [{
+        pk: pubkey,
+        name: displayName || 'Host',
+        isAlive: true,
+        cardCount: 0,
+        isHost: true,
+        chambersRemaining: 6,
+        isReady: false,
+        dominanceScore: 0
+      }];
+      setPlayers(initialPlayers);
+      playersRef.current = initialPlayers;
+      console.log(`[Deceit:Roster] Initial host roster:`, initialPlayers.map(p => p.name));
+    }
 
     if (isPub) {
       broadcastRoomBeacon({
@@ -319,19 +321,21 @@ export const GameProvider = ({ children }) => {
       }));
     } catch (e) {}
 
-    // Initial local player representation
-    const me = {
-      pk: pubkey,
-      name: displayName || 'Gambler',
-      isAlive: true,
-      cardCount: 0,
-      isHost: false,
-      chambersRemaining: 6,
-      isReady: false,
-      dominanceScore: 0
-    };
-    setPlayers([me]);
-    playersRef.current = [me];
+    if (!isResume || !playersRef.current || playersRef.current.length === 0) {
+      // Initial local player representation
+      const me = {
+        pk: pubkey,
+        name: displayName || 'Gambler',
+        isAlive: true,
+        cardCount: 0,
+        isHost: false,
+        chambersRemaining: 6,
+        isReady: false,
+        dominanceScore: 0
+      };
+      setPlayers([me]);
+      playersRef.current = [me];
+    }
 
     if (joinIntervalRef.current) {
       clearInterval(joinIntervalRef.current);
@@ -725,6 +729,25 @@ export const GameProvider = ({ children }) => {
               setChambersRemaining(parsed.chambersRemaining);
               chambersRef.current = parsed.chambersRemaining;
             }
+            if (Array.isArray(parsed.players) && parsed.players.length > 0) {
+              setPlayers(parsed.players);
+              playersRef.current = parsed.players;
+            }
+            if (parsed.lastPlay) {
+              setLastPlay(parsed.lastPlay);
+              lastPlayRef.current = parsed.lastPlay;
+            }
+            if (parsed.activePlayerPk) {
+              setActivePlayerPk(parsed.activePlayerPk);
+              activePlayerPkRef.current = parsed.activePlayerPk;
+            }
+            if (parsed.pileCount !== undefined) {
+              setPileCount(parsed.pileCount);
+              pileCountRef.current = parsed.pileCount;
+            }
+            if (parsed.localLastPlayedCards) {
+              localLastPlayedCardsRef.current = parsed.localLastPlayedCards;
+            }
           }
           if (parsed.isHost) {
             createRoom(parsed.roomCode, parsed.isPublic, true);
@@ -742,7 +765,12 @@ export const GameProvider = ({ children }) => {
 
   // Continuously persist active session updates to localStorage
   useEffect(() => {
-    if (!roomCode) return;
+    if (!roomCode || gameState === 'ended' || gameState === 'none') {
+      if (gameState === 'ended') {
+        try { localStorage.removeItem('deceit_active_session'); } catch (e) {}
+      }
+      return;
+    }
     try {
       localStorage.setItem('deceit_active_session', JSON.stringify({
         roomCode,
@@ -753,10 +781,15 @@ export const GameProvider = ({ children }) => {
         tableTarget,
         chambersRemaining,
         localHand,
+        players,
+        lastPlay,
+        activePlayerPk,
+        pileCount,
+        localLastPlayedCards: localLastPlayedCardsRef.current,
         timestamp: Date.now()
       }));
     } catch (e) {}
-  }, [roomCode, isHost, isPublic, gameState, roundNumber, tableTarget, chambersRemaining, localHand]);
+  }, [roomCode, isHost, isPublic, gameState, roundNumber, tableTarget, chambersRemaining, localHand, players, lastPlay, activePlayerPk, pileCount]);
 
   // Toggle Public / Private room
   const togglePublic = useCallback(() => {
@@ -1358,7 +1391,22 @@ export const GameProvider = ({ children }) => {
 
         if (living.length <= 1) {
           // Sole Survivor!
-          const winner = living[0] || updated.find(p => p.pk !== victimPk) || updated[0];
+          let winner = null;
+          if (living.length === 1) {
+            winner = living[0];
+          } else {
+            // If all local players marked dead or 1-player corrupted roster.
+            // The dead victim can NEVER be the sole survivor!
+            winner = updated.find(p => p.pk !== victimPk) 
+              || playersRef.current.find(p => p.pk !== victimPk)
+              || (lastPlayRef.current?.playerPk !== victimPk ? playersRef.current.find(p => p.pk === lastPlayRef.current?.playerPk) : null);
+          }
+
+          if (!winner || (isDead && winner.pk === victimPk)) {
+            const alternate = updated.find(p => p.pk !== victimPk) || playersRef.current.find(p => p.pk !== victimPk);
+            winner = alternate || { name: 'Opponent', pk: 'opponent' };
+          }
+
           console.log(`[Deceit:Game:End] SOLE SURVIVOR: ${winner.name} (${winner.pk.slice(0, 8)})`);
           soleSurvivorRef.current = winner;
           gameStateRef.current = 'ended';
@@ -2268,21 +2316,6 @@ export const GameProvider = ({ children }) => {
       }
     };
   }, [gameState, roomCode, pubkey, publishSignal, triggerBanner]);
-
-  // Page unload & tab close listener to immediately broadcast LEAVE_ROOM
-  useEffect(() => {
-    const handleUnload = () => {
-      if (pubkey && roomCodeRef.current) {
-        publishSignal('LEAVE_ROOM', { playerPk: pubkey }).catch(() => {});
-      }
-    };
-    window.addEventListener('beforeunload', handleUnload);
-    window.addEventListener('pagehide', handleUnload);
-    return () => {
-      window.removeEventListener('beforeunload', handleUnload);
-      window.removeEventListener('pagehide', handleUnload);
-    };
-  }, [pubkey, publishSignal]);
 
   // Leave room
   const leaveRoom = useCallback(() => {
