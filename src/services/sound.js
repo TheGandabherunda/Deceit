@@ -33,13 +33,17 @@ class SoundFX {
 
     // Active generic audio objects
     this.activeAudios = new Set();
+    this.hasUserInteracted = false;
   }
 
   init() {
+    if (!this.hasUserInteracted) return;
     if (!this.ctx && typeof window !== 'undefined') {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       if (AudioContext) {
-        this.ctx = new AudioContext();
+        try {
+          this.ctx = new AudioContext();
+        } catch (e) {}
       }
     }
     if (this.ctx && this.ctx.state === 'suspended') {
@@ -60,11 +64,9 @@ class SoundFX {
   // Play audio asset with volume control and safe procedural fallback
   playAudioFile(src, volume = 1.0, fallbackFn = null, soundName = 'audio') {
     if (this.muted) {
-      console.log(`[Deceit:Audio] Audio muted. Skipping "${soundName}"`);
       return;
     }
     try {
-      console.log(`[Deceit:Audio] Playing sound: "${soundName}" (vol: ${volume})`);
       const audio = new Audio(src);
       audio.volume = Math.min(1.0, Math.max(0.0, volume));
       this.activeAudios.add(audio);
@@ -77,21 +79,24 @@ class SoundFX {
       if (p !== undefined) {
         p.catch((err) => {
           this.activeAudios.delete(audio);
-          console.warn(`[Deceit:Audio] Browser playback blocked for "${soundName}":`, err.message);
-          if (fallbackFn) fallbackFn();
+          // If browser blocked autoplay before user clicked document, ignore silently
+          if (err && err.name === 'NotAllowedError') {
+            return;
+          }
+          console.warn(`[Deceit:Audio] Playback blocked for "${soundName}":`, err.message);
+          if (fallbackFn && this.hasUserInteracted) fallbackFn();
         });
       }
     } catch (e) {
-      console.warn(`[Deceit:Audio] Error loading "${soundName}":`, e.message);
-      if (fallbackFn) fallbackFn();
+      if (fallbackFn && this.hasUserInteracted) fallbackFn();
     }
   }
 
   // Soft card deal / slide
   playCardSlide() {
-    if (this.muted) return;
+    if (this.muted || !this.hasUserInteracted) return;
     this.init();
-    if (!this.ctx) return;
+    if (!this.ctx || this.ctx.state !== 'running') return;
 
     const t = this.ctx.currentTime;
     const osc = this.ctx.createOscillator();
@@ -201,9 +206,9 @@ class SoundFX {
 
   // Chip clink / Card snap
   playCardSnap() {
-    if (this.muted) return;
+    if (this.muted || !this.hasUserInteracted) return;
     this.init();
-    if (!this.ctx) return;
+    if (!this.ctx || this.ctx.state !== 'running') return;
 
     const t = this.ctx.currentTime;
     const osc = this.ctx.createOscillator();
@@ -438,7 +443,7 @@ class SoundFX {
             shellTimeoutId = safeTimeout(playShellSound, 1200);
 
             shotAudioObj.play().catch(() => {
-              this.synthGunshot();
+              if (this.hasUserInteracted) this.synthGunshot();
               playShellSound();
             });
 
@@ -460,7 +465,7 @@ class SoundFX {
             endTimeoutId = safeTimeout(finishSequence, 1600);
 
             emptyAudioObj.play().catch(() => {
-              this.synthEmptyChamberClick();
+              if (this.hasUserInteracted) this.synthEmptyChamberClick();
               finishSequence();
             });
           }
@@ -487,7 +492,7 @@ class SoundFX {
     clockTimeoutId = safeTimeout(startClock, 2200);
 
     spinAudioObj.play().catch(() => {
-      this.synthCylinderSpin();
+      if (this.hasUserInteracted) this.synthCylinderSpin();
       startClock();
     });
   }
@@ -527,9 +532,9 @@ class SoundFX {
   }
 
   synthCylinderSpin() {
-    if (this.muted) return;
+    if (this.muted || !this.hasUserInteracted) return;
     this.init();
-    if (!this.ctx) return;
+    if (!this.ctx || this.ctx.state !== 'running') return;
 
     const clicks = 8;
     for (let i = 0; i < clicks; i++) {
@@ -541,7 +546,7 @@ class SoundFX {
   }
 
   playMechanicalTick() {
-    if (this.muted || !this.ctx) return;
+    if (this.muted || !this.hasUserInteracted || !this.ctx || this.ctx.state !== 'running') return;
     const t = this.ctx.currentTime;
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
@@ -566,9 +571,9 @@ class SoundFX {
   }
 
   synthEmptyChamberClick() {
-    if (this.muted) return;
+    if (this.muted || !this.hasUserInteracted) return;
     this.init();
-    if (!this.ctx) return;
+    if (!this.ctx || this.ctx.state !== 'running') return;
 
     const t = this.ctx.currentTime;
     const osc = this.ctx.createOscillator();
@@ -594,9 +599,9 @@ class SoundFX {
   }
 
   synthGunshot() {
-    if (this.muted) return;
+    if (this.muted || !this.hasUserInteracted) return;
     this.init();
-    if (!this.ctx) return;
+    if (!this.ctx || this.ctx.state !== 'running') return;
 
     const t = this.ctx.currentTime;
 
@@ -727,12 +732,15 @@ export const sound = new SoundFX();
 
 if (typeof window !== 'undefined') {
   const unlockAudio = () => {
+    sound.hasUserInteracted = true;
     sound.init();
     window.removeEventListener('click', unlockAudio);
     window.removeEventListener('keydown', unlockAudio);
     window.removeEventListener('touchstart', unlockAudio);
+    window.removeEventListener('pointerdown', unlockAudio);
   };
   window.addEventListener('click', unlockAudio, { passive: true });
   window.addEventListener('keydown', unlockAudio, { passive: true });
   window.addEventListener('touchstart', unlockAudio, { passive: true });
+  window.addEventListener('pointerdown', unlockAudio, { passive: true });
 }

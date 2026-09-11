@@ -107,6 +107,9 @@ export const GameProvider = ({ children }) => {
   const leaveRoomRef = useRef(null);
   const processedEventIdsRef = useRef(new Set());
   const processedActionsRef = useRef(new Set());
+  const resolvedTurnIdsRef = useRef(new Set());
+  const isResumeSessionRef = useRef(false);
+  const resumeTimestampRef = useRef(0);
   const revealTimeoutRef = useRef(null);
   const rouletteNextRoundTimeoutRef = useRef(null);
   const rouletteGameOverTimeoutRef = useRef(null);
@@ -130,23 +133,24 @@ export const GameProvider = ({ children }) => {
   const triggerBanner = useCallback((text, duration = 3000) => {
     setActionBanner(text);
     setTimeout(() => {
-      setActionBanner(current => (current === text ? null : current));
+      setActionBanner(prev => (prev === text ? null : prev));
     }, duration);
   }, []);
 
-  // Helper to publish signed game/signal event
-  const publishSigned = useCallback(async (template) => {
-    const sk = isExtension ? 'extension' : (secretKey || privKeyHex);
-    if (!sk) {
-      console.warn('[Deceit:Nostr] Cannot sign event: no secret key or extension available');
-      return null;
-    }
-    return publishEvent(template, sk, relays);
+  // Publish Nostr Signed Event helper
+  const publishSigned = useCallback(async (eventTemplate) => {
+    return publishEvent(
+      eventTemplate,
+      isExtension ? 'extension' : secretKey || privKeyHex,
+      relays
+    );
   }, [isExtension, secretKey, privKeyHex, relays]);
 
   const publishSignal = useCallback(async (type, payload = {}, targetPk = null) => {
     if (!roomCodeRef.current || !pubkey) return;
-    console.log(`[Deceit:Signal:Out] Publishing signal "${type}" in room ${roomCodeRef.current}:`, payload);
+    if (type !== 'HEARTBEAT' && type !== 'ROSTER_SYNC') {
+      console.log(`[Deceit:Signal:Out] Publishing signal "${type}" in room ${roomCodeRef.current}:`, payload);
+    }
     const template = createSignalEvent({
       roomCode: roomCodeRef.current,
       senderPk: pubkey,
@@ -172,7 +176,10 @@ export const GameProvider = ({ children }) => {
       payload
     });
     try {
-      await publishSigned(template);
+      const signedEvent = await publishSigned(template);
+      if (signedEvent && signedEvent.id) {
+        processedEventIdsRef.current.add(signedEvent.id);
+      }
     } catch (e) {
       console.error('[Deceit:Game:Out] Error publishing game action event:', e);
     }
@@ -228,17 +235,18 @@ export const GameProvider = ({ children }) => {
       }
       processedEventIdsRef.current.clear();
       processedActionsRef.current.clear();
-    }
+      resolvedTurnIdsRef.current.clear();
 
-    try {
-      localStorage.setItem('deceit_active_session', JSON.stringify({
-        roomCode: cleanCode,
-        isHost: true,
-        isPublic: isPub,
-        gameState: isResume ? gameStateRef.current : 'lobby',
-        timestamp: Date.now()
-      }));
-    } catch (e) {}
+      try {
+        localStorage.setItem('deceit_active_session', JSON.stringify({
+          roomCode: cleanCode,
+          isHost: true,
+          isPublic: isPub,
+          gameState: 'lobby',
+          timestamp: Date.now()
+        }));
+      } catch (e) {}
+    }
 
     if (!isResume || !playersRef.current || playersRef.current.length === 0) {
       const initialPlayers = [{
@@ -309,17 +317,18 @@ export const GameProvider = ({ children }) => {
       }
       processedEventIdsRef.current.clear();
       processedActionsRef.current.clear();
-    }
+      resolvedTurnIdsRef.current.clear();
 
-    try {
-      localStorage.setItem('deceit_active_session', JSON.stringify({
-        roomCode: cleanCode,
-        isHost: false,
-        isPublic: isPub,
-        gameState: isResume ? gameStateRef.current : 'lobby',
-        timestamp: Date.now()
-      }));
-    } catch (e) {}
+      try {
+        localStorage.setItem('deceit_active_session', JSON.stringify({
+          roomCode: cleanCode,
+          isHost: false,
+          isPublic: isPub,
+          gameState: 'lobby',
+          timestamp: Date.now()
+        }));
+      } catch (e) {}
+    }
 
     if (!isResume || !playersRef.current || playersRef.current.length === 0) {
       // Initial local player representation
@@ -697,7 +706,7 @@ export const GameProvider = ({ children }) => {
     }, 200);
   }, [cancelMatchmaking, startMatchmaking]);
 
-  // Session Persistence: Auto-rejoin on page refresh if session still active (< 35s)
+  // Session Persistence: Auto-rejoin on page refresh if session still active (< 45s)
   const sessionRestoredRef = useRef(false);
   useEffect(() => {
     if (!pubkey || sessionRestoredRef.current) return;
@@ -708,8 +717,22 @@ export const GameProvider = ({ children }) => {
       if (saved) {
         const parsed = JSON.parse(saved);
         const ageSec = (Date.now() - (parsed.timestamp || 0)) / 1000;
-        if (parsed && parsed.roomCode && parsed.gameState !== 'ended' && ageSec < 35) {
+        if (parsed && parsed.roomCode && parsed.gameState !== 'ended' && ageSec < 45) {
+          isResumeSessionRef.current = true;
+          resumeTimestampRef.current = parsed.timestamp || Date.now();
           console.log(`[Deceit:Session] 🔄 Resuming active table ${parsed.roomCode} (isHost=${parsed.isHost}, isPublic=${parsed.isPublic}, gameState=${parsed.gameState}, age=${Math.round(ageSec)}s)`);
+
+          // Restore deduplication sets so past round events are never replayed
+          if (Array.isArray(parsed.processedActionKeys)) {
+            parsed.processedActionKeys.forEach(k => processedActionsRef.current.add(k));
+          }
+          if (Array.isArray(parsed.processedEventIds)) {
+            parsed.processedEventIds.forEach(id => processedEventIdsRef.current.add(id));
+          }
+          if (Array.isArray(parsed.resolvedTurnIds)) {
+            parsed.resolvedTurnIds.forEach(t => resolvedTurnIdsRef.current.add(t));
+          }
+
           if (parsed.gameState === 'playing') {
             setGameState('playing');
             gameStateRef.current = 'playing';
@@ -786,6 +809,9 @@ export const GameProvider = ({ children }) => {
         activePlayerPk,
         pileCount,
         localLastPlayedCards: localLastPlayedCardsRef.current,
+        processedActionKeys: Array.from(processedActionsRef.current).slice(-150),
+        processedEventIds: Array.from(processedEventIdsRef.current).slice(-150),
+        resolvedTurnIds: Array.from(resolvedTurnIdsRef.current).slice(-50),
         timestamp: Date.now()
       }));
     } catch (e) {}
@@ -1601,6 +1627,7 @@ export const GameProvider = ({ children }) => {
 
     if (turnId) {
       processedActionsRef.current.add(`reveal_${turnId}`);
+      resolvedTurnIdsRef.current.add(turnId);
     }
 
     // Run verification & display modal locally immediately for the revealer!
@@ -1629,6 +1656,7 @@ export const GameProvider = ({ children }) => {
 
     if (targetTurnId) {
       processedActionsRef.current.add(`liar_${targetTurnId}`);
+      resolvedTurnIdsRef.current.add(targetTurnId);
     }
 
     sound.playCallLiar();
@@ -1776,7 +1804,9 @@ export const GameProvider = ({ children }) => {
 
         // Signaling
         if (event.kind === KINDS.SIGNAL) {
-          console.log(`[Deceit:Signal:In] Received signal "${type}" from ${event.pubkey.slice(0, 8)}...:`, parsed);
+          if (type !== 'HEARTBEAT' && type !== 'ROSTER_SYNC') {
+            console.log(`[Deceit:Signal:In] Received signal "${type}" from ${event.pubkey.slice(0, 8)}...:`, parsed);
+          }
 
           if (type === 'JOIN_REQUEST' && isHostRef.current) {
             const newPk = parsed.senderPk || event.pubkey;
@@ -1846,7 +1876,12 @@ export const GameProvider = ({ children }) => {
             }
 
           } else if (type === 'ROSTER_SYNC') {
-            console.log(`[Deceit:Signal:In] Processing ROSTER_SYNC with ${parsed.players?.length} players:`, parsed.players?.map(p => p.name));
+            const isRosterChanged = !playersRef.current || 
+              playersRef.current.length !== parsed.players?.length ||
+              parsed.players?.some((p, i) => p.pk !== playersRef.current[i]?.pk || p.isReady !== playersRef.current[i]?.isReady || p.isAlive !== playersRef.current[i]?.isAlive);
+            if (isRosterChanged) {
+              console.log(`[Deceit:Signal:In] Processing ROSTER_SYNC with ${parsed.players?.length} players:`, parsed.players?.map(p => p.name));
+            }
             if (Array.isArray(parsed.players) && parsed.players.length > 0) {
               const myLocal = playersRef.current.find(p => p.pk === pubkey);
               const syncedPlayers = parsed.players.map(p => {
@@ -1987,12 +2022,19 @@ export const GameProvider = ({ children }) => {
 
         // Game Actions
         if (event.kind === KINDS.GAME) {
-          console.log(`[Deceit:Game:In] Received action "${type}" from ${event.pubkey.slice(0, 8)}...:`, parsed);
+          // If we resumed an ongoing session, drop historical events created before reload
+          if (isResumeSessionRef.current && resumeTimestampRef.current > 0) {
+            const eventTimeMs = (event.created_at || 0) * 1000;
+            if (eventTimeMs < resumeTimestampRef.current - 2000) {
+              return;
+            }
+          }
 
           if (gameStateRef.current === 'ended' || soleSurvivorRef.current) {
-            console.log(`[Deceit:Game:In] Game has ended or sole survivor declared. Suppressing incoming game action "${type}".`);
             return;
           }
+
+          console.log(`[Deceit:Game:In] Received action "${type}" from ${event.pubkey.slice(0, 8)}...:`, parsed);
 
           if (type === 'DEAL_ROUND') {
             const dealKey = `deal_round_${parsed.roundNumber}`;
@@ -2062,11 +2104,15 @@ export const GameProvider = ({ children }) => {
 
           } else if (type === 'PLAY_CARDS') {
             const playKey = `play_${parsed.turnId}`;
-            if (parsed.turnId && processedActionsRef.current.has(playKey)) {
-              console.log(`[Deceit:Game:In] Ignoring duplicate PLAY_CARDS for turn ${parsed.turnId}`);
+            if (
+              !parsed.turnId ||
+              processedActionsRef.current.has(playKey) ||
+              resolvedTurnIdsRef.current.has(parsed.turnId)
+            ) {
+              console.log(`[Deceit:Game:In] Ignoring duplicate or past PLAY_CARDS for turn ${parsed.turnId}`);
               return;
             }
-            if (parsed.turnId) processedActionsRef.current.add(playKey);
+            processedActionsRef.current.add(playKey);
 
             sound.playCardTake();
 
@@ -2107,11 +2153,16 @@ export const GameProvider = ({ children }) => {
 
           } else if (type === 'CALL_LIAR') {
             const liarKey = `liar_${parsed.targetTurnId}`;
-            if (parsed.targetTurnId && processedActionsRef.current.has(liarKey)) {
-              console.log(`[Deceit:Game:In] Ignoring duplicate CALL_LIAR for turn ${parsed.targetTurnId}`);
+            if (
+              !parsed.targetTurnId ||
+              processedActionsRef.current.has(liarKey) ||
+              resolvedTurnIdsRef.current.has(parsed.targetTurnId)
+            ) {
+              console.log(`[Deceit:Game:In] Suppressing duplicate or already-resolved CALL_LIAR for turn ${parsed.targetTurnId}`);
               return;
             }
-            if (parsed.targetTurnId) processedActionsRef.current.add(liarKey);
+            processedActionsRef.current.add(liarKey);
+            resolvedTurnIdsRef.current.add(parsed.targetTurnId);
 
             sound.stopChallengeTimer();
             localLastPlayTruthRef.current = null; // Challenged! Uncalled bonus does not apply
@@ -2134,11 +2185,16 @@ export const GameProvider = ({ children }) => {
 
           } else if (type === 'REVEAL_CARDS') {
             const revealKey = `reveal_${parsed.turnId}`;
-            if (parsed.turnId && processedActionsRef.current.has(revealKey)) {
+            if (
+              !parsed.turnId ||
+              processedActionsRef.current.has(revealKey) ||
+              (resolvedTurnIdsRef.current.has(parsed.turnId) && !pendingRevealRef.current)
+            ) {
               console.log(`[Deceit:Game:In] Ignoring duplicate REVEAL_CARDS for turn ${parsed.turnId}`);
               return;
             }
-            if (parsed.turnId) processedActionsRef.current.add(revealKey);
+            processedActionsRef.current.add(revealKey);
+            if (parsed.turnId) resolvedTurnIdsRef.current.add(parsed.turnId);
 
             console.log(`[Deceit:Game:In] Received REVEAL_CARDS:`, parsed);
             if (verifyRevealedCardsRef.current) {
@@ -2205,8 +2261,12 @@ export const GameProvider = ({ children }) => {
       subRef.current = null;
     }
 
-    // Only listen for live events in this table session (25s buffer for in-flight signals during table entry/reconnect)
-    const subSince = Math.floor(Date.now() / 1000) - 25;
+    // Only listen for live events in this table session
+    // If resuming an ongoing game, only listen from right now (- 2s buffer)
+    // so we NEVER pull in past round actions that were already resolved!
+    const subSince = isResumeSessionRef.current
+      ? Math.floor(Date.now() / 1000) - 2
+      : Math.floor(Date.now() / 1000) - 25;
     const requests = relays.flatMap(url => [
       { url, filter: { kinds: [KINDS.SIGNAL, KINDS.GAME], '#d': [`deceit-${roomCode}`], since: subSince } },
       { url, filter: { kinds: [KINDS.SIGNAL, KINDS.GAME], '#h': [roomCode], since: subSince } },

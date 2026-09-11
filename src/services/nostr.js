@@ -64,15 +64,26 @@ export const publishEvent = async (eventTemplate, sk, relays = DEFAULT_RELAYS) =
       signedEvent = signEvent(eventTemplate, sk);
     }
 
-    console.log(`[Deceit:Nostr] Publishing event kind=${signedEvent.kind} id=${signedEvent.id.slice(0, 8)}... to ${relays.length} relays:`, signedEvent.tags);
+    const isQuietSignal = signedEvent.kind === 20001 && (
+      signedEvent.content.includes('"type":"HEARTBEAT"') || 
+      signedEvent.content.includes('"type":"ROSTER_SYNC"')
+    );
+
+    if (!isQuietSignal) {
+      console.log(`[Deceit:Nostr] Publishing event kind=${signedEvent.kind} id=${signedEvent.id.slice(0, 8)}... to ${relays.length} relays:`, signedEvent.tags);
+    }
     const pub = pool.publish(relays, signedEvent);
     if (Array.isArray(pub)) {
       const results = await Promise.allSettled(pub);
       const successful = results.filter(r => r.status === 'fulfilled').length;
-      console.log(`[Deceit:Nostr] Published kind=${signedEvent.kind} (${successful}/${relays.length} relays responded successfully)`);
+      if (!isQuietSignal) {
+        console.log(`[Deceit:Nostr] Published kind=${signedEvent.kind} (${successful}/${relays.length} relays responded successfully)`);
+      }
     } else if (pub && typeof pub.then === 'function') {
       await pub;
-      console.log(`[Deceit:Nostr] Published kind=${signedEvent.kind} successfully`);
+      if (!isQuietSignal) {
+        console.log(`[Deceit:Nostr] Published kind=${signedEvent.kind} successfully`);
+      }
     }
     return signedEvent;
   } catch (err) {
