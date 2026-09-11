@@ -101,27 +101,30 @@ const Login = ({ onComplete }) => {
                 {COLORS.find((c) => c.hex.toLowerCase() === color.toLowerCase())?.label || ''}
               </span>
             </div>
-            <div className="grid grid-cols-6 gap-2 px-1">
-              {COLORS.map((c) => (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => setColor(c.hex)}
-                  className={`h-7 rounded-lg transition-transform cursor-pointer flex items-center justify-center ${
-                    color.toLowerCase() === c.hex.toLowerCase()
-                      ? 'ring-2 ring-white ring-offset-2 ring-offset-black scale-105'
-                      : 'opacity-80 hover:opacity-100 hover:scale-105'
-                  }`}
-                  style={{ backgroundColor: c.hex }}
-                  title={c.label}
-                >
-                  {color.toLowerCase() === c.hex.toLowerCase() && (
-                    <span className="material-symbols-rounded text-xs text-white">
-                      check
-                    </span>
-                  )}
-                </button>
-              ))}
+            <div className="w-full flex items-center justify-between gap-1 p-1.5 rounded-full bg-white/[0.04] border border-white/10 overflow-x-auto no-scrollbar">
+              {COLORS.map((c) => {
+                const isSelected = color.toLowerCase() === c.hex.toLowerCase();
+                return (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => setColor(c.hex)}
+                    aria-label={c.label}
+                    aria-pressed={isSelected}
+                    className={`w-7 h-7 shrink-0 flex items-center justify-center rounded-full border-2 transition-all cursor-pointer ${
+                      isSelected
+                        ? 'border-white scale-110 shadow-sm'
+                        : 'border-transparent hover:border-white/30'
+                    }`}
+                    title={c.label}
+                  >
+                    <span
+                      className="block w-[78%] h-[78%] rounded-full ring-1 ring-black/20 ring-inset"
+                      style={{ backgroundColor: c.hex }}
+                    />
+                  </button>
+                );
+              })}
             </div>
           </div>
 

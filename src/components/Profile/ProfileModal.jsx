@@ -24,6 +24,16 @@ export const ProfileModal = ({ isOpen, onClose }) => {
     }
   }, [isOpen, profile?.name, profile?.color, profile?.shape]);
 
+  // Handle Escape key to close modal
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   useEffect(() => {
     const handleNameChange = (e) => {
       if (e.detail) {
@@ -36,7 +46,7 @@ export const ProfileModal = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-  const handleSave = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     const cleanName = name.trim() || localStorage.getItem('deceit_name') || 'Player';
     updateProfile({
@@ -50,103 +60,103 @@ export const ProfileModal = ({ isOpen, onClose }) => {
 
   return (
     <div 
-      className="fixed inset-0 bg-black/75 backdrop-blur-md z-[400] flex flex-col justify-end md:justify-center items-center p-4 sm:p-6 pb-6 animate-fade-in select-none"
+      className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[300] flex flex-col justify-end md:justify-center items-center p-4 sm:p-6 pb-6 md:pb-6 select-none"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
       <div 
-        className="w-full max-w-[500px] max-h-[90vh] overflow-y-auto bg-[#0c0c0e] rounded-[32px] p-6 sm:p-7 shadow-2xl relative border border-white/10"
-        style={{ animation: 'slideUpModal 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards' }}
+        className="w-full max-w-[440px] max-h-[92vh] overflow-y-auto bg-[#0a0a0a] rounded-[32px] p-6 sm:p-8 shadow-2xl relative border border-white/10 no-scrollbar"
+        style={{ animation: 'slideUpModal 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards' }}
       >
+        {/* Bottom Sheet Handle (Mobile only) */}
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-white/10 rounded-full md:hidden" />
+        
         {/* Close button */}
         <button 
           type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-colors cursor-pointer z-10"
+          className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-colors z-10 cursor-pointer"
         >
           <span className="material-symbols-rounded text-[20px]">close</span>
         </button>
 
         {/* Header & Character Preview */}
-        <div className="flex flex-col items-center text-center mb-6">
-          <div className="relative mb-3">
+        <div className="mt-2 mb-6 text-center px-2 flex flex-col items-center">
+          <div className="w-24 h-24 flex items-center justify-center mb-3">
             <BloubAvatar 
               shape={selectedShape}
               color={selectedColor}
               expression="idle"
-              size={100}
+              size={92}
             />
           </div>
 
-          <h3 className="text-2xl font-serif text-white tracking-tight">
+          <h3 
+            className="text-4xl text-white font-serif" 
+            style={{ fontFamily: '"Gloock", serif', letterSpacing: 'normal', fontWeight: 400 }}
+          >
             Player Profile
           </h3>
-          <div className="flex items-center gap-1.5 mt-1 font-mono text-xs text-white/40">
-            <span>ID:</span>
-            <span className="text-white/70 font-bold">{truncatedId}</span>
-          </div>
+          <p className="text-white/40 text-sm mt-2">
+            Customize your character and display name.
+          </p>
         </div>
 
-        <form onSubmit={handleSave} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5">
           {/* Display Name */}
           <div>
-            <label className="block text-xs font-mono uppercase tracking-wider text-white/60 mb-1.5">
-              Display Name
-            </label>
+            <label className="block text-sm font-medium text-white/60 mb-1.5 ml-2">Display Name</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              placeholder="Enter your name"
+              autoComplete="off"
               maxLength={20}
-              placeholder="Your table name"
-              className="w-full h-[42px] bg-white/[0.05] border border-white/10 rounded-xl px-4 text-white text-sm focus:outline-none focus:border-white/30 transition-colors font-medium"
-              required
+              className="w-full h-[48px] bg-white/[0.06] rounded-full px-6 text-lg text-white focus:outline-none focus:ring-1 focus:ring-white/20 transition-colors shadow-inner"
             />
           </div>
 
-          {/* Profile Color Selection */}
+          {/* Color Selection - Single row in circle container */}
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-xs font-mono uppercase tracking-wider text-white/60">
-                Character Color
-              </label>
-              <span className="text-xs font-mono text-white/50">
+            <div className="flex items-center justify-between mb-1.5 ml-2 mr-2">
+              <label className="block text-sm font-medium text-white/60">Color</label>
+              <span className="text-xs font-mono text-white/40">
                 {COLORS.find((c) => c.hex.toLowerCase() === selectedColor.toLowerCase())?.label || ''}
               </span>
             </div>
-
-            {/* Solid Color Swatches Grid */}
-            <div className="grid grid-cols-6 gap-2">
-              {COLORS.map((c) => (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => setSelectedColor(c.hex)}
-                  className={`h-9 rounded-xl flex items-center justify-center transition-all cursor-pointer relative ${
-                    selectedColor.toLowerCase() === c.hex.toLowerCase()
-                      ? 'ring-2 ring-white ring-offset-2 ring-offset-black scale-105'
-                      : 'hover:scale-105 opacity-80 hover:opacity-100'
-                  }`}
-                  style={{ backgroundColor: c.hex }}
-                  title={c.label}
-                >
-                  {selectedColor.toLowerCase() === c.hex.toLowerCase() && (
-                    <span className="material-symbols-rounded text-sm text-white">
-                      check
-                    </span>
-                  )}
-                </button>
-              ))}
+            <div className="w-full h-[48px] bg-white/[0.06] rounded-full px-3 flex items-center justify-between gap-1.5 overflow-x-auto no-scrollbar shadow-inner">
+              {COLORS.map((c) => {
+                const isSelected = selectedColor.toLowerCase() === c.hex.toLowerCase();
+                return (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => setSelectedColor(c.hex)}
+                    aria-label={c.label}
+                    aria-pressed={isSelected}
+                    className={`w-7 h-7 sm:w-8 sm:h-8 shrink-0 flex items-center justify-center rounded-full border-2 transition-all cursor-pointer ${
+                      isSelected
+                        ? 'border-white scale-110 shadow-sm'
+                        : 'border-transparent hover:border-white/30'
+                    }`}
+                    title={c.label}
+                  >
+                    <span
+                      className="block w-[76%] h-[76%] rounded-full ring-1 ring-black/20 ring-inset"
+                      style={{ backgroundColor: c.hex }}
+                    />
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          {/* Bloub Shape Selection */}
+          {/* Shape Selection */}
           <div>
-            <label className="block text-xs font-mono uppercase tracking-wider text-white/60 mb-2">
-              Bloub Avatar Shape
-            </label>
-            <div className="grid grid-cols-4 gap-2.5">
+            <label className="block text-sm font-medium text-white/60 mb-1.5 ml-2">Character Shape</label>
+            <div className="grid grid-cols-4 gap-2">
               {SHAPES.map((s) => {
                 const isSelected = selectedShape === s.id;
                 return (
@@ -156,7 +166,7 @@ export const ProfileModal = ({ isOpen, onClose }) => {
                     onClick={() => setSelectedShape(s.id)}
                     className={`flex flex-col items-center justify-center p-2 rounded-2xl transition-all cursor-pointer border ${
                       isSelected
-                        ? 'bg-white/10 border-white/40 ring-1 ring-white/30 shadow-lg scale-105'
+                        ? 'bg-white/10 border-white/40 ring-1 ring-white/30 shadow-md scale-105'
                         : 'bg-white/[0.03] border-white/5 hover:bg-white/[0.06] hover:border-white/10 text-white/60'
                     }`}
                   >
@@ -176,25 +186,26 @@ export const ProfileModal = ({ isOpen, onClose }) => {
               })}
             </div>
           </div>
-
-          {/* Action Buttons */}
-          <div className="pt-2 flex items-center gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 bg-white/5 hover:bg-white/10 text-white/70 font-mono text-xs font-bold rounded-full h-[44px] transition-colors cursor-pointer"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="flex-1 bg-white hover:bg-white/90 text-black font-bold rounded-full h-[44px] transition-colors flex items-center justify-center text-xs uppercase tracking-wider shadow-xl cursor-pointer active:scale-95"
+          
+          {/* Submit Button */}
+          <div className="mt-8 pt-2">
+            <button 
+              type="submit" 
+              disabled={!name.trim()}
+              className="w-full bg-white hover:bg-white/90 disabled:opacity-50 text-black font-bold rounded-full h-[48px] transition-colors flex items-center justify-center text-lg shadow-xl active:scale-95 cursor-pointer"
             >
               Save Profile
             </button>
           </div>
         </form>
       </div>
+
+      <style>{`
+        @keyframes slideUpModal {
+          0% { opacity: 0; transform: translateY(40px) scale(0.96); }
+          100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+      `}</style>
     </div>
   );
 };
