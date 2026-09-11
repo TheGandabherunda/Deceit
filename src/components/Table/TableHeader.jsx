@@ -21,7 +21,7 @@ export const TableHeader = ({ onOpenRules, onOpenSettings }) => {
     "Ace's Table";
 
   return (
-    <header className="bg-black/40 backdrop-blur-xl px-4 py-3 border-b border-white/10 flex items-center justify-between z-40 relative md:h-[72px]">
+    <header className="bg-black/40 backdrop-blur-xl px-3 sm:px-4 py-2 border-b border-white/10 flex items-center justify-between z-40 relative h-14 sm:h-16 shrink-0">
       {/* Left: App Brand & Player Profile Chip (Identical to Home Screen) */}
       <div className="flex items-center gap-3 z-20">
         <div className="flex items-center gap-2 font-bold text-white tracking-wide text-2xl">

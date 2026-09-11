@@ -54,7 +54,7 @@ export const CardView = ({ card, faceDown = false, isSelected = false, onClick, 
       <div 
         onClick={onClick}
         data-card="true"
-        className={`w-20 h-28 md:w-24 md:h-34 rounded-xl bg-black overflow-hidden flex items-center justify-center cursor-default shadow-lg transition-all select-none relative opacity-100 playing-card ${!currentImgSrc ? 'border border-white/15' : ''} ${className}`}
+        className={`w-18 h-26 sm:w-20 sm:h-28 md:w-22 md:h-30 rounded-xl bg-black overflow-hidden flex items-center justify-center cursor-default shadow-lg transition-all select-none relative opacity-100 playing-card ${!currentImgSrc ? 'border border-white/15' : ''} ${className}`}
       >
         {currentImgSrc ? (
           <img 
@@ -78,7 +78,7 @@ export const CardView = ({ card, faceDown = false, isSelected = false, onClick, 
     <div
       onClick={onClick}
       data-card="true"
-      className={`w-20 h-28 md:w-24 md:h-34 rounded-xl bg-black cursor-pointer select-none relative overflow-hidden transition-all playing-card ${
+      className={`w-18 h-26 sm:w-20 sm:h-28 md:w-22 md:h-30 rounded-xl bg-black cursor-pointer select-none relative overflow-hidden transition-all playing-card ${
         isSelected 
           ? 'shadow-[0_0_32px_rgba(255,255,255,0.5)]' 
           : 'shadow-md hover:shadow-xl'

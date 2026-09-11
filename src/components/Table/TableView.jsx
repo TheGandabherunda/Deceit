@@ -8,7 +8,6 @@ import { RevolverCinematic } from './Modals/RevolverCinematic';
 import { GameOverModal } from './Modals/GameOverModal';
 import { RulesModal } from '../Hallway/RulesModal';
 import { SettingsModal } from '../Settings/SettingsModal';
-import AmbientLight from '../AmbientLight';
 import { useGame } from '../../context/GameContext';
 import { useNostr } from '../../context/NostrContext';
 import { sound } from '../../services/sound';
@@ -66,14 +65,11 @@ export const TableView = () => {
   }, [gameState, isStartAudioPlaying, isRouletteActive, soleSurvivor]);
 
   return (
-    <div className={`h-[100dvh] w-screen overflow-x-hidden flex flex-col antialiased bg-[#050505] text-white relative select-none animate-fade-in ${
+    <div className={`h-[100dvh] max-h-[100dvh] w-screen overflow-hidden flex flex-col antialiased bg-[#050505] text-white relative select-none animate-fade-in ${
       isShaking ? 'shake-active' : ''
     }`}>
       {/* Screen flash on gunshot */}
       {isFlashActive && <div className="flash-overlay" />}
-
-      {/* Atmospheric Table Lighting */}
-      <AmbientLight target={gameState === 'lobby' ? 'A' : (tableTarget || 'A')} />
 
       {/* Persistent Navigation Header */}
       <TableHeader 
@@ -81,8 +77,8 @@ export const TableView = () => {
         onOpenSettings={() => setIsSettingsOpen(true)}
       />
 
-      {/* Table Arena */}
-      <main className="flex-1 flex flex-col items-center justify-between p-2 md:p-4 relative max-w-5xl mx-auto w-full z-10 overflow-visible">
+      {/* Table Arena - Strictly fits within single viewport */}
+      <main className="flex-1 flex flex-col items-center justify-between p-1 sm:p-2 md:p-3 relative max-w-5xl mx-auto w-full z-10 overflow-hidden">
         {/* Disconnection Warning Banner */}
         {disconnectedPeer && (
           <div className="w-full max-w-xl mx-auto mb-2 px-4 py-2.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-300 font-mono text-xs flex items-center justify-between shadow-2xl animate-pulse z-30">
@@ -141,7 +137,7 @@ export const TableView = () => {
           )}
 
           {/* Center Table Area - Open layout without outer container box */}
-          <div className="flex-1 max-w-3xl relative flex flex-col items-center justify-center min-h-[220px]">
+          <div className="flex-1 max-w-3xl relative flex flex-col items-center justify-center my-auto py-1">
             {gameState === 'lobby' ? (
               /* Lobby Center Interface - Bloom Style */
               <div className="flex flex-col items-center text-center max-w-md my-auto py-3">
