@@ -40,10 +40,10 @@ class SoundFX {
     this.sfxVolume = typeof window !== 'undefined' ? parseFloat(localStorage.getItem('deceit_sfx_volume') || '0.7') : 0.7;
 
     // Background Music state (/sounds/background.mp3)
-    // Fixed subtle 1.5% volume per user request
+    // Fixed subtle 1.2% volume per user request
     this.bgMusicAudioUrl = '/sounds/background.mp3';
     this.bgMusicEnabled = typeof window !== 'undefined' ? localStorage.getItem('deceit_bg_enabled') !== 'false' : true;
-    this.bgMusicVolume = 0.015; // Exactly 1.5% subtle ambient background volume
+    this.bgMusicVolume = 0.012; // Exactly 1.2% subtle ambient background volume
     this.bgMusicAudio = null;
     this.bgMusicRequested = false; // Tracks if game view wants background music
     this.isBgMusicPlaying = false;
@@ -196,8 +196,8 @@ class SoundFX {
   }
 
   setBgMusicVolume(vol) {
-    // Kept locked to subtle 0.015 (1.5%) per user request
-    this.bgMusicVolume = 0.015;
+    // Kept locked to subtle 0.012 (1.2%) per user request
+    this.bgMusicVolume = 0.012;
     this.notifySettingsChanged();
   }
 
@@ -496,7 +496,7 @@ class SoundFX {
   // Card take when selecting card
   playCardTake() {
     console.log('[Deceit:Audio] 🃏 Playing card take sound (card-take.mp3)');
-    this.playAudioFile(cardTakeAudio, 0.9, () => this.playCardSlide(), 'card-take.mp3');
+    this.playAudioFile(`/sounds/card-take.mp3?v=${Date.now()}`, 0.95, () => this.playAudioFile(cardTakeAudio, 0.95, () => this.playCardSlide()), 'card-take.mp3');
   }
 
   // Room entrance / join audio (start.mp3)

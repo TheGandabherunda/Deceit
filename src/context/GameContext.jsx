@@ -1791,6 +1791,7 @@ export const GameProvider = ({ children }) => {
   const toggleCardSelection = useCallback((cardId) => {
     setSelectedCardIds(prev => {
       if (prev.includes(cardId)) {
+        sound.playCardTake();
         return prev.filter(id => id !== cardId);
       }
       if (prev.length >= 3) {
