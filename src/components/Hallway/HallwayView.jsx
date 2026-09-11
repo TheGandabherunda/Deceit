@@ -6,9 +6,12 @@ import { RulesModal } from './RulesModal';
 import AmbientLight from '../AmbientLight';
 import { useNostr } from '../../context/NostrContext';
 import { useGame } from '../../context/GameContext';
+import { useProfile } from '../../context/ProfileContext';
+import { BloubAvatar } from '../Bloub/BloubAvatar';
 
 export const HallwayView = () => {
   const { displayName, updateDisplayName } = useNostr();
+  const { profile } = useProfile();
   const { 
     isMatchmaking, 
     matchmakingStatus, 
@@ -38,22 +41,38 @@ export const HallwayView = () => {
 
       {/* Main Center Interface */}
       <main className="flex-1 overflow-y-auto p-4 md:p-8 z-10 flex flex-col items-center justify-center relative">
-        <div className="max-w-xl mx-auto w-full text-center flex flex-col items-center justify-center my-auto py-6">
+        <div className="max-w-xl mx-auto w-full text-center flex flex-col items-center justify-center my-auto py-6 relative">
 
           {!isMatchmaking ? (
             /* IDLE STATE: PROMINENT "JOIN GAME" BUTTON */
-            <div className="flex flex-col items-center animate-fade-in">
-              {/* Badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/10 text-white/70 font-mono text-[11px] uppercase tracking-widest mb-6">
-                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                <span>Nostr Multiplayer • 2 to 4 Players</span>
+            <div className="flex flex-col items-center animate-fade-in relative w-full">
+              {/* Big Selected Bloub in Background with bottom fade partial reveal */}
+              <div 
+                className="absolute -top-24 sm:-top-28 md:-top-36 left-1/2 -translate-x-1/2 pointer-events-none -z-10 flex items-center justify-center select-none"
+                aria-hidden="true"
+              >
+                <div 
+                  className="relative transition-all duration-500 scale-90 sm:scale-100 md:scale-110"
+                  style={{
+                    maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 18%, rgba(0,0,0,0.85) 45%, rgba(0,0,0,0) 78%)',
+                    WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 18%, rgba(0,0,0,0.85) 45%, rgba(0,0,0,0) 78%)',
+                  }}
+                >
+                  <BloubAvatar
+                    shape={profile?.shape}
+                    color={profile?.color}
+                    expression="idle"
+                    size={560}
+                    paperColor="#050505"
+                  />
+                </div>
               </div>
 
               {/* Title & Subtitle */}
-              <h1 className="text-5xl md:text-7xl font-serif font-black text-white tracking-tight mb-4 select-none">
-                DECEIT
+              <h1 className="text-5xl md:text-7xl font-serif font-black text-white tracking-tight mb-4 select-none drop-shadow-[0_4px_24px_rgba(0,0,0,0.8)]">
+                Deceit
               </h1>
-              <p className="text-white/50 text-sm md:text-base font-sans max-w-md mx-auto mb-10 leading-relaxed">
+              <p className="text-white/70 text-sm md:text-base font-sans max-w-md mx-auto mb-10 leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)]">
                 Play cards in the dead zone. Bluff the target, call out liars, and survive the Russian Roulette revolver.
               </p>
 
@@ -62,9 +81,8 @@ export const HallwayView = () => {
                 <div className="absolute -inset-1 rounded-full bg-white/20 blur-xl group-hover:bg-white/30 transition-all opacity-70 group-hover:opacity-100 animate-pulse" />
                 <button
                   onClick={() => setIsTableSizeOpen(true)}
-                  className="relative h-16 px-12 md:px-16 rounded-full bg-white hover:bg-white/95 text-black font-serif text-xl font-bold tracking-wider uppercase transition-all shadow-[0_0_50px_rgba(255,255,255,0.2)] hover:shadow-[0_0_80px_rgba(255,255,255,0.45)] hover:scale-105 active:scale-95 flex items-center justify-center gap-3 cursor-pointer"
+                  className="relative h-16 px-12 md:px-16 rounded-full bg-white hover:bg-white/95 text-black font-serif text-xl font-bold transition-all shadow-[0_0_50px_rgba(255,255,255,0.2)] hover:shadow-[0_0_80px_rgba(255,255,255,0.45)] hover:scale-105 active:scale-95 flex items-center justify-center cursor-pointer"
                 >
-                  <span className="material-symbols-rounded text-2xl">play_arrow</span>
                   <span>Join Game</span>
                 </button>
               </div>
@@ -77,7 +95,7 @@ export const HallwayView = () => {
                 <button
                   type="button"
                   onClick={() => setIsPrivateOpen(true)}
-                  className="text-[11px] font-mono text-white/30 hover:text-white/60 transition-colors underline underline-offset-4"
+                  className="text-[11px] font-mono text-white/30 hover:text-white/60 transition-colors underline underline-offset-4 cursor-pointer"
                 >
                   Playing with friends? Open a Private Table
                 </button>
@@ -129,7 +147,7 @@ export const HallwayView = () => {
                     {matchmakingSize > 2 ? (
                       <button
                         onClick={switchTo2PlayerMatch}
-                        className="w-full py-2.5 px-4 rounded-full bg-white hover:bg-white/90 text-black font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-md cursor-pointer"
+                        className="w-full py-2.5 px-4 rounded-full bg-white hover:bg-white/90 text-black font-semibold text-xs transition-all flex items-center justify-center gap-1.5 shadow-md cursor-pointer"
                       >
                         <span className="material-symbols-rounded text-sm">bolt</span>
                         <span>Switch to 2 Players</span>
@@ -140,7 +158,7 @@ export const HallwayView = () => {
                           cancelMatchmaking();
                           setIsPrivateOpen(true);
                         }}
-                        className="w-full py-2.5 px-4 rounded-full bg-white hover:bg-white/90 text-black font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-md cursor-pointer"
+                        className="w-full py-2.5 px-4 rounded-full bg-white hover:bg-white/90 text-black font-semibold text-xs transition-all flex items-center justify-center gap-1.5 shadow-md cursor-pointer"
                       >
                         <span className="material-symbols-rounded text-sm">lock</span>
                         <span>Create Private Table</span>

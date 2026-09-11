@@ -57,7 +57,7 @@ export const HallwayHeader = ({ onOpenPrivate, onOpenRules }) => {
 
         <button 
           onClick={onOpenPrivate}
-          className="bg-white/10 hover:bg-white/15 text-white px-4 py-2 rounded-full font-bold transition-all items-center flex text-xs uppercase tracking-wider shadow-md active:scale-95 cursor-pointer"
+          className="bg-white/10 hover:bg-white/15 text-white px-4 py-2 rounded-full font-medium sm:font-semibold transition-all items-center flex text-xs sm:text-sm shadow-md active:scale-95 cursor-pointer"
           title="Create or Join a Private Table"
         >
           <span>Private Table</span>
