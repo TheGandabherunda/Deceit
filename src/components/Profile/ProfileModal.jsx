@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useProfile } from '../../context/ProfileContext';
 import { BloubAvatar } from '../Bloub/BloubAvatar';
 import { SHAPES, COLORS, DEFAULT_SHAPE, DEFAULT_COLOR } from '../Bloub/bloubShapes';
@@ -13,6 +13,49 @@ export const ProfileModal = ({ isOpen, onClose }) => {
   const [name, setName] = useState(getActiveName);
   const [selectedColor, setSelectedColor] = useState(profile?.color || DEFAULT_COLOR);
   const [selectedShape, setSelectedShape] = useState(profile?.shape || DEFAULT_SHAPE);
+
+  // Color row horizontal scroll state & arrows
+  const colorScrollRef = useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const updateScrollArrows = () => {
+    const el = colorScrollRef.current;
+    if (!el) return;
+    const { scrollLeft, scrollWidth, clientWidth } = el;
+    setCanScrollLeft(scrollLeft > 6);
+    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 6);
+  };
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const el = colorScrollRef.current;
+    if (!el) return;
+
+    const t = setTimeout(updateScrollArrows, 60);
+
+    const observer = new ResizeObserver(() => {
+      updateScrollArrows();
+    });
+    observer.observe(el);
+
+    return () => {
+      clearTimeout(t);
+      observer.disconnect();
+    };
+  }, [isOpen]);
+
+  const handleScrollLeft = () => {
+    if (colorScrollRef.current) {
+      colorScrollRef.current.scrollBy({ left: -140, behavior: 'smooth' });
+    }
+  };
+
+  const handleScrollRight = () => {
+    if (colorScrollRef.current) {
+      colorScrollRef.current.scrollBy({ left: 140, behavior: 'smooth' });
+    }
+  };
 
   // Sync state whenever the modal opens or profile changes
   useEffect(() => {
@@ -118,7 +161,7 @@ export const ProfileModal = ({ isOpen, onClose }) => {
             />
           </div>
 
-          {/* Color Selection - Single row in circle container */}
+          {/* Color Selection - Single row with left & right scroll arrows */}
           <div>
             <div className="flex items-center justify-between mb-1.5 ml-2 mr-2">
               <label className="block text-sm font-medium text-white/60">Color</label>
@@ -126,30 +169,80 @@ export const ProfileModal = ({ isOpen, onClose }) => {
                 {COLORS.find((c) => c.hex.toLowerCase() === selectedColor.toLowerCase())?.label || ''}
               </span>
             </div>
-            <div className="w-full h-[48px] bg-white/[0.06] rounded-full px-3 flex items-center justify-between gap-1.5 overflow-x-auto no-scrollbar shadow-inner">
-              {COLORS.map((c) => {
-                const isSelected = selectedColor.toLowerCase() === c.hex.toLowerCase();
-                return (
-                  <button
-                    key={c.id}
-                    type="button"
-                    onClick={() => setSelectedColor(c.hex)}
-                    aria-label={c.label}
-                    aria-pressed={isSelected}
-                    className={`w-7 h-7 sm:w-8 sm:h-8 shrink-0 flex items-center justify-center rounded-full border-2 transition-all cursor-pointer ${
-                      isSelected
-                        ? 'border-white scale-110 shadow-sm'
-                        : 'border-transparent hover:border-white/30'
-                    }`}
-                    title={c.label}
-                  >
-                    <span
-                      className="block w-[76%] h-[76%] rounded-full ring-1 ring-black/20 ring-inset"
-                      style={{ backgroundColor: c.hex }}
-                    />
-                  </button>
-                );
-              })}
+
+            <div className="relative w-full flex items-center">
+              {/* Left Arrow (visible when colors are available to scroll left) */}
+              <button
+                type="button"
+                onClick={handleScrollLeft}
+                aria-label="Scroll left to more colors"
+                className={`absolute left-1 z-20 w-7 h-7 rounded-full bg-black/80 hover:bg-black text-white/80 hover:text-white border border-white/20 flex items-center justify-center transition-all cursor-pointer shadow-lg active:scale-95 ${
+                  canScrollLeft
+                    ? 'opacity-100 pointer-events-auto scale-100'
+                    : 'opacity-0 pointer-events-none scale-75'
+                }`}
+              >
+                <span className="material-symbols-rounded text-base leading-none">chevron_left</span>
+              </button>
+
+              {/* Edge Gradient Mask on Left */}
+              <div 
+                className={`pointer-events-none absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[#0a0a0a] to-transparent rounded-l-full z-10 transition-opacity duration-200 ${
+                  canScrollLeft ? 'opacity-100' : 'opacity-0'
+                }`}
+              />
+
+              {/* Color Scroll Track */}
+              <div
+                ref={colorScrollRef}
+                onScroll={updateScrollArrows}
+                className="w-full h-[48px] bg-white/[0.06] rounded-full px-3 flex items-center gap-2 overflow-x-auto no-scrollbar shadow-inner scroll-smooth"
+              >
+                {COLORS.map((c) => {
+                  const isSelected = selectedColor.toLowerCase() === c.hex.toLowerCase();
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => setSelectedColor(c.hex)}
+                      aria-label={c.label}
+                      aria-pressed={isSelected}
+                      className={`w-7 h-7 sm:w-8 sm:h-8 shrink-0 flex items-center justify-center rounded-full border-2 transition-all cursor-pointer ${
+                        isSelected
+                          ? 'border-white scale-110 shadow-sm'
+                          : 'border-transparent hover:border-white/30'
+                      }`}
+                      title={c.label}
+                    >
+                      <span
+                        className="block w-[76%] h-[76%] rounded-full ring-1 ring-black/20 ring-inset"
+                        style={{ backgroundColor: c.hex }}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Edge Gradient Mask on Right */}
+              <div 
+                className={`pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#0a0a0a] to-transparent rounded-r-full z-10 transition-opacity duration-200 ${
+                  canScrollRight ? 'opacity-100' : 'opacity-0'
+                }`}
+              />
+
+              {/* Right Arrow (visible when colors are available to scroll right) */}
+              <button
+                type="button"
+                onClick={handleScrollRight}
+                aria-label="Scroll right to more colors"
+                className={`absolute right-1 z-20 w-7 h-7 rounded-full bg-black/80 hover:bg-black text-white/80 hover:text-white border border-white/20 flex items-center justify-center transition-all cursor-pointer shadow-lg active:scale-95 ${
+                  canScrollRight
+                    ? 'opacity-100 pointer-events-auto scale-100'
+                    : 'opacity-0 pointer-events-none scale-75'
+                }`}
+              >
+                <span className="material-symbols-rounded text-base leading-none">chevron_right</span>
+              </button>
             </div>
           </div>
 
