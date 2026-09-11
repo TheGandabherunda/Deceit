@@ -239,10 +239,10 @@ export const ProfileModal = ({ isOpen, onClose }) => {
                     key={s.id}
                     type="button"
                     onClick={() => setSelectedShape(s.id)}
-                    className={`flex flex-col items-center justify-center p-2 rounded-2xl transition-all cursor-pointer border ${
+                    className={`flex flex-col items-center justify-center p-2 rounded-2xl transition-all cursor-pointer border-2 ${
                       isSelected
-                        ? 'bg-white/10 border-white/40 ring-1 ring-white/30 shadow-md scale-105'
-                        : 'bg-white/[0.03] border-white/5 hover:bg-white/[0.06] hover:border-white/10 text-white/60'
+                        ? 'border-white scale-105'
+                        : 'border-transparent hover:border-white/20 text-white/60'
                     }`}
                   >
                     <div className="w-10 h-10 flex items-center justify-center pointer-events-none">
