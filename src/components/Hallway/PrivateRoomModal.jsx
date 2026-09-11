@@ -68,15 +68,15 @@ export const PrivateRoomModal = ({ isOpen, onClose }) => {
           </p>
         </div>
 
-        {/* 2 Tabs */}
-        <div className="flex rounded-full bg-white/[0.06] p-1.5 mb-6 border border-white/10">
+        {/* 2 Tabs - exact same dimension (h-[50px] rounded-full) as button and input, with generous spacing */}
+        <div className="w-full h-[50px] flex rounded-full bg-white/[0.06] p-1 mb-8 border border-white/10 items-center">
           <button
             type="button"
             onClick={() => setActiveTab('create')}
-            className={`flex-1 py-2 text-xs font-semibold rounded-full transition-all flex items-center justify-center ${
+            className={`flex-1 h-full text-sm font-semibold rounded-full transition-all flex items-center justify-center cursor-pointer ${
               activeTab === 'create'
                 ? 'bg-white text-black shadow-md'
-                : 'text-white/50 hover:text-white cursor-pointer'
+                : 'text-white/50 hover:text-white'
             }`}
           >
             <span>Create Table</span>
@@ -84,10 +84,10 @@ export const PrivateRoomModal = ({ isOpen, onClose }) => {
           <button
             type="button"
             onClick={() => setActiveTab('join')}
-            className={`flex-1 py-2 text-xs font-semibold rounded-full transition-all flex items-center justify-center ${
+            className={`flex-1 h-full text-sm font-semibold rounded-full transition-all flex items-center justify-center cursor-pointer ${
               activeTab === 'join'
                 ? 'bg-white text-black shadow-md'
-                : 'text-white/50 hover:text-white cursor-pointer'
+                : 'text-white/50 hover:text-white'
             }`}
           >
             <span>Join Table</span>

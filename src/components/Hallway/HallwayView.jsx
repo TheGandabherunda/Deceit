@@ -74,14 +74,14 @@ export const HallwayView = () => {
               {/* Big Selected Bloub with bottom fade partial reveal */}
               <div 
                 ref={bloubContainerRef}
-                className="relative pointer-events-none select-none -mb-14 sm:-mb-18 md:-mb-24 flex items-center justify-center shrink-0"
+                className="relative pointer-events-none select-none -mb-28 sm:-mb-36 md:-mb-44 flex items-center justify-center shrink-0"
                 aria-hidden="true"
               >
                 <div 
                   className="relative transition-all duration-500 scale-90 sm:scale-100 md:scale-105"
                   style={{
-                    maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 32%, rgba(0,0,0,0.85) 65%, rgba(0,0,0,0) 96%)',
-                    WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 32%, rgba(0,0,0,0.85) 65%, rgba(0,0,0,0) 96%)',
+                    maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 26%, rgba(0,0,0,0.85) 60%, rgba(0,0,0,0) 95%)',
+                    WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 26%, rgba(0,0,0,0.85) 60%, rgba(0,0,0,0) 95%)',
                   }}
                 >
                   <BloubAvatar
@@ -89,7 +89,7 @@ export const HallwayView = () => {
                     color={profile?.color}
                     expression="idle"
                     gazeTarget={gazeTarget}
-                    size={380}
+                    size={520}
                     paperColor="#050505"
                   />
                 </div>
