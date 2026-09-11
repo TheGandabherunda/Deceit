@@ -116,27 +116,42 @@ export const HallwayView = () => {
                 <span>{queueCount} / {matchmakingSize || 2} player{queueCount === 1 ? '' : 's'} ready</span>
               </div>
 
-              {/* Fallback Suggestion Card when 3 or 4 players are unavailable */}
+              {/* Fallback Suggestion Card when matchmaking takes longer */}
               {showSizeFallback && (
                 <div className="w-full bg-white/[0.05] border border-white/20 rounded-2xl p-4 mb-5 text-center animate-fade-in shadow-xl">
                   <div className="flex items-center justify-center gap-1.5 text-white/90 text-xs font-mono font-bold mb-1.5">
                     <span className="material-symbols-rounded text-sm text-amber-400">group_off</span>
-                    <span>Waiting for {matchmakingSize} players taking longer</span>
+                    <span>Waiting for {matchmakingSize || 2} players taking longer</span>
                   </div>
                   <p className="text-[11px] text-white/60 mb-3 leading-relaxed">
-                    Currently not enough players waiting for {matchmakingSize}-player tables. Switch to 2-Player Duel to play immediately?
+                    {matchmakingSize > 2
+                      ? `Currently not enough players waiting for ${matchmakingSize}-player tables. Switch to 2-Player Duel to play immediately?`
+                      : 'No other players currently searching in the queue. You can create a Private Table to invite a friend, or keep searching.'}
                   </p>
                   <div className="flex flex-col gap-2">
-                    <button
-                      onClick={switchTo2PlayerMatch}
-                      className="w-full py-2.5 px-4 rounded-full bg-white hover:bg-white/90 text-black font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-md"
-                    >
-                      <span className="material-symbols-rounded text-sm">bolt</span>
-                      <span>Switch to 2 Players</span>
-                    </button>
+                    {matchmakingSize > 2 ? (
+                      <button
+                        onClick={switchTo2PlayerMatch}
+                        className="w-full py-2.5 px-4 rounded-full bg-white hover:bg-white/90 text-black font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-md cursor-pointer"
+                      >
+                        <span className="material-symbols-rounded text-sm">bolt</span>
+                        <span>Switch to 2 Players</span>
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          cancelMatchmaking();
+                          setIsPrivateOpen(true);
+                        }}
+                        className="w-full py-2.5 px-4 rounded-full bg-white hover:bg-white/90 text-black font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-md cursor-pointer"
+                      >
+                        <span className="material-symbols-rounded text-sm">lock</span>
+                        <span>Create Private Table</span>
+                      </button>
+                    )}
                     <button
                       onClick={cancelMatchmaking}
-                      className="w-full py-1.5 text-[11px] font-mono text-white/40 hover:text-white transition-colors"
+                      className="w-full py-1.5 text-[11px] font-mono text-white/40 hover:text-white transition-colors cursor-pointer"
                     >
                       Leave Matchmaking
                     </button>

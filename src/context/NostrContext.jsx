@@ -113,8 +113,8 @@ export const NostrProvider = ({ children }) => {
             const status = event.tags.find(t => t[0] === 'status')?.[1] || parsed.status || 'open';
             const now = Math.floor(Date.now() / 1000);
 
-            // Filter out beacons older than 15 minutes unless it's a recently ended game
-            if (now - event.created_at > 900) return;
+            // Filter out beacons older than 2 minutes unless it's a recently ended game
+            if (now - event.created_at > 120) return;
 
             setPublicRooms(prev => {
               const existing = prev[roomCode];

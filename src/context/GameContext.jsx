@@ -21,6 +21,7 @@ export const GameProvider = ({ children }) => {
   const matchmakingSubRef = useRef(null);
   const matchmakingIntervalRef = useRef(null);
   const fallbackTimeoutRef = useRef(null);
+  const hardTimeoutRef = useRef(null);
   const isMatchmakingRef = useRef(false);
   const matchmakingSizeRef = useRef(2);
   useEffect(() => { isMatchmakingRef.current = isMatchmaking; }, [isMatchmaking]);
@@ -103,6 +104,7 @@ export const GameProvider = ({ children }) => {
   const readyCountdownRef = useRef(null);
   const adjustDominanceScoreRef = useRef(null);
   const resolveDisconnectionWinnerRef = useRef(null);
+  const leaveRoomRef = useRef(null);
 
   useEffect(() => { roomCodeRef.current = roomCode; }, [roomCode]);
   useEffect(() => { isHostRef.current = isHost; }, [isHost]);
@@ -328,15 +330,19 @@ export const GameProvider = ({ children }) => {
         console.log(`[Deceit:Join] Roster confirmed! Joined room ${cleanCode} with players:`, playersRef.current.map(p => p.name));
         clearInterval(joinIntervalRef.current);
         joinIntervalRef.current = null;
-      } else if (attempts < 20) {
+      } else if (attempts < 10) {
         sendJoin();
       } else {
-        console.warn(`[Deceit:Join] Max join attempts (20) reached for room ${cleanCode}`);
+        console.warn(`[Deceit:Join] Join timeout (15s) reached for room ${cleanCode}`);
         clearInterval(joinIntervalRef.current);
         joinIntervalRef.current = null;
+        triggerBanner('Unable to reach table host (15s timeout). Returning to hallway.', 4000);
+        if (leaveRoomRef.current) {
+          leaveRoomRef.current();
+        }
       }
     }, 1500);
-  }, [displayName, pubkey, publishSignal]);
+  }, [displayName, pubkey, publishSignal, triggerBanner]);
 
   // Automated Public Matchmaking Queue
   const startMatchmaking = useCallback((targetSize = 2) => {
@@ -357,6 +363,10 @@ export const GameProvider = ({ children }) => {
       clearTimeout(fallbackTimeoutRef.current);
       fallbackTimeoutRef.current = null;
     }
+    if (hardTimeoutRef.current) {
+      clearTimeout(hardTimeoutRef.current);
+      hardTimeoutRef.current = null;
+    }
     if (matchmakingSubRef.current) {
       try { matchmakingSubRef.current.close(); } catch (e) {}
       matchmakingSubRef.current = null;
@@ -366,23 +376,31 @@ export const GameProvider = ({ children }) => {
       matchmakingIntervalRef.current = null;
     }
 
-    // If searching for 3 or 4 players, setup fallback timeout after 8 seconds
-    if (targetSize > 2) {
-      console.log(`[Deceit:Matchmaking] ⏱️ Started 8s fallback timeout for targetSize ${targetSize}`);
-      fallbackTimeoutRef.current = setTimeout(() => {
-        if (isMatchmakingRef.current) {
-          console.log(`[Deceit:Matchmaking] ⏰ 8s timeout reached: Few players for ${targetSize}-player match. Displaying fallback dialog.`);
-          setShowSizeFallback(true);
-        }
-      }, 8000);
-    }
+    // Setup matchmaking fallback timeout: 5s for 3/4 players, 12s for 2 players
+    const fallbackDelay = targetSize > 2 ? 5000 : 12000;
+    console.log(`[Deceit:Matchmaking] ⏱️ Started ${fallbackDelay / 1000}s fallback timeout for targetSize ${targetSize}`);
+    fallbackTimeoutRef.current = setTimeout(() => {
+      if (isMatchmakingRef.current) {
+        console.log(`[Deceit:Matchmaking] ⏰ ${fallbackDelay / 1000}s timeout reached: Displaying fallback dialog.`);
+        setShowSizeFallback(true);
+      }
+    }, fallbackDelay);
 
-    // 1. Check if an active open public room already exists (< targetSize players)
+    // Universal 30-second matchmaking timeout
+    hardTimeoutRef.current = setTimeout(() => {
+      if (isMatchmakingRef.current) {
+        console.log(`[Deceit:Matchmaking] ⏰ 30s universal matchmaking timeout reached.`);
+        setMatchmakingStatus('Search timed out (30s). No active players found.');
+        setShowSizeFallback(true);
+      }
+    }, 30000);
+
+    // 1. Check if an active open public room already exists (< targetSize players & fresh within 30s)
     const activeRooms = Object.values(publicRooms || {}).filter(r => 
       r.status === 'open' && 
       r.playerCount < targetSize && 
       (r.maxPlayers || 4) === targetSize &&
-      (Math.floor(Date.now() / 1000) - (r.createdAt || 0)) < 300
+      (Math.floor(Date.now() / 1000) - (r.createdAt || 0)) < 30
     );
 
     if (activeRooms.length > 0) {
@@ -393,6 +411,10 @@ export const GameProvider = ({ children }) => {
       if (fallbackTimeoutRef.current) {
         clearTimeout(fallbackTimeoutRef.current);
         fallbackTimeoutRef.current = null;
+      }
+      if (hardTimeoutRef.current) {
+        clearTimeout(hardTimeoutRef.current);
+        hardTimeoutRef.current = null;
       }
       setTimeout(() => {
         setIsMatchmaking(false);
@@ -415,6 +437,10 @@ export const GameProvider = ({ children }) => {
       if (fallbackTimeoutRef.current) {
         clearTimeout(fallbackTimeoutRef.current);
         fallbackTimeoutRef.current = null;
+      }
+      if (hardTimeoutRef.current) {
+        clearTimeout(hardTimeoutRef.current);
+        hardTimeoutRef.current = null;
       }
       if (matchmakingSubRef.current) {
         try { matchmakingSubRef.current.close(); } catch (e) {}
@@ -588,6 +614,10 @@ export const GameProvider = ({ children }) => {
       clearTimeout(fallbackTimeoutRef.current);
       fallbackTimeoutRef.current = null;
     }
+    if (hardTimeoutRef.current) {
+      clearTimeout(hardTimeoutRef.current);
+      hardTimeoutRef.current = null;
+    }
     if (matchmakingSubRef.current) {
       try { matchmakingSubRef.current.close(); } catch (e) {}
       matchmakingSubRef.current = null;
@@ -620,13 +650,17 @@ export const GameProvider = ({ children }) => {
       clearTimeout(fallbackTimeoutRef.current);
       fallbackTimeoutRef.current = null;
     }
+    if (hardTimeoutRef.current) {
+      clearTimeout(hardTimeoutRef.current);
+      hardTimeoutRef.current = null;
+    }
     cancelMatchmaking();
     setTimeout(() => {
       startMatchmaking(2);
     }, 200);
   }, [cancelMatchmaking, startMatchmaking]);
 
-  // Session Persistence: Auto-rejoin on page refresh if session still active
+  // Session Persistence: Auto-rejoin on page refresh if session still active (< 35s)
   const sessionRestoredRef = useRef(false);
   useEffect(() => {
     if (!pubkey || sessionRestoredRef.current) return;
@@ -636,9 +670,9 @@ export const GameProvider = ({ children }) => {
       const saved = localStorage.getItem('deceit_active_session');
       if (saved) {
         const parsed = JSON.parse(saved);
-        const ageHours = (Date.now() - (parsed.timestamp || 0)) / (1000 * 60 * 60);
-        if (parsed && parsed.roomCode && ageHours < 3) {
-          console.log(`[Deceit:Session] 🔄 Resuming active table ${parsed.roomCode} (isHost=${parsed.isHost}, isPublic=${parsed.isPublic}, gameState=${parsed.gameState})`);
+        const ageSec = (Date.now() - (parsed.timestamp || 0)) / 1000;
+        if (parsed && parsed.roomCode && parsed.gameState !== 'ended' && ageSec < 35) {
+          console.log(`[Deceit:Session] 🔄 Resuming active table ${parsed.roomCode} (isHost=${parsed.isHost}, isPublic=${parsed.isPublic}, gameState=${parsed.gameState}, age=${Math.round(ageSec)}s)`);
           if (parsed.gameState === 'playing') {
             setGameState('playing');
             gameStateRef.current = 'playing';
@@ -707,23 +741,65 @@ export const GameProvider = ({ children }) => {
     });
   }, [isPublic, displayName, gameState, broadcastRoomBeacon]);
 
-  // Host periodic heartbeat in lobby to guarantee all joined peers stay in sync
+  // Lobby Heartbeat & Inactivity Watchdog (30s max wait in lobby)
   useEffect(() => {
-    if (isHost && gameState === 'lobby' && roomCode) {
-      rosterSyncIntervalRef.current = setInterval(() => {
-        if (playersRef.current.length > 0) {
-          console.log(`[Deceit:Lobby] Host periodic ROSTER_SYNC heartbeat:`, playersRef.current.map(p => p.name));
-          publishSignal('ROSTER_SYNC', { players: playersRef.current });
-        }
-      }, 3500);
+    if (gameState !== 'lobby' || !roomCode) {
+      if (rosterSyncIntervalRef.current) {
+        clearInterval(rosterSyncIntervalRef.current);
+        rosterSyncIntervalRef.current = null;
+      }
+      return;
     }
+
+    // 1. Lobby heartbeat & host roster broadcast every 2.5s
+    rosterSyncIntervalRef.current = setInterval(() => {
+      if (gameStateRef.current === 'lobby' && roomCodeRef.current) {
+        publishSignal('HEARTBEAT', { timestamp: Date.now() }).catch(() => {});
+        if (isHostRef.current && playersRef.current.length > 0) {
+          publishSignal('ROSTER_SYNC', { players: playersRef.current }).catch(() => {});
+        }
+      }
+    }, 2500);
+
+    // 2. Watchdog: check for inactive peers in lobby every 2s (30s limit)
+    const lobbyWatchdog = setInterval(() => {
+      if (gameStateRef.current !== 'lobby' || !roomCodeRef.current) return;
+      const now = Date.now();
+
+      if (isHostRef.current) {
+        // Host checks guests: if any guest is silent for > 30s, drop them from table
+        const inactiveGuests = playersRef.current.filter(p => !p.isHost && (now - (lastSeenMapRef.current[p.pk] || now)) > 30000);
+        if (inactiveGuests.length > 0) {
+          inactiveGuests.forEach(g => {
+            console.log(`[Deceit:Lobby] Guest ${g.name} silent for > 30s. Removing from table.`);
+            triggerBanner(`${g.name} timed out (30s) and was removed from table.`, 3000);
+          });
+          const updated = playersRef.current.filter(p => !inactiveGuests.some(g => g.pk === p.pk));
+          playersRef.current = updated;
+          setPlayers(updated);
+          publishSignal('ROSTER_SYNC', { players: updated }).catch(() => {});
+        }
+      } else {
+        // Guest checks host: if host is silent for > 30s, notify and exit lobby
+        const hostPlayer = playersRef.current.find(p => p.isHost);
+        if (hostPlayer && (now - (lastSeenMapRef.current[hostPlayer.pk] || now)) > 30000) {
+          console.warn(`[Deceit:Lobby] Host ${hostPlayer.name} silent for > 30s in lobby. Exiting room.`);
+          triggerBanner('Table host disconnected (30s timeout). Returning to hallway.', 4000);
+          if (leaveRoomRef.current) {
+            leaveRoomRef.current();
+          }
+        }
+      }
+    }, 2000);
+
     return () => {
       if (rosterSyncIntervalRef.current) {
         clearInterval(rosterSyncIntervalRef.current);
         rosterSyncIntervalRef.current = null;
       }
+      clearInterval(lobbyWatchdog);
     };
-  }, [isHost, gameState, roomCode, publishSignal]);
+  }, [isHost, gameState, roomCode, publishSignal, triggerBanner]);
 
   // Deal a new round (Host action)
   const dealNewRound = useCallback((roundNum, currentPlayers) => {
@@ -915,7 +991,7 @@ export const GameProvider = ({ children }) => {
 
   useEffect(() => { adjustDominanceScoreRef.current = adjustDominanceScore; }, [adjustDominanceScore]);
 
-  // Resolve Winner when Opponent Disconnects & Timeout Expires
+  // Resolve Winner when Opponent Disconnects & Timeout Expires (Strict 30s)
   const resolveDisconnectionWinner = useCallback((disconnectedPk) => {
     sound.stopChallengeTimer();
     sound.stopRouletteSequence();
@@ -924,6 +1000,20 @@ export const GameProvider = ({ children }) => {
     const all = playersRef.current;
     const disconnectedPlayer = all.find(p => p.pk === disconnectedPk);
     const localPlayer = all.find(p => p.pk === pubkey);
+
+    const livingRemaining = all.filter(p => p.isAlive && p.pk !== disconnectedPk);
+    if (livingRemaining.length > 1) {
+      // 3 or 4 player match where 2+ players remain active
+      console.log(`[Deceit:Disconnect] Player ${disconnectedPlayer?.name} timed out (30s). Eliminating player and continuing match for ${livingRemaining.length} remaining players.`);
+      const updated = all.map(p => p.pk === disconnectedPk ? { ...p, isAlive: false } : p);
+      playersRef.current = updated;
+      setPlayers(updated);
+      triggerBanner(`⚠️ ${disconnectedPlayer?.name || 'Player'} timed out (30s) and was eliminated!`, 4000);
+      if (isHostRef.current) {
+        publishSignal('ROSTER_SYNC', { players: updated }).catch(() => {});
+      }
+      return;
+    }
 
     const discScore = disconnectedPlayer?.dominanceScore || 0;
     const localScore = localPlayer?.dominanceScore || 0;
@@ -949,6 +1039,10 @@ export const GameProvider = ({ children }) => {
       localScore
     });
 
+    try {
+      localStorage.removeItem('deceit_active_session');
+    } catch (e) {}
+
     if (winner?.pk === pubkey) {
       sound.playWin();
       confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
@@ -957,7 +1051,7 @@ export const GameProvider = ({ children }) => {
     }
 
     triggerBanner(`Game Over: ${winner?.name} won by Dominance Score! (${winner?.dominanceScore || 0} pts)`, 6000);
-  }, [pubkey, triggerBanner]);
+  }, [pubkey, triggerBanner, publishSignal]);
 
   useEffect(() => { resolveDisconnectionWinnerRef.current = resolveDisconnectionWinner; }, [resolveDisconnectionWinner]);
 
@@ -1924,7 +2018,7 @@ export const GameProvider = ({ children }) => {
     };
   }, [roomCode, relays, pubkey]);
 
-  // Disconnection Watchdog & Active Game Heartbeat
+  // Disconnection Watchdog & Active Game Heartbeat (Strict 30-Second Limit)
   useEffect(() => {
     if (gameState !== 'playing' || !roomCode) {
       if (heartbeatIntervalRef.current) {
@@ -1945,14 +2039,14 @@ export const GameProvider = ({ children }) => {
       lastSeenMapRef.current[p.pk] = Date.now();
     });
 
-    // 1. Send periodic heartbeat every 4s during active gameplay
+    // 1. Send periodic heartbeat every 2s during active gameplay
     heartbeatIntervalRef.current = setInterval(() => {
       if (gameStateRef.current === 'playing' && roomCodeRef.current) {
         publishSignal('HEARTBEAT', { timestamp: Date.now() }).catch(() => {});
       }
-    }, 4000);
+    }, 2000);
 
-    // 2. Watchdog: check for silent opponents every 2s
+    // 2. Watchdog: check for silent opponents every 1s (Strict 30s limit)
     disconnectTimerRef.current = setInterval(() => {
       if (gameStateRef.current !== 'playing' || !roomCodeRef.current) return;
       const now = Date.now();
@@ -1962,17 +2056,17 @@ export const GameProvider = ({ children }) => {
         const lastSeen = lastSeenMapRef.current[opp.pk] || gameStartTimeRef.current;
         const silentMs = now - lastSeen;
 
-        // 15 seconds threshold
-        if (silentMs > 15000) {
+        // Detect silence after 4s (2 missed heartbeats), strictly enforce 30s total wait
+        if (silentMs >= 4000) {
+          const remaining = Math.max(0, 30 - Math.floor(silentMs / 1000));
+
           if (!disconnectedPeerRef.current || disconnectedPeerRef.current.pk !== opp.pk) {
-            console.warn(`[Deceit:Disconnect] Opponent ${opp.name} (${opp.pk.slice(0, 8)}) silent for ${Math.round(silentMs/1000)}s. Starting 30s reconnection timer...`);
-            const discObj = { pk: opp.pk, name: opp.name, startedAt: now, countdown: 30 };
+            console.warn(`[Deceit:Disconnect] Opponent ${opp.name} (${opp.pk.slice(0, 8)}) silent for ${Math.round(silentMs/1000)}s. Starting 30s reconnection timer (${remaining}s remaining)...`);
+            const discObj = { pk: opp.pk, name: opp.name, countdown: remaining };
             disconnectedPeerRef.current = discObj;
             setDisconnectedPeer(discObj);
-            triggerBanner(`⚠️ ${opp.name} disconnected! Waiting for reconnection (30s)...`, 4000);
+            triggerBanner(`⚠️ ${opp.name} disconnected! Waiting for reconnection (${remaining}s)...`, 3000);
           } else {
-            const elapsed = Math.floor((now - disconnectedPeerRef.current.startedAt) / 1000);
-            const remaining = Math.max(0, 30 - elapsed);
             setDisconnectedPeer(prev => prev ? { ...prev, countdown: remaining } : null);
 
             if (remaining <= 0) {
@@ -1987,7 +2081,7 @@ export const GameProvider = ({ children }) => {
           }
         }
       }
-    }, 2000);
+    }, 1000);
 
     return () => {
       if (heartbeatIntervalRef.current) {
@@ -2000,6 +2094,21 @@ export const GameProvider = ({ children }) => {
       }
     };
   }, [gameState, roomCode, pubkey, publishSignal, triggerBanner]);
+
+  // Page unload & tab close listener to immediately broadcast LEAVE_ROOM
+  useEffect(() => {
+    const handleUnload = () => {
+      if (pubkey && roomCodeRef.current) {
+        publishSignal('LEAVE_ROOM', { playerPk: pubkey }).catch(() => {});
+      }
+    };
+    window.addEventListener('beforeunload', handleUnload);
+    window.addEventListener('pagehide', handleUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleUnload);
+      window.removeEventListener('pagehide', handleUnload);
+    };
+  }, [pubkey, publishSignal]);
 
   // Leave room
   const leaveRoom = useCallback(() => {
@@ -2054,6 +2163,8 @@ export const GameProvider = ({ children }) => {
     setPendingReveal(null);
     setIsRouletteActive(false);
   }, [pubkey, publishSignal]);
+
+  useEffect(() => { leaveRoomRef.current = leaveRoom; }, [leaveRoom]);
 
   return (
     <GameContext.Provider value={{
