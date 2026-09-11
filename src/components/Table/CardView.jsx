@@ -54,14 +54,14 @@ export const CardView = ({ card, faceDown = false, isSelected = false, onClick, 
       <div 
         onClick={onClick}
         data-card="true"
-        className={`w-18 h-26 sm:w-20 sm:h-28 md:w-22 md:h-30 rounded-xl bg-black overflow-hidden flex items-center justify-center cursor-default shadow-lg transition-all select-none relative opacity-100 playing-card ${!currentImgSrc ? 'border border-white/15' : ''} ${className}`}
+        className={`table-playing-card rounded-lg sm:rounded-xl bg-black overflow-hidden flex items-center justify-center cursor-default shadow-lg transition-all select-none relative opacity-100 playing-card ${!currentImgSrc ? 'border border-white/15' : ''} ${className}`}
       >
         {currentImgSrc ? (
           <img 
             src={currentImgSrc} 
             alt="Card Back" 
             onError={handleImgError}
-            className="w-full h-full object-cover pointer-events-none block opacity-100"
+            className="w-full h-full object-cover pointer-events-none block opacity-100 select-none rounded-[inherit]"
           />
         ) : (
           <div className="flex flex-col items-center justify-center">
@@ -78,19 +78,24 @@ export const CardView = ({ card, faceDown = false, isSelected = false, onClick, 
     <div
       onClick={onClick}
       data-card="true"
-      className={`w-18 h-26 sm:w-20 sm:h-28 md:w-22 md:h-30 rounded-xl bg-black cursor-pointer select-none relative overflow-hidden transition-all playing-card ${
+      className={`table-playing-card rounded-lg sm:rounded-xl bg-black cursor-pointer select-none relative overflow-hidden transition-all ${
         isSelected 
-          ? 'shadow-[0_0_32px_rgba(255,255,255,0.5)]' 
-          : 'shadow-md hover:shadow-xl'
+          ? 'shadow-none' 
+          : 'playing-card shadow-md hover:shadow-xl'
       } ${!currentImgSrc ? 'border border-white/15' : ''} ${className}`}
     >
+      {/* Minimal White Shimmer Stroke for Selected Card - Zero Drop Shadow */}
+      {isSelected && (
+        <div className="card-shimmer-stroke" />
+      )}
+
       {currentImgSrc ? (
         /* Image Card Presentation - Pure Image Only, No Overlaid Text, No Stroke */
         <img 
           src={currentImgSrc} 
           alt={title} 
           onError={handleImgError}
-          className="w-full h-full object-cover pointer-events-none block"
+          className="w-full h-full object-cover pointer-events-none block select-none rounded-[inherit]"
         />
       ) : (
         /* Sleek Typography Vector Card (Fallback) */

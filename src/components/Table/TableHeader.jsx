@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
 import { useGame } from '../../context/GameContext';
+import { useNostr } from '../../context/NostrContext';
 import { useProfile } from '../../context/ProfileContext';
 import { BloubAvatar } from '../Bloub/BloubAvatar';
 
 export const TableHeader = ({ onOpenRules, onOpenSettings }) => {
   const { roomCode, isHost, isPublic, togglePublic, players, roundNumber, gameState, startGame, leaveRoom, isStartAudioPlaying, tableTarget } = useGame();
+  const { pubkey } = useNostr();
   const { profile, truncatedId, setIsProfileModalOpen } = useProfile();
   const [copied, setCopied] = useState(false);
+
+  const me = players.find(p => p.pk === pubkey);
+  const isAlive = me ? me.isAlive : true;
 
   const copyRoomCode = () => {
     if (!roomCode) return;
@@ -40,7 +45,7 @@ export const TableHeader = ({ onOpenRules, onOpenSettings }) => {
             <BloubAvatar
               shape={profile.shape}
               color={profile.color}
-              expression="idle"
+              expression={!isAlive ? 'dead' : 'idle'}
               size={38}
             />
           </div>

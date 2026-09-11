@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGame } from '../../../context/GameContext';
 import { useNostr } from '../../../context/NostrContext';
 import { useProfile } from '../../../context/ProfileContext';
@@ -6,9 +6,45 @@ import { sound } from '../../../services/sound';
 import { BloubAvatar } from '../../Bloub/BloubAvatar';
 
 export const GameOverModal = () => {
-  const { soleSurvivor, endGameReason, players, resetToLobby, leaveRoom } = useGame();
+  const { 
+    soleSurvivor, 
+    endGameReason, 
+    players, 
+    leaveRoom, 
+    gameState,
+    isRouletteActive
+  } = useGame();
   const { pubkey } = useNostr();
   const { profile } = useProfile();
+
+  const [hasDismissedSpectate, setHasDismissedSpectate] = useState(false);
+  const [windowSize, setWindowSize] = useState({
+    isMobile: typeof window !== 'undefined' ? window.innerWidth < 640 : false,
+    isLaptop: typeof window !== 'undefined' ? window.innerWidth >= 768 && (window.innerHeight <= 860 || (window.innerWidth <= 1440 && window.innerHeight <= 900)) : false,
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      setWindowSize({
+        isMobile: w < 640,
+        isLaptop: w >= 768 && (h <= 860 || (w <= 1440 && h <= 900)),
+      });
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const me = players.find(p => p.pk === pubkey);
+  const isAlive = me ? me.isAlive : true;
+
+  // Reset spectate dismissal if entering lobby or revived
+  useEffect(() => {
+    if (gameState === 'lobby' || isAlive) {
+      setHasDismissedSpectate(false);
+    }
+  }, [gameState, isAlive]);
 
   useEffect(() => {
     return () => {
@@ -17,141 +53,135 @@ export const GameOverModal = () => {
     };
   }, []);
 
-  if (!soleSurvivor) return null;
+  // Modal Visibility Conditions
+  const isGameOver = Boolean(soleSurvivor) || gameState === 'ended';
+  const isEliminatedInProgress = !isGameOver && gameState === 'playing' && !isAlive && !isRouletteActive;
 
-  const isWinner = soleSurvivor.pk === pubkey;
-  const isDisconnectWin = endGameReason?.type === 'disconnect';
+  // Do not overlap with ongoing gun roulette cinematic
+  if (isRouletteActive) return null;
 
-  const winner = soleSurvivor;
-  const winnerColor = winner.color || (winner.pk === pubkey ? profile.color : '#3b93f0');
-  const winnerShape = winner.shape || (winner.pk === pubkey ? profile.shape : 'cercle');
+  // Nothing to display if game is ongoing and player is alive, or player already chose to spectate
+  if (!isGameOver && (!isEliminatedInProgress || hasDismissedSpectate)) {
+    return null;
+  }
 
-  // Local player info for defeat screen
-  const localPlayerObj = players.find(p => p.pk === pubkey);
-  const loserName = localPlayerObj?.name || profile.name || 'You';
-  const loserColor = localPlayerObj?.color || profile.color || '#e8483f';
-  const loserShape = localPlayerObj?.shape || profile.shape || 'cercle';
+  // Determine state values
+  const isWinner = soleSurvivor ? soleSurvivor.pk === pubkey : false;
+
+  const avatarSize = windowSize.isMobile ? 190 : (windowSize.isLaptop ? 235 : 290);
+
+  let displayShape = profile.shape || 'cercle';
+  let displayColor = profile.color || '#3b93f0';
+
+  if (isWinner && soleSurvivor) {
+    displayShape = soleSurvivor.shape || (soleSurvivor.pk === pubkey ? profile.shape : 'cercle');
+    displayColor = soleSurvivor.color || (soleSurvivor.pk === pubkey ? profile.color : '#3b93f0');
+  } else if (me) {
+    displayShape = me.shape || profile.shape || 'cercle';
+    displayColor = me.color || profile.color || '#e8483f';
+  }
 
   return (
-    <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-[350] flex flex-col justify-center items-center p-4 animate-fade-in select-none">
-      <div 
-        className="w-full max-w-md bg-[#0a0a0a] rounded-[32px] p-6 sm:p-8 shadow-2xl relative border border-white/10 text-center"
-        style={{ animation: 'slideUpModal 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards' }}
-      >
-        <span className="text-white/40 font-mono text-xs uppercase tracking-widest block mb-1">
-          {isDisconnectWin 
-            ? 'Match Concluded (Disconnect)' 
-            : (isWinner ? 'Sole Survivor' : 'Eliminated')}
+    <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-[350] flex flex-col justify-between items-center py-8 sm:py-12 px-4 select-none animate-fade-in overflow-y-auto">
+      {/* 1. TOP: Title & Subtitle */}
+      <div className="flex flex-col items-center text-center mt-2 sm:mt-4 z-20">
+        <h1
+          className={`text-4xl sm:text-6xl md:text-7xl font-normal tracking-tight ${
+            isWinner 
+              ? 'text-white drop-shadow-[0_4px_30px_rgba(251,191,36,0.35)]' 
+              : (isEliminatedInProgress 
+                  ? 'text-rose-400 drop-shadow-[0_4px_30px_rgba(244,63,94,0.35)]' 
+                  : 'text-white drop-shadow-[0_4px_30px_rgba(255,255,255,0.2)]')
+          }`}
+          style={{ fontFamily: '"Gloock", serif', fontWeight: 400 }}
+        >
+          {isWinner 
+            ? 'Victory' 
+            : (isEliminatedInProgress ? 'Got Eliminated' : 'Defeat')}
+        </h1>
+
+        <span className="text-xs sm:text-sm font-mono uppercase tracking-[0.25em] text-white/50 mt-2 sm:mt-3">
+          {isWinner 
+            ? 'Table Champion' 
+            : (isEliminatedInProgress 
+                ? 'Match Still In Progress' 
+                : 'Eliminated from Table')}
         </span>
+      </div>
 
-        <h3 className="text-3xl font-serif text-white tracking-tight mb-2">
-          {isWinner ? 'Victory!' : 'Defeat'}
-        </h3>
-
-        {/* Respective Face Only: Winner sees only Winner face; Loser sees only Loser face */}
-        {isWinner ? (
-          /* Winner Face Showcase */
-          <div className="flex flex-col items-center justify-center my-4 relative">
-            <div className="relative">
-              {/* Crown Badge */}
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-400 text-black rounded-full p-1 shadow-lg z-10 animate-bounce">
-                <span className="material-symbols-rounded text-base block leading-none">
-                  crown
-                </span>
-              </div>
-
-              <div className="rounded-full ring-4 ring-amber-400/30 p-1 bg-black/40 shadow-2xl">
-                <BloubAvatar
-                  shape={winnerShape}
-                  color={winnerColor}
-                  expression="victory"
-                  size={96}
-                />
-              </div>
+      {/* 2. MIDDLE: Big Bloub with Head-Crown (Victory) or Pure Bloub (Defeat/Eliminated) */}
+      <div className="flex flex-col items-center justify-center my-auto py-6 z-20">
+        <div className="relative flex items-center justify-center">
+          {/* Victory Crown: Sitting right on top of head, tilted slightly to the right */}
+          {isWinner && (
+            <div 
+              className="absolute z-20 pointer-events-none"
+              style={{
+                top: '-10%',
+                right: '25%',
+                transform: 'rotate(14deg)',
+                transformOrigin: 'bottom center',
+              }}
+            >
+              <svg 
+                viewBox="0 0 24 24" 
+                fill="currentColor" 
+                className="text-amber-400 drop-shadow-[0_4px_14px_rgba(251,191,36,0.55)]"
+                style={{
+                  width: `${Math.round(avatarSize * 0.38)}px`,
+                  height: `${Math.round(avatarSize * 0.38)}px`
+                }}
+              >
+                <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z" />
+              </svg>
             </div>
+          )}
 
-            <span className="text-white font-bold text-lg mt-3">
-              {winner.name} (You)
-            </span>
-            <span className="text-amber-400 font-mono text-[10px] uppercase tracking-widest font-semibold">
-              Table Champion
-            </span>
+          {/* Just the Bloub Avatar (No floating rings, badges, or frames) */}
+          <div className={`transition-all duration-300 ${!isWinner ? 'opacity-85' : ''}`}>
+            <BloubAvatar
+              shape={displayShape}
+              color={displayColor}
+              expression={isWinner ? 'victory' : 'dead'}
+              size={avatarSize}
+            />
           </div>
-        ) : (
-          /* Loser Face Showcase with Dead X X Eyes */
-          <div className="flex flex-col items-center justify-center my-4 relative">
-            <div className="relative">
-              {/* Eliminated Skull Badge */}
-              <div className="absolute -bottom-1 -right-1 bg-black/80 border border-white/20 rounded-full p-1 shadow-md z-10">
-                <span className="material-symbols-rounded text-sm text-rose-400 block leading-none">
-                  skull
-                </span>
-              </div>
-
-              <div className="rounded-full ring-4 ring-rose-500/20 p-1 bg-black/40 shadow-2xl opacity-80">
-                <BloubAvatar
-                  shape={loserShape}
-                  color={loserColor}
-                  expression="dead"
-                  size={96}
-                />
-              </div>
-            </div>
-
-            <span className="text-white font-bold text-lg mt-3">
-              {loserName} (You)
-            </span>
-            <span className="text-rose-400 font-mono text-[10px] uppercase tracking-widest font-semibold">
-              Eliminated
-            </span>
-          </div>
-        )}
-
-        {isDisconnectWin ? (
-          <div className="w-full bg-white/[0.03] border border-white/10 rounded-2xl p-4 mb-6 text-left space-y-3 font-mono text-xs">
-            <div className="flex items-center gap-2 text-amber-300 font-bold">
-              <span className="material-symbols-rounded text-base">wifi_off</span>
-              <span>Disconnection Rule Decision</span>
-            </div>
-            <p className="text-white/80 leading-relaxed">
-              <strong>{endGameReason?.disconnectedName || 'Opponent'}</strong> disconnected and did not return within the 30-second window.
-            </p>
-            <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5 space-y-1.5 text-[11px] text-white/60">
-              <div className="text-white/90 font-semibold font-sans">How victory was calculated:</div>
-              <div>• Disconnection Rule: Tie-breaker is resolved by backend Dominance Score.</div>
-              <div>• Backend factors: Successful bluff calls (+50), uncalled bluffs (+20), safe truth (+10), and caught bluffs (-50).</div>
-              <div className="text-emerald-400 font-bold pt-1">
-                Result: {soleSurvivor.name} had higher calculated dominance and was awarded the match!
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="w-full bg-white/[0.03] border border-white/10 rounded-2xl p-4 mb-6 text-center font-mono text-xs text-white/60">
-            <p className="leading-relaxed">
-              {isWinner 
-                ? 'You outlasted every bluff and survived the Russian Roulette!' 
-                : `${soleSurvivor.name} survived the Russian Roulette to claim the table.`}
-            </p>
-          </div>
-        )}
-
-        {/* Action Buttons: Play Again (Stay in table) or Leave */}
-        <div className="flex flex-col gap-2.5">
-          <button
-            onClick={resetToLobby}
-            className="w-full bg-white hover:bg-white/90 text-black font-bold rounded-full h-[46px] transition-colors flex items-center justify-center gap-2 text-xs uppercase tracking-wider shadow-xl cursor-pointer active:scale-95"
-          >
-            <span className="material-symbols-rounded text-base">replay</span>
-            <span>Stay & Play Again</span>
-          </button>
-
-          <button
-            onClick={leaveRoom}
-            className="w-full bg-white/5 hover:bg-white/10 text-white/50 hover:text-white rounded-full h-[40px] transition-colors flex items-center justify-center text-xs font-mono tracking-wider cursor-pointer"
-          >
-            Return to Hallway
-          </button>
         </div>
+      </div>
+
+      {/* 3. BOTTOM: Actions */}
+      <div className="w-full max-w-md flex flex-col items-center justify-center z-20 pb-2 sm:pb-4">
+        {isEliminatedInProgress ? (
+          /* Mid-game Elimination: Spectate or Close */
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-sm">
+            <button
+              type="button"
+              onClick={() => setHasDismissedSpectate(true)}
+              className="w-full sm:w-auto flex-1 h-12 bg-white hover:bg-white/90 text-black font-semibold rounded-full transition-all flex items-center justify-center text-sm shadow-2xl cursor-pointer active:scale-95 px-8"
+            >
+              Spectate
+            </button>
+
+            <button
+              type="button"
+              onClick={leaveRoom}
+              className="w-full sm:w-auto flex-1 h-12 bg-white/10 hover:bg-white/20 text-white font-medium rounded-full transition-all flex items-center justify-center text-sm border border-white/10 cursor-pointer active:scale-95 px-8"
+            >
+              Close
+            </button>
+          </div>
+        ) : (
+          /* Game Over (Victory or Defeat): ONLY Close button */
+          <div className="flex items-center justify-center w-full max-w-xs">
+            <button
+              type="button"
+              onClick={leaveRoom}
+              className="w-full h-12 bg-white hover:bg-white/90 text-black font-semibold rounded-full transition-all flex items-center justify-center text-sm shadow-2xl cursor-pointer active:scale-95 px-8"
+            >
+              Close
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

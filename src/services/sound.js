@@ -23,6 +23,7 @@ class SoundFX {
     this.timerCancelled = false;
     this.startAudioObj = null;
     this.startAudioTimeout = null;
+    this.startAudioFadeTimeout = null;
     this.startAudioCancelled = false;
     this.winAudioObj = null;
     this.failAudioObj = null;
@@ -500,13 +501,13 @@ class SoundFX {
 
   // Card flip when revealing cards
   playCardFlip() {
-    this.playAudioFile(cardFlipAudio, 1.0, () => this.playCardSnap(), 'card-flip.mp3');
+    this.playAudioFile(cardFlipAudio, 0.45, () => this.playCardSnap(), 'card-flip.mp3');
   }
 
   // Card take when selecting card
   playCardTake() {
     console.log('[Deceit:Audio] 🃏 Playing card take sound (card-take.mp3)');
-    this.playAudioFile(`/sounds/card-take.mp3?v=${Date.now()}`, 0.95, () => this.playAudioFile(cardTakeAudio, 0.95, () => this.playCardSlide()), 'card-take.mp3');
+    this.playAudioFile(`/sounds/card-take.mp3?v=${Date.now()}`, 0.4, () => this.playAudioFile(cardTakeAudio, 0.4, () => this.playCardSlide()), 'card-take.mp3');
   }
 
   // Room entrance / join audio (start.mp3)
@@ -520,7 +521,7 @@ class SoundFX {
       return null;
     }
     try {
-      console.log('[Deceit:Audio] 🚪 Playing table entrance audio (start.mp3, ~13.58s)...');
+      console.log('[Deceit:Audio] 🚪 Playing table entrance audio (start.mp3, 8s entrance)...');
       const audio = new Audio(startAudio);
       audio.volume = 0.85;
       this.startAudioObj = audio;
@@ -530,19 +531,40 @@ class SoundFX {
       const handleEnd = () => {
         if (this.startAudioCancelled || completed) return;
         completed = true;
-        console.log('[Deceit:Audio] 🚪 Table entrance audio completed!');
+        console.log('[Deceit:Audio] 🚪 Table entrance audio completed at 8s!');
         if (this.startAudioTimeout) {
           clearTimeout(this.startAudioTimeout);
           this.startAudioTimeout = null;
         }
+        if (this.startAudioFadeTimeout) {
+          clearTimeout(this.startAudioFadeTimeout);
+          this.startAudioFadeTimeout = null;
+        }
+        try {
+          audio.pause();
+          audio.currentTime = 0;
+        } catch (e) {}
         this.activeAudios.delete(audio);
         this.startAudioObj = null;
         if (onComplete) onComplete();
       };
 
       audio.addEventListener('ended', handleEnd, { once: true });
-      // Guarantee fallback at exactly 13.7 seconds (audio is ~13.58s)
-      this.startAudioTimeout = setTimeout(handleEnd, 13700);
+
+      // Start gentle volume fade-out at 7.3s so it seamlessly resolves at 8.0s
+      this.startAudioFadeTimeout = setTimeout(() => {
+        if (completed || this.startAudioCancelled) return;
+        const fadeInterval = setInterval(() => {
+          if (audio && audio.volume > 0.1) {
+            audio.volume = Math.max(0, audio.volume - 0.12);
+          } else {
+            clearInterval(fadeInterval);
+          }
+        }, 100);
+      }, 7300);
+
+      // Entrance audio completes at exactly 8.0 seconds
+      this.startAudioTimeout = setTimeout(handleEnd, 8000);
 
       const p = audio.play();
       if (p !== undefined) {
@@ -573,6 +595,10 @@ class SoundFX {
     if (this.startAudioTimeout) {
       clearTimeout(this.startAudioTimeout);
       this.startAudioTimeout = null;
+    }
+    if (this.startAudioFadeTimeout) {
+      clearTimeout(this.startAudioFadeTimeout);
+      this.startAudioFadeTimeout = null;
     }
   }
 
@@ -805,7 +831,7 @@ class SoundFX {
               };
 
               shellAudioObj.addEventListener('ended', finishSequence, { once: true });
-              endTimeoutId = safeTimeout(finishSequence, 2200);
+              endTimeoutId = safeTimeout(finishSequence, 3000);
 
               shellAudioObj.play().catch(() => {
                 finishSequence();
@@ -835,7 +861,7 @@ class SoundFX {
             };
 
             emptyAudioObj.addEventListener('ended', finishSequence, { once: true });
-            endTimeoutId = safeTimeout(finishSequence, 1600);
+            endTimeoutId = safeTimeout(finishSequence, 2800);
 
             emptyAudioObj.play().catch(() => {
               if (this.hasUserInteracted) this.synthEmptyChamberClick();

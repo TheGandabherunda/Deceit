@@ -17,8 +17,9 @@ export const ProfileProvider = ({ children }) => {
         const validColor = COLORS.some((c) => c.hex.toLowerCase() === parsed.color?.toLowerCase())
           ? parsed.color
           : DEFAULT_COLOR;
+        const savedName = parsed.name || localStorage.getItem('deceit_name') || '';
         return {
-          name: parsed.name || localStorage.getItem('deceit_name') || 'Player',
+          name: savedName === 'Player' ? '' : savedName,
           color: validColor,
           shape: parsed.shape || DEFAULT_SHAPE
         };
@@ -27,8 +28,9 @@ export const ProfileProvider = ({ children }) => {
       console.warn('[Deceit:Profile] Failed to parse stored profile:', e);
     }
 
+    const fallbackName = localStorage.getItem('deceit_name') || '';
     return {
-      name: localStorage.getItem('deceit_name') || 'Player',
+      name: fallbackName === 'Player' ? '' : fallbackName,
       color: DEFAULT_COLOR,
       shape: DEFAULT_SHAPE
     };
@@ -69,18 +71,25 @@ export const ProfileProvider = ({ children }) => {
         color: color !== undefined ? color : prev.color,
         shape: shape !== undefined ? shape : prev.shape
       };
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-        if (name !== undefined) {
-          updateDisplayName(updated.name);
-          window.dispatchEvent(new CustomEvent('deceit:name-change', { detail: updated.name }));
-        }
-        window.dispatchEvent(new CustomEvent('deceit:profile-change', { detail: updated }));
-      } catch (e) {
-        console.warn('[Deceit:Profile] Failed to save profile to localStorage:', e);
-      }
       return updated;
     });
+
+    const updatedProfile = {
+      name: name !== undefined ? name.trim() : profile.name,
+      color: color !== undefined ? color : profile.color,
+      shape: shape !== undefined ? shape : profile.shape
+    };
+
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedProfile));
+      if (name !== undefined) {
+        updateDisplayName(updatedProfile.name);
+        window.dispatchEvent(new CustomEvent('deceit:name-change', { detail: updatedProfile.name }));
+      }
+      window.dispatchEvent(new CustomEvent('deceit:profile-change', { detail: updatedProfile }));
+    } catch (e) {
+      console.warn('[Deceit:Profile] Failed to save profile to localStorage:', e);
+    }
   };
 
   const truncatedId = pubkey

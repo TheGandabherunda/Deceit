@@ -1014,7 +1014,6 @@ export const GameProvider = ({ children }) => {
 
     console.log(`[Deceit:Gameplay] 🎴 Host dealing round ${roundNum}. Playing card shuffle sound (cards-shuffle.mp3) and displaying respective cards.`);
     sound.playCardShuffle();
-    triggerBanner(`Round ${roundNum}: Target is ${target === 'A' ? 'Aces' : target === 'K' ? 'Kings' : 'Queens'}!`);
 
     publishGameAction('DEAL_ROUND', {
       roundNumber: roundNum,
@@ -1328,9 +1327,6 @@ export const GameProvider = ({ children }) => {
     });
     setPlayers(updatedPlayers);
     playersRef.current = updatedPlayers;
-
-    const playerName = playersRef.current.find(p => p.pk === playerPk)?.name || 'Player';
-    triggerBanner(`${playerName} played ${cardCount} card${cardCount > 1 ? 's' : ''}`);
 
     // Determine next living player clockwise
     const living = updatedPlayers.filter(p => p.isAlive);
@@ -2185,7 +2181,6 @@ export const GameProvider = ({ children }) => {
             gameStateRef.current = 'playing';
             console.log(`[Deceit:Gameplay] 🎴 Peer received DEAL_ROUND ${parsed.roundNumber}. Playing card shuffle sound (cards-shuffle.mp3) and displaying respective cards.`);
             sound.playCardShuffle();
-            triggerBanner(`Round ${parsed.roundNumber}: Target is ${parsed.tableTarget === 'A' ? 'Aces' : parsed.tableTarget === 'K' ? 'Kings' : 'Queens'}!`);
 
           } else if (type === 'PLAY_CARDS') {
             const playKey = `play_${parsed.turnId}`;
@@ -2224,9 +2219,6 @@ export const GameProvider = ({ children }) => {
               playersRef.current = parsed.players;
             }
             setActivePlayerPk(parsed.nextTurnPk);
-
-            const pName = playersRef.current.find(p => p.pk === parsed.playerPk)?.name || 'Player';
-            triggerBanner(`${pName} played ${parsed.cardCount} card${parsed.cardCount > 1 ? 's' : ''}`);
 
             // If a player emptied their hand and I am not the challenger, play 12s timer audio
             if (parsed.players) {

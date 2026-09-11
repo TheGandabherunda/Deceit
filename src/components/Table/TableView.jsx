@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { TableHeader } from './TableHeader';
 import { OpponentsLayer } from './OpponentsLayer';
-import { CardPile } from './DeadZone/CardPile';
+import { TableCenterActions } from './TableCenterActions';
 import { LocalPlayerSeat } from './LocalPlayerSeat';
 import { RevealSummaryModal } from './Modals/RevealSummaryModal';
 import { RevolverCinematic } from './Modals/RevolverCinematic';
@@ -17,6 +17,10 @@ export const TableView = () => {
   const { pubkey } = useNostr();
   const [isRulesOpen, setIsRulesOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [showRoundSplash, setShowRoundSplash] = useState(false);
+  const [splashFading, setSplashFading] = useState(false);
+  const lastSplashKeyRef = useRef(null);
+
   const { 
     roomCode,
     isHost,
@@ -36,11 +40,50 @@ export const TableView = () => {
     isStartAudioPlaying,
     isRouletteActive,
     soleSurvivor,
-    disconnectedPeer
+    disconnectedPeer,
+    roundNumber
   } = useGame();
 
   const opponents = players.filter(p => p.pk !== pubkey);
   const me = players.find(p => p.pk === pubkey);
+
+  const targetName = 
+    tableTarget === 'K' ? "King's Table" : 
+    tableTarget === 'Q' ? "Queen's Table" : 
+    "Ace's Table";
+
+  // Round Intro Splash:
+  // Appears over all UI elements with blurred background when a round starts/target is set,
+  // then smoothly fades out and disappears after 2.5s.
+  useEffect(() => {
+    if (gameState !== 'playing' || !tableTarget || !roundNumber) {
+      setShowRoundSplash(false);
+      setSplashFading(false);
+      lastSplashKeyRef.current = null;
+      return;
+    }
+
+    const splashKey = `${roundNumber}-${tableTarget}`;
+    if (lastSplashKeyRef.current === splashKey) return;
+    lastSplashKeyRef.current = splashKey;
+
+    setShowRoundSplash(true);
+    setSplashFading(false);
+
+    const fadeTimer = setTimeout(() => {
+      setSplashFading(true);
+    }, 2000);
+
+    const removeTimer = setTimeout(() => {
+      setShowRoundSplash(false);
+      setSplashFading(false);
+    }, 2500);
+
+    return () => {
+      clearTimeout(fadeTimer);
+      clearTimeout(removeTimer);
+    };
+  }, [gameState, roundNumber, tableTarget]);
 
   // Background Music:
   // - Starts ONLY while in playing, after table entry music (start.mp3) stops.
@@ -82,6 +125,16 @@ export const TableView = () => {
         onOpenRules={() => setIsRulesOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
       />
+
+      {/* Floating System Notification Toast */}
+      {actionBanner && (
+        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 pointer-events-none animate-fade-in px-4">
+          <div className="px-4 py-1.5 rounded-full bg-black/80 backdrop-blur-md border border-white/10 text-white/90 font-mono text-xs shadow-2xl flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+            <span>{actionBanner}</span>
+          </div>
+        </div>
+      )}
 
       {/* Table Arena - Strictly fits within single viewport */}
       <main className="flex-1 flex flex-col items-center justify-between p-1 sm:p-2 md:p-3 relative max-w-5xl mx-auto w-full z-10 overflow-hidden">
@@ -212,23 +265,8 @@ export const TableView = () => {
                 )}
               </div>
             ) : (
-              /* Active Round Center - Only Cards in the Middle */
-              <div className="flex flex-col items-center justify-center relative w-full my-auto py-2">
-                {/* Action Notification Banner */}
-                {actionBanner && (
-                  <div className="mb-4 transition-all animate-fade-in">
-                    <div className="px-4 py-1.5 rounded-full bg-[#0a0a0a]/90 backdrop-blur-md border border-white/20 text-white font-mono text-xs shadow-2xl flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                      <span>{actionBanner}</span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Only Cards Stack in the Middle */}
-                <div className="flex items-center justify-center">
-                  <CardPile pileCount={pileCount} />
-                </div>
-              </div>
+              /* Active Round Center - Play Card (Left), Card Pile + Turn Arrow (Center), Call Liar (Right) */
+              <TableCenterActions />
             )}
           </div>
 
@@ -256,6 +294,31 @@ export const TableView = () => {
       <GameOverModal />
       <RulesModal isOpen={isRulesOpen} onClose={() => setIsRulesOpen(false)} />
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+
+      {/* Round Intro / Target Splash Overlay — Over all UI elements with blurred background */}
+      {showRoundSplash && (
+        <div 
+          className={`fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/75 backdrop-blur-md select-none pointer-events-none transition-opacity duration-500 ${
+            splashFading ? 'opacity-0' : 'opacity-100'
+          }`}
+        >
+          <div 
+            className={`w-full max-w-5xl px-4 text-center flex flex-col items-center justify-center transition-transform duration-500 ${
+              splashFading ? 'scale-105' : 'scale-100'
+            }`}
+          >
+            <h1 
+              className="text-[clamp(2.5rem,8vw,5.5rem)] text-white font-normal tracking-tight leading-none drop-shadow-[0_4px_30px_rgba(255,255,255,0.2)]"
+              style={{ fontFamily: '"Gloock", serif', fontWeight: 400 }}
+            >
+              {targetName}
+            </h1>
+            <span className="text-xs sm:text-sm text-white/60 font-sans font-medium tracking-[0.3em] uppercase mt-3 sm:mt-4 drop-shadow-md">
+              Round {roundNumber}
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

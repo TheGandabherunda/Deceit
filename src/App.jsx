@@ -8,7 +8,10 @@ import { TableView } from './components/Table/TableView';
 import { ProfileModal } from './components/Profile/ProfileModal';
 
 const MainNavigator = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('deceit_name'));
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    const stored = localStorage.getItem('deceit_name');
+    return !!(stored && stored.trim() && stored.trim() !== 'Player');
+  });
   const { roomCode, gameState } = useGame();
   const { isProfileModalOpen, setIsProfileModalOpen } = useProfile();
 

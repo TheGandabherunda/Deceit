@@ -56,15 +56,12 @@ export const OpponentsLayer = ({
         const opp = seat?.player;
         if (!opp || !opp.pk) return null;
         const isTurn = activePlayerPk === opp.pk;
-        const isLastActor = lastPlay?.playerPk === opp.pk;
-        const lastActionText = isLastActor ? `Played ${lastPlay.cardCount}` : null;
 
         return (
           <OpponentSeat 
             key={opp.pk}
             player={opp} 
             isActiveTurn={isTurn} 
-            lastAction={lastActionText}
             expression={seat.expression}
             gazeTarget={seat.gazeTarget}
             directGaze={seat.directGaze}

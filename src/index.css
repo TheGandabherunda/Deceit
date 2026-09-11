@@ -115,18 +115,84 @@ input:-webkit-autofill:active {
 
 /* Playing Card Hover Lift */
 .playing-card {
-  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-  transform-origin: center bottom;
+  transition: transform 0.22s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .playing-card:hover {
-  transform: translateY(-12px) scale(1.04);
+  transform: translateY(-8px);
 }
 
-.playing-card-selected {
-  transform: translateY(-20px) scale(1.06) !important;
-  border-color: #ffffff !important;
-  box-shadow: 0 0 25px rgba(255, 255, 255, 0.3) !important;
+/* Selected Card Minimal White Shimmer Stroke (Zero Drop Shadow) */
+@keyframes cardStrokeShimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.card-shimmer-stroke {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0.4) 0%,
+    rgba(255, 255, 255, 1) 30%,
+    rgba(255, 255, 255, 0.35) 60%,
+    rgba(255, 255, 255, 1) 85%,
+    rgba(255, 255, 255, 0.4) 100%
+  );
+  background-size: 250% 250%;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: cardStrokeShimmer 3.2s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 30;
+}
+
+/* Card Deal Distribution Animation (Local Player: Flies from center deck down to hand) */
+@keyframes dealCardToLocal {
+  0% {
+    opacity: 0;
+    transform: translateY(-110px) scale(0.65) rotate(0deg);
+  }
+  65% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(var(--target-y, 0px)) rotate(var(--target-rot, 0deg)) scale(1);
+  }
+}
+
+.deal-anim-local {
+  animation: dealCardToLocal 0.42s cubic-bezier(0.18, 0.89, 0.32, 1.15) backwards;
+}
+
+/* Card Deal Distribution Animation (Opponent: Flies from center deck up to opponent hand) */
+@keyframes dealCardToOpponent {
+  0% {
+    opacity: 0;
+    transform: translateY(100px) scale(0.65) rotate(0deg);
+  }
+  65% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(var(--target-y, 0px)) rotate(var(--target-rot, 0deg)) scale(1);
+  }
+}
+
+.deal-anim-opponent {
+  animation: dealCardToOpponent 0.42s cubic-bezier(0.18, 0.89, 0.32, 1.15) backwards;
 }
 
 /* Screen Shake on Gunshot */
@@ -170,3 +236,49 @@ input:-webkit-autofill:active {
 .spin-cylinder {
   animation: spinCylinder 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
+
+/* ==========================================================================
+   RESPONSIVE TABLE SYSTEM: LAPTOP VS DESKTOP
+   ========================================================================== */
+:root {
+  /* Default Desktop / Large Screen (Unchanged current size) */
+  --table-card-w: 104px;
+  --table-card-h: 145px;
+  --table-card-overlap: -42px;
+}
+
+/* Laptop Screens (13"-16" laptops: height <= 860px or width 1024-1440px with height <= 900px) */
+@media (min-width: 768px) and (max-height: 860px) {
+  :root {
+    --table-card-w: 82px;
+    --table-card-h: 115px;
+    --table-card-overlap: -32px;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1440px) and (max-height: 900px) {
+  :root {
+    --table-card-w: 82px;
+    --table-card-h: 115px;
+    --table-card-overlap: -32px;
+  }
+}
+
+/* Mobile Screens (< 640px) */
+@media (max-width: 639px) {
+  :root {
+    --table-card-w: 90px;
+    --table-card-h: 126px;
+    --table-card-overlap: -38px;
+  }
+}
+
+.table-playing-card {
+  width: var(--table-card-w) !important;
+  height: var(--table-card-h) !important;
+}
+
+.table-cards-overlap > * + * {
+  margin-left: var(--table-card-overlap) !important;
+}
+

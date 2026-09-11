@@ -37,7 +37,7 @@ export const TargetCardDisplay = ({ target = 'A' }) => {
         <div className={`transition-all duration-500 rounded-xl ${themeGlow}`}>
           <CardView 
             card={{ rank: target }} 
-            className="!w-18 !h-26 md:!w-20 md:!h-28 !cursor-default pointer-events-none" 
+            className="!w-[90px] !h-[126px] sm:!w-[104px] sm:!h-[145px] !cursor-default pointer-events-none" 
           />
         </div>
       </div>
