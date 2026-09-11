@@ -15,19 +15,10 @@ export const TableHeader = ({ onOpenRules, onOpenSettings }) => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const getTargetDetails = (target) => {
-    switch (target) {
-      case 'K':
-        return { name: 'King', color: 'text-yellow-400', dot: 'bg-yellow-400', glow: 'drop-shadow-[0_0_8px_rgba(234,179,8,0.4)]' };
-      case 'Q':
-        return { name: 'Queen', color: 'text-rose-400', dot: 'bg-rose-400', glow: 'drop-shadow-[0_0_8px_rgba(225,29,72,0.4)]' };
-      case 'A':
-      default:
-        return { name: 'Ace', color: 'text-white', dot: 'bg-white', glow: 'drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]' };
-    }
-  };
-
-  const targetDetails = getTargetDetails(tableTarget);
+  const targetName = 
+    tableTarget === 'K' ? "King's Table" : 
+    tableTarget === 'Q' ? "Queen's Table" : 
+    "Ace's Table";
 
   return (
     <header className="bg-black/40 backdrop-blur-xl px-4 py-3 border-b border-white/10 flex items-center justify-between z-40 relative md:h-[72px]">
@@ -89,21 +80,17 @@ export const TableHeader = ({ onOpenRules, onOpenSettings }) => {
             </div>
           </div>
         ) : (
-          <div className="flex items-center gap-2.5 px-3.5 py-1 rounded-full bg-white/[0.04] border border-white/10 shadow-sm">
+          <div className="flex items-center gap-2.5">
             <span className="text-xs text-white/60 font-mono">
               Round <strong className="text-white font-bold">{roundNumber}</strong>
             </span>
             <span className="text-white/20 select-none">•</span>
-            <div className="flex items-center gap-1.5">
-              <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${targetDetails.dot}`} />
-              <span className="text-[11px] text-white/40 font-mono">Target:</span>
-              <span 
-                className={`text-sm sm:text-base font-normal tracking-wide ${targetDetails.color} ${targetDetails.glow}`}
-                style={{ fontFamily: '"Gloock", serif', fontWeight: 400 }}
-              >
-                {targetDetails.name}
-              </span>
-            </div>
+            <span 
+              className="text-base sm:text-lg text-white font-normal"
+              style={{ fontFamily: '"Gloock", serif', fontWeight: 400 }}
+            >
+              {targetName}
+            </span>
           </div>
         )}
       </div>
