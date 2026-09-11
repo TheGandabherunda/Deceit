@@ -161,42 +161,35 @@ export const ProfileModal = ({ isOpen, onClose }) => {
             />
           </div>
 
-          {/* Color Selection - Single row with left & right scroll arrows */}
+          {/* Color Selection - Single row with external left & right arrows (no background container) */}
           <div>
-            <div className="flex items-center justify-between mb-1.5 ml-2 mr-2">
+            <div className="flex items-center justify-between mb-1.5 ml-1 mr-1">
               <label className="block text-sm font-medium text-white/60">Color</label>
               <span className="text-xs font-mono text-white/40">
                 {COLORS.find((c) => c.hex.toLowerCase() === selectedColor.toLowerCase())?.label || ''}
               </span>
             </div>
 
-            <div className="relative w-full flex items-center">
-              {/* Left Arrow (visible when colors are available to scroll left) */}
+            <div className="flex items-center gap-1.5 w-full">
+              {/* Left Arrow (outside the colors, visible when colors are available to scroll left) */}
               <button
                 type="button"
                 onClick={handleScrollLeft}
                 aria-label="Scroll left to more colors"
-                className={`absolute left-1 z-20 w-7 h-7 rounded-full bg-black/80 hover:bg-black text-white/80 hover:text-white border border-white/20 flex items-center justify-center transition-all cursor-pointer shadow-lg active:scale-95 ${
+                className={`w-8 h-8 shrink-0 rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white flex items-center justify-center transition-all cursor-pointer ${
                   canScrollLeft
-                    ? 'opacity-100 pointer-events-auto scale-100'
-                    : 'opacity-0 pointer-events-none scale-75'
+                    ? 'opacity-100 pointer-events-auto'
+                    : 'opacity-0 pointer-events-none'
                 }`}
               >
-                <span className="material-symbols-rounded text-base leading-none">chevron_left</span>
+                <span className="material-symbols-rounded text-lg leading-none">chevron_left</span>
               </button>
 
-              {/* Edge Gradient Mask on Left */}
-              <div 
-                className={`pointer-events-none absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[#0a0a0a] to-transparent rounded-l-full z-10 transition-opacity duration-200 ${
-                  canScrollLeft ? 'opacity-100' : 'opacity-0'
-                }`}
-              />
-
-              {/* Color Scroll Track */}
+              {/* Color Scroll Track (no background container) */}
               <div
                 ref={colorScrollRef}
                 onScroll={updateScrollArrows}
-                className="w-full h-[48px] bg-white/[0.06] rounded-full px-3 flex items-center gap-2 overflow-x-auto no-scrollbar shadow-inner scroll-smooth"
+                className="flex-1 py-1.5 flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth"
               >
                 {COLORS.map((c) => {
                   const isSelected = selectedColor.toLowerCase() === c.hex.toLowerCase();
@@ -207,7 +200,7 @@ export const ProfileModal = ({ isOpen, onClose }) => {
                       onClick={() => setSelectedColor(c.hex)}
                       aria-label={c.label}
                       aria-pressed={isSelected}
-                      className={`w-7 h-7 sm:w-8 sm:h-8 shrink-0 flex items-center justify-center rounded-full border-2 transition-all cursor-pointer ${
+                      className={`w-8 h-8 shrink-0 flex items-center justify-center rounded-full border-2 transition-all cursor-pointer ${
                         isSelected
                           ? 'border-white scale-110 shadow-sm'
                           : 'border-transparent hover:border-white/30'
@@ -223,25 +216,18 @@ export const ProfileModal = ({ isOpen, onClose }) => {
                 })}
               </div>
 
-              {/* Edge Gradient Mask on Right */}
-              <div 
-                className={`pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#0a0a0a] to-transparent rounded-r-full z-10 transition-opacity duration-200 ${
-                  canScrollRight ? 'opacity-100' : 'opacity-0'
-                }`}
-              />
-
-              {/* Right Arrow (visible when colors are available to scroll right) */}
+              {/* Right Arrow (outside the colors, visible when colors are available to scroll right) */}
               <button
                 type="button"
                 onClick={handleScrollRight}
                 aria-label="Scroll right to more colors"
-                className={`absolute right-1 z-20 w-7 h-7 rounded-full bg-black/80 hover:bg-black text-white/80 hover:text-white border border-white/20 flex items-center justify-center transition-all cursor-pointer shadow-lg active:scale-95 ${
+                className={`w-8 h-8 shrink-0 rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white flex items-center justify-center transition-all cursor-pointer ${
                   canScrollRight
-                    ? 'opacity-100 pointer-events-auto scale-100'
-                    : 'opacity-0 pointer-events-none scale-75'
+                    ? 'opacity-100 pointer-events-auto'
+                    : 'opacity-0 pointer-events-none'
                 }`}
               >
-                <span className="material-symbols-rounded text-base leading-none">chevron_right</span>
+                <span className="material-symbols-rounded text-lg leading-none">chevron_right</span>
               </button>
             </div>
           </div>
