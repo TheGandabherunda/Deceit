@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TableHeader } from './TableHeader';
 import { OpponentsLayer } from './OpponentsLayer';
 import { TargetCardDisplay } from './DeadZone/TargetCardDisplay';
@@ -7,6 +7,8 @@ import { LocalPlayerSeat } from './LocalPlayerSeat';
 import { RevealSummaryModal } from './Modals/RevealSummaryModal';
 import { RevolverCinematic } from './Modals/RevolverCinematic';
 import { GameOverModal } from './Modals/GameOverModal';
+import { RulesModal } from '../Hallway/RulesModal';
+import { SettingsModal } from '../Settings/SettingsModal';
 import AmbientLight from '../AmbientLight';
 import { useGame } from '../../context/GameContext';
 import { useNostr } from '../../context/NostrContext';
@@ -14,6 +16,8 @@ import { sound } from '../../services/sound';
 
 export const TableView = () => {
   const { pubkey } = useNostr();
+  const [isRulesOpen, setIsRulesOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { 
     roomCode,
     isHost,
@@ -35,17 +39,13 @@ export const TableView = () => {
 
   const opponents = players.filter(p => p.pk !== pubkey);
 
-  // Background Music: Play low-volume ambient music during active game sessions
+  // Background Music: Play low-volume ambient music as soon as player enters the table
   useEffect(() => {
-    if (gameState === 'playing') {
-      sound.startBgMusic();
-    } else {
-      sound.stopBgMusic();
-    }
+    sound.startBgMusic();
     return () => {
       sound.stopBgMusic();
     };
-  }, [gameState]);
+  }, []);
 
   return (
     <div className={`h-[100dvh] w-screen overflow-x-hidden flex flex-col antialiased bg-[#050505] text-white relative select-none animate-fade-in ${
@@ -58,7 +58,10 @@ export const TableView = () => {
       <AmbientLight />
 
       {/* Persistent Navigation Header */}
-      <TableHeader />
+      <TableHeader 
+        onOpenRules={() => setIsRulesOpen(true)}
+        onOpenSettings={() => setIsSettingsOpen(true)}
+      />
 
       {/* Table Arena */}
       <main className="flex-1 flex flex-col items-center justify-between p-2 md:p-4 relative max-w-5xl mx-auto w-full z-10 overflow-visible">
@@ -226,6 +229,8 @@ export const TableView = () => {
       <RevealSummaryModal />
       <RevolverCinematic />
       <GameOverModal />
+      <RulesModal isOpen={isRulesOpen} onClose={() => setIsRulesOpen(false)} />
+      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
     </div>
   );
 };

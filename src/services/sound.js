@@ -80,12 +80,18 @@ class SoundFX {
     this.isBgMusicPlaying = true;
     if (!this.bgMusicAudio) this.initBgMusic();
     if (!this.bgMusicAudio) return;
-    if (this.masterMuted || !this.bgMusicEnabled) return;
+    if (this.masterMuted || !this.bgMusicEnabled) {
+      console.log('[Deceit:Audio] 🎵 Background music suppressed (muted or disabled in settings).');
+      return;
+    }
 
     this.bgMusicAudio.volume = Math.max(0, Math.min(1, this.bgMusicVolume));
+    console.log(`[Deceit:Audio] 🎵 Playing background music (volume: ${Math.round(this.bgMusicVolume * 100)}%)...`);
     const p = this.bgMusicAudio.play();
     if (p !== undefined) {
-      p.catch(() => {});
+      p.catch((err) => {
+        console.warn('[Deceit:Audio] 🎵 Autoplay policy waiting for user interaction to resume bg music:', err?.message);
+      });
     }
   }
 
@@ -798,6 +804,7 @@ class SoundFX {
     this.stopRouletteSequence();
     this.stopWin();
     this.stopFail();
+    this.stopBgMusic();
     this.activeAudios.forEach(audio => {
       try {
         audio.pause();
@@ -1002,20 +1009,6 @@ class SoundFX {
       this.failAudioObj = null;
     }
   }
-  stopAllAudio() {
-    this.stopTimer();
-    this.stopStartAudio();
-    this.stopWin();
-    this.stopFail();
-    this.stopBgMusic();
-    for (const audio of this.activeAudios) {
-      try {
-        audio.pause();
-        audio.currentTime = 0;
-      } catch (e) {}
-    }
-    this.activeAudios.clear();
-  }
 }
 
 export const sound = new SoundFX();
@@ -1037,14 +1030,23 @@ if (typeof window !== 'undefined') {
   window.addEventListener('touchstart', unlockAudio, { passive: true });
   window.addEventListener('pointerdown', unlockAudio, { passive: true });
 
-  // Global hover audio for all interactive UI elements in the website
-  const INTERACTIVE_SELECTOR = 'button, a, input, select, textarea, [role="button"], [role="radio"], [role="tab"], .cursor-pointer, [tabindex]:not([tabindex="-1"])';
+  // Resume background music on any user gesture if requested to play but delayed by browser autoplay policy
+  const resumeBgOnGesture = () => {
+    if (sound.isBgMusicPlaying && sound.bgMusicEnabled && !sound.masterMuted && sound.bgMusicAudio && sound.bgMusicAudio.paused) {
+      sound.bgMusicAudio.play().catch(() => {});
+    }
+  };
+  window.addEventListener('click', resumeBgOnGesture, { passive: true });
+  window.addEventListener('pointerdown', resumeBgOnGesture, { passive: true });
+
+  // Hover audio ONLY for playing cards (per user request: "keep the hover sound only for cards not for complete all ui's")
+  const CARD_HOVER_SELECTOR = '.playing-card, [data-card]';
 
   let lastHoveredElement = null;
 
   document.addEventListener('mouseover', (e) => {
     if (!e.target || !(e.target instanceof Element)) return;
-    const target = e.target.closest(INTERACTIVE_SELECTOR);
+    const target = e.target.closest(CARD_HOVER_SELECTOR);
     if (!target) {
       lastHoveredElement = null;
       return;
@@ -1053,11 +1055,6 @@ if (typeof window !== 'undefined') {
       return; // Same element, ignore inner DOM boundary crossings
     }
     lastHoveredElement = target;
-
-    // Skip disabled elements
-    if (target.disabled || target.getAttribute('aria-disabled') === 'true') {
-      return;
-    }
 
     sound.playHover();
   }, { passive: true });

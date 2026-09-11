@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { sound } from '../../services/sound';
 
 export const SettingsModal = ({ isOpen, onClose }) => {
@@ -41,6 +42,7 @@ export const SettingsModal = ({ isOpen, onClose }) => {
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
+  if (typeof document === 'undefined') return null;
 
   const handleToggleMasterMute = (checked) => {
     const newMuted = !checked;
@@ -63,7 +65,7 @@ export const SettingsModal = ({ isOpen, onClose }) => {
     sound.setSfxVolume(val);
   };
 
-  return (
+  return createPortal(
     <div 
       className="fixed inset-0 bg-black/75 backdrop-blur-md z-[300] flex flex-col justify-end md:justify-center items-center p-4 sm:p-6 pb-6 md:pb-6 animate-fade-in select-none"
       onClick={(e) => {
@@ -206,6 +208,7 @@ export const SettingsModal = ({ isOpen, onClose }) => {
           Done
         </button>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

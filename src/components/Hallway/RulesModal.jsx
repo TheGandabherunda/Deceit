@@ -1,38 +1,57 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 export const RulesModal = ({ isOpen, onClose }) => {
-  if (!isOpen) return null;
+  // Handle escape key
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
-  return (
+  if (!isOpen) return null;
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
     <div 
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[300] flex flex-col justify-end md:justify-center items-center p-4 sm:p-6 pb-6 md:pb-6 animate-fade-in"
+      className="fixed inset-0 bg-black/75 backdrop-blur-md z-[300] flex flex-col justify-end md:justify-center items-center p-4 sm:p-6 pb-6 md:pb-6 animate-fade-in select-none"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
       <div 
-        className="w-full max-w-[560px] max-h-[85vh] overflow-y-auto bg-[#0a0a0a] rounded-[32px] p-8 shadow-2xl relative border border-white/10"
+        className="w-full max-w-[520px] max-h-[85vh] overflow-y-auto bg-[#0a0a0a] rounded-[32px] p-6 sm:p-8 shadow-2xl relative border border-white/10 no-scrollbar"
         style={{ animation: 'slideUpModal 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards' }}
       >
+        {/* Pull Handle for mobile */}
+        <div className="w-12 h-1.5 bg-white/20 rounded-full mx-auto mb-4 md:hidden" />
+
         <button 
           type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-colors z-10"
+          className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-colors z-10 cursor-pointer"
+          aria-label="Close rules"
         >
           <span className="material-symbols-rounded text-[20px]">close</span>
         </button>
 
-        <div className="mt-2 mb-6 text-center px-4">
-          <h3 className="text-3xl text-white font-serif tracking-tight">
+        <div className="mt-1 mb-6 text-center px-2">
+          <h3 
+            className="text-4xl text-white font-serif tracking-normal"
+            style={{ fontFamily: '"Gloock", serif', fontWeight: 400 }}
+          >
             Game Rules
           </h3>
-          <p className="text-white/40 text-sm mt-1">
+          <p className="text-white/40 text-sm mt-1.5">
             How to bluff, survive, and win.
           </p>
         </div>
 
-        <div className="space-y-4 text-left text-sm text-white/80">
-          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5">
+        <div className="space-y-3.5 text-left text-sm text-white/80 select-text">
+          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10">
             <h4 className="font-bold text-white mb-1">1. The 20-Card Deck & Table Target</h4>
             <p className="text-white/60 text-xs leading-relaxed">
               The deck has exactly 20 cards: 6 Aces, 6 Kings, 6 Queens, and 2 Jokers.
@@ -41,7 +60,7 @@ export const RulesModal = ({ isOpen, onClose }) => {
             </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5">
+          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10">
             <h4 className="font-bold text-white mb-1">2. Turns & Calling Liar</h4>
             <p className="text-white/60 text-xs leading-relaxed">
               The active player selects 1 to 3 cards and plays them face-down, claiming they match the target.
@@ -49,7 +68,7 @@ export const RulesModal = ({ isOpen, onClose }) => {
             </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5">
+          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10">
             <h4 className="font-bold text-white mb-1">3. Verification</h4>
             <p className="text-white/60 text-xs leading-relaxed">
               When Liar is called, only the previous cards flip face-up. If any card doesn't match the target (and isn't a Joker), the Liar loses.
@@ -57,7 +76,7 @@ export const RulesModal = ({ isOpen, onClose }) => {
             </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5">
+          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10">
             <h4 className="font-bold text-white mb-1">4. Empty Hand Rule</h4>
             <p className="text-white/60 text-xs leading-relaxed">
               If a player plays their last card and the next player does not call Liar, the round ends.
@@ -65,7 +84,7 @@ export const RulesModal = ({ isOpen, onClose }) => {
             </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5">
+          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10">
             <h4 className="font-bold text-white mb-1">5. The Revolver Penalty</h4>
             <p className="text-white/60 text-xs leading-relaxed">
               The loser faces the 6-chamber revolver.
@@ -74,7 +93,7 @@ export const RulesModal = ({ isOpen, onClose }) => {
             </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-white/[0.05] border border-white/15">
+          <div className="p-4 rounded-2xl bg-white/[0.04] border border-white/15">
             <div className="flex items-center gap-2 mb-2">
               <span className="material-symbols-rounded text-base text-amber-400">bolt</span>
               <h4 className="font-bold text-white">6. Disconnection Rule & Dominance Calculation</h4>
@@ -107,7 +126,7 @@ export const RulesModal = ({ isOpen, onClose }) => {
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5">
+          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10">
             <div className="flex items-center gap-2 mb-1">
               <span className="material-symbols-rounded text-base text-blue-400">wifi</span>
               <h4 className="font-bold text-white">7. 30-Second Disconnection Policy</h4>
@@ -119,15 +138,17 @@ export const RulesModal = ({ isOpen, onClose }) => {
           </div>
         </div>
 
-        <div className="mt-6">
+        <div className="mt-6 pt-2">
           <button
+            type="button"
             onClick={onClose}
-            className="w-full bg-white hover:bg-white/90 text-black font-bold rounded-full h-[48px] transition-colors flex items-center justify-center text-sm shadow-xl"
+            className="w-full h-[48px] rounded-full bg-white hover:bg-white/90 text-black font-bold text-sm transition-all flex items-center justify-center cursor-pointer shadow-lg active:scale-98"
           >
             Understood
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
