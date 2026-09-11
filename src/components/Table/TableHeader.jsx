@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { useGame } from '../../context/GameContext';
+import { useProfile } from '../../context/ProfileContext';
 import { sound } from '../../services/sound';
 import { RulesModal } from '../Hallway/RulesModal';
+import { BloubAvatar } from '../Bloub/BloubAvatar';
 
 export const TableHeader = () => {
   const { roomCode, isHost, isPublic, togglePublic, players, roundNumber, gameState, startGame, leaveRoom, isStartAudioPlaying } = useGame();
+  const { profile, truncatedId, setIsProfileModalOpen } = useProfile();
   const [copied, setCopied] = useState(false);
   const [isMuted, setIsMuted] = useState(sound.muted);
   const [isRulesOpen, setIsRulesOpen] = useState(false);
@@ -71,8 +74,37 @@ export const TableHeader = () => {
         )}
       </div>
 
-      {/* Right: Rules, Sound & Leave */}
+      {/* Right: Player Profile, Rules, Sound & Leave */}
       <div className="flex items-center gap-2">
+        {/* Player Profile Pill */}
+        <button
+          type="button"
+          onClick={() => setIsProfileModalOpen(true)}
+          title="Customize character & profile"
+          className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 transition-all cursor-pointer shadow-sm group mr-1"
+        >
+          <div className="relative w-5 h-5 flex items-center justify-center">
+            <div 
+              className="absolute inset-0 rounded-full blur-[2px] opacity-40 group-hover:opacity-70 transition-opacity"
+              style={{ backgroundColor: profile.color }}
+            />
+            <div className="w-5 h-5 rounded-full overflow-hidden flex items-center justify-center border border-white/20 relative z-10">
+              <BloubAvatar
+                shape={profile.shape}
+                color={profile.color}
+                expression="idle"
+                size={20}
+              />
+            </div>
+          </div>
+          <span className="text-xs font-semibold text-white group-hover:text-white/90 transition-colors max-w-[90px] truncate hidden sm:inline">
+            {profile.name || 'Player'}
+          </span>
+          <span className="material-symbols-rounded text-xs text-white/30 group-hover:text-white/70 transition-colors">
+            tune
+          </span>
+        </button>
+
         <button
           onClick={() => setIsRulesOpen(true)}
           className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white flex items-center justify-center text-xs transition-colors"

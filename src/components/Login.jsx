@@ -1,59 +1,124 @@
 import React, { useState } from 'react';
 import AmbientLight from './AmbientLight';
 import { getOrCreateKeys } from '../services/nostr';
+import { BloubAvatar } from './Bloub/BloubAvatar';
+import { SHAPES, COLORS, DEFAULT_SHAPE, DEFAULT_COLOR } from './Bloub/bloubShapes';
 
 const Login = ({ onComplete }) => {
   const [name, setName] = useState(localStorage.getItem('deceit_name') || '');
+  const [color, setColor] = useState(DEFAULT_COLOR);
+  const [shape, setShape] = useState(DEFAULT_SHAPE);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const clean = name.trim();
     if (!clean) return;
 
+    const profileData = {
+      name: clean,
+      color,
+      shape
+    };
+
     localStorage.setItem('deceit_name', clean);
+    localStorage.setItem('deceit_player_profile', JSON.stringify(profileData));
+
     const { pk, sk } = getOrCreateKeys();
     window.dispatchEvent(new CustomEvent('deceit:name-change', { detail: clean }));
+    window.dispatchEvent(new CustomEvent('deceit:profile-change', { detail: profileData }));
     onComplete({ displayName: clean, nostrPk: pk, nostrSk: sk });
   };
 
   return (
-    <div className="fixed inset-0 bg-[#050505] z-[200] flex flex-col justify-end md:justify-center items-center overflow-hidden px-4 md:px-0 pb-24 md:pb-0 animate-fade-in select-none">
-      
+    <div className="fixed inset-0 bg-[#050505] z-[200] flex flex-col justify-center items-center overflow-y-auto px-4 py-8 animate-fade-in select-none">
       {/* Ambient Edge Light Effect */}
       <AmbientLight />
 
       {/* Top Logo Title */}
-      <div className="absolute top-12 left-0 right-0 text-center z-10 pointer-events-none px-4">
-        <h1 className="text-3xl lg:text-4xl font-bold text-white tracking-tight">Deceit</h1>
+      <div className="text-center z-10 pointer-events-none mb-4">
+        <h1 className="text-3xl lg:text-4xl font-bold text-white tracking-widest font-serif uppercase">Deceit</h1>
       </div>
 
-      <div className="w-full max-w-sm transform transition-all pointer-events-auto relative z-10 p-4 lg:p-0 mx-auto">
-        <div className="mb-8 w-full text-center">
-          <h2 className="text-[2.8rem] text-white/90 font-serif tracking-tight leading-none">
+      <div className="w-full max-w-sm transform transition-all pointer-events-auto relative z-10 p-2 mx-auto">
+        {/* Animated Avatar Character Preview */}
+        <div className="flex flex-col items-center justify-center mb-6">
+          <div className="relative mb-2">
+            <BloubAvatar
+              shape={shape}
+              color={color}
+              expression="idle"
+              size={105}
+              className="drop-shadow-2xl"
+            />
+          </div>
+          <div className="flex items-center gap-1.5">
+            {SHAPES.slice(0, 5).map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => setShape(s.id)}
+                className={`w-6 h-6 rounded-full border text-[10px] font-mono flex items-center justify-center transition-all cursor-pointer ${
+                  shape === s.id ? 'border-white bg-white/20 text-white' : 'border-white/10 text-white/40 hover:text-white'
+                }`}
+                title={s.label}
+              >
+                {s.label.charAt(0)}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="mb-6 w-full text-center">
+          <h2 className="text-2xl text-white/90 font-serif tracking-tight leading-snug">
             Enter the table.<br />
             Trust no one.
           </h2>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-white/60 mb-1.5 ml-2">Display Name</label>
+            <label className="block text-xs font-mono uppercase tracking-wider text-white/60 mb-1.5 ml-1">
+              Display Name
+            </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               autoComplete="off"
               autoFocus
-              className="w-full h-[48px] bg-white/[0.06] rounded-full px-6 text-lg text-white focus:outline-none focus:ring-1 focus:ring-white/20 transition-colors shadow-inner"
+              className="w-full h-[46px] bg-white/[0.06] border border-white/10 rounded-full px-5 text-base text-white focus:outline-none focus:border-white/30 transition-colors shadow-inner"
               placeholder="e.g., Alice"
               required
             />
           </div>
 
-          <div className="pt-2">
+          {/* Color Choices */}
+          <div>
+            <label className="block text-xs font-mono uppercase tracking-wider text-white/60 mb-1.5 ml-1">
+              Profile Color
+            </label>
+            <div className="flex items-center justify-between gap-1.5 px-1">
+              {COLORS.slice(0, 8).map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => setColor(c.hex)}
+                  className={`w-7 h-7 rounded-full transition-transform cursor-pointer ${
+                    color.toLowerCase() === c.hex.toLowerCase()
+                      ? 'ring-2 ring-white ring-offset-2 ring-offset-black scale-110'
+                      : 'opacity-70 hover:opacity-100 hover:scale-105'
+                  }`}
+                  style={{ backgroundColor: c.hex }}
+                  title={c.label}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="pt-3">
             <button
               type="submit"
-              className="w-full bg-white hover:bg-white/90 text-black font-bold rounded-full h-[48px] transition-colors flex items-center justify-center text-lg shadow-xl"
+              className="w-full bg-white hover:bg-white/90 text-black font-bold rounded-full h-[46px] transition-colors flex items-center justify-center text-sm uppercase tracking-wider shadow-xl cursor-pointer active:scale-95"
             >
               Join Deceit
             </button>
@@ -61,8 +126,8 @@ const Login = ({ onComplete }) => {
         </form>
       </div>
 
-      <div className="absolute bottom-4 left-0 right-0 flex flex-col items-center pointer-events-none z-0 px-4">
-        <p className="text-white/30 text-xs text-center">
+      <div className="mt-8 flex flex-col items-center pointer-events-none z-0 px-4">
+        <p className="text-white/30 text-xs text-center font-mono">
           A serverless 2D bluffing game of deduction, deception, and survival.
         </p>
       </div>

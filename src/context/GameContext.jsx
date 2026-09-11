@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useNostr } from './NostrContext';
+import { useProfile } from './ProfileContext';
 import { pool, DEFAULT_RELAYS, publishEvent } from '../services/nostr';
 import { KINDS, createSignalEvent, createGameEvent } from '../services/nostrProtocol';
 import { dealHands, isCardTruthful, rollTableTarget } from '../services/deck';
@@ -11,6 +12,7 @@ const GameContext = createContext(null);
 
 export const GameProvider = ({ children }) => {
   const { pubkey, privKeyHex, secretKey, isExtension, displayName, relays, broadcastRoomBeacon, publicRooms } = useNostr();
+  const { profile } = useProfile();
 
   // Matchmaking State
   const [isMatchmaking, setIsMatchmaking] = useState(false);
@@ -193,6 +195,40 @@ export const GameProvider = ({ children }) => {
     setTimeout(() => setIsShaking(false), 700);
   }, []);
 
+  // Sync profile edits made locally to the table roster and broadcast to peers
+  useEffect(() => {
+    const handleProfileChange = (e) => {
+      const updated = e.detail;
+      if (!updated || !pubkey) return;
+      setPlayers(prev => {
+        const next = prev.map(p => {
+          if (p.pk === pubkey) {
+            return {
+              ...p,
+              name: updated.name || p.name,
+              color: updated.color || p.color,
+              shape: updated.shape || p.shape
+            };
+          }
+          return p;
+        });
+        playersRef.current = next;
+        return next;
+      });
+
+      if (roomCodeRef.current) {
+        publishSignal('PROFILE_UPDATE', {
+          playerPk: pubkey,
+          name: updated.name,
+          color: updated.color,
+          shape: updated.shape
+        });
+      }
+    };
+    window.addEventListener('deceit:profile-change', handleProfileChange);
+    return () => window.removeEventListener('deceit:profile-change', handleProfileChange);
+  }, [pubkey, publishSignal]);
+
   // Create a new room
   const createRoom = useCallback((code, isPub = false, isResume = false) => {
     const cleanCode = code.toUpperCase().trim();
@@ -251,13 +287,15 @@ export const GameProvider = ({ children }) => {
     if (!isResume || !playersRef.current || playersRef.current.length === 0) {
       const initialPlayers = [{
         pk: pubkey,
-        name: displayName || 'Host',
+        name: displayName || profile?.name || 'Host',
         isAlive: true,
         cardCount: 0,
         isHost: true,
         chambersRemaining: 6,
         isReady: false,
-        dominanceScore: 0
+        dominanceScore: 0,
+        color: profile?.color || '#3b93f0',
+        shape: profile?.shape || 'cercle'
       }];
       setPlayers(initialPlayers);
       playersRef.current = initialPlayers;
@@ -334,13 +372,15 @@ export const GameProvider = ({ children }) => {
       // Initial local player representation
       const me = {
         pk: pubkey,
-        name: displayName || 'Gambler',
+        name: displayName || profile?.name || 'Gambler',
         isAlive: true,
         cardCount: 0,
         isHost: false,
         chambersRemaining: 6,
         isReady: false,
-        dominanceScore: 0
+        dominanceScore: 0,
+        color: profile?.color || '#3b93f0',
+        shape: profile?.shape || 'cercle'
       };
       setPlayers([me]);
       playersRef.current = [me];
@@ -355,7 +395,9 @@ export const GameProvider = ({ children }) => {
       attempts++;
       console.log(`[Deceit:Join] Sending JOIN_REQUEST for room ${cleanCode} (attempt #${attempts})`);
       await publishSignal('JOIN_REQUEST', {
-        displayName: displayName || 'Gambler'
+        displayName: displayName || profile?.name || 'Gambler',
+        color: profile?.color || '#3b93f0',
+        shape: profile?.shape || 'cercle'
       });
     };
 
@@ -1813,6 +1855,8 @@ export const GameProvider = ({ children }) => {
           if (type === 'JOIN_REQUEST' && isHostRef.current) {
             const newPk = parsed.senderPk || event.pubkey;
             const senderName = parsed.displayName || 'Gambler';
+            const senderColor = parsed.color || '#3b93f0';
+            const senderShape = parsed.shape || 'cercle';
             console.log(`[Deceit:Signal:In] Host processing JOIN_REQUEST from "${senderName}" (${newPk.slice(0, 8)}...)`);
 
             let currentRoster = [...playersRef.current];
@@ -1821,7 +1865,9 @@ export const GameProvider = ({ children }) => {
             if (existingIdx >= 0) {
               currentRoster[existingIdx] = {
                 ...currentRoster[existingIdx],
-                name: senderName
+                name: senderName,
+                color: senderColor,
+                shape: senderShape
               };
             } else if (currentRoster.length < 4) {
               currentRoster.push({
@@ -1832,7 +1878,9 @@ export const GameProvider = ({ children }) => {
                 isHost: false,
                 chambersRemaining: 6,
                 isReady: false,
-                dominanceScore: 0
+                dominanceScore: 0,
+                color: senderColor,
+                shape: senderShape
               });
               console.log(`[Deceit:Roster] Added player "${senderName}". New roster size: ${currentRoster.length}`);
             } else {
@@ -1886,11 +1934,14 @@ export const GameProvider = ({ children }) => {
             }
             if (Array.isArray(parsed.players) && parsed.players.length > 0) {
               const myLocal = playersRef.current.find(p => p.pk === pubkey);
-              const syncedPlayers = parsed.players.map(p => {
-                if (p.pk === pubkey && myLocal?.isReady) {
-                  return { ...p, isReady: true };
-                }
-                return p;
+              const syncedPlayers = parsed.players.map((p, idx) => {
+                const existing = playersRef.current.find(ep => ep.pk === p.pk);
+                return {
+                  ...p,
+                  isReady: (p.pk === pubkey && myLocal?.isReady) ? true : p.isReady,
+                  color: p.color || existing?.color || ['#3b93f0', '#e8483f', '#3ecf8e', '#f0b429'][idx % 4],
+                  shape: p.shape || existing?.shape || 'cercle'
+                };
               });
               setPlayers(syncedPlayers);
               playersRef.current = syncedPlayers;
@@ -2014,6 +2065,24 @@ export const GameProvider = ({ children }) => {
               setPlayers(parsed.players);
               playersRef.current = parsed.players;
             }
+          } else if (type === 'PROFILE_UPDATE') {
+            const targetPk = parsed.playerPk || event.pubkey;
+            console.log(`[Deceit:Signal:In] Player ${targetPk.slice(0, 8)} updated profile:`, parsed);
+            setPlayers(prev => {
+              const updated = prev.map(p => {
+                if (p.pk === targetPk) {
+                  return {
+                    ...p,
+                    name: parsed.name || p.name,
+                    color: parsed.color || p.color,
+                    shape: parsed.shape || p.shape
+                  };
+                }
+                return p;
+              });
+              playersRef.current = updated;
+              return updated;
+            });
           }
         }
 

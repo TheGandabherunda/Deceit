@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { NostrProvider } from './context/NostrContext';
+import { ProfileProvider, useProfile } from './context/ProfileContext';
 import { GameProvider, useGame } from './context/GameContext';
 import Login from './components/Login';
 import { HallwayView } from './components/Hallway/HallwayView';
 import { TableView } from './components/Table/TableView';
+import { ProfileModal } from './components/Profile/ProfileModal';
 
 const MainNavigator = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('deceit_name'));
   const { roomCode, gameState } = useGame();
+  const { isProfileModalOpen, setIsProfileModalOpen } = useProfile();
 
   useEffect(() => {
     const handleNameChange = (e) => {
@@ -23,19 +26,30 @@ const MainNavigator = () => {
     return <Login onComplete={() => setIsLoggedIn(true)} />;
   }
 
-  if (roomCode && gameState !== 'none') {
-    return <TableView />;
-  }
+  return (
+    <div className="min-h-screen w-full flex flex-col bg-[#050505]">
+      {/* Main Content Area */}
+      <div className="flex-1 w-full flex flex-col">
+        {roomCode && gameState !== 'none' ? <TableView /> : <HallwayView />}
+      </div>
 
-  return <HallwayView />;
+      {/* Global Profile Customizer Modal */}
+      <ProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+      />
+    </div>
+  );
 };
 
 function App() {
   return (
     <NostrProvider>
-      <GameProvider>
-        <MainNavigator />
-      </GameProvider>
+      <ProfileProvider>
+        <GameProvider>
+          <MainNavigator />
+        </GameProvider>
+      </ProfileProvider>
     </NostrProvider>
   );
 }

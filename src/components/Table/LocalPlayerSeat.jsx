@@ -3,10 +3,12 @@ import { CardView } from './CardView';
 import { PlayerGunBadge } from './PlayerGunBadge';
 import { useGame } from '../../context/GameContext';
 import { useNostr } from '../../context/NostrContext';
+import { useProfile } from '../../context/ProfileContext';
 import { sound } from '../../services/sound';
 
 export const LocalPlayerSeat = () => {
   const { pubkey, displayName } = useNostr();
+  const { profile } = useProfile();
   const { 
     gameState,
     isHost,
@@ -105,7 +107,10 @@ export const LocalPlayerSeat = () => {
         <div className="flex items-center gap-4 flex-wrap justify-center">
           {/* Local Player Badge */}
           <div className="px-4 py-1.5 rounded-full flex items-center gap-3 bg-white/[0.04] border border-white/10">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center font-serif text-xs font-bold bg-white text-black">
+            <div 
+              className="w-7 h-7 rounded-full flex items-center justify-center font-serif text-xs font-bold text-black border border-white/20 shadow-sm"
+              style={{ backgroundColor: profile?.color || '#3b93f0' }}
+            >
               {displayName ? displayName.substring(0, 2).toUpperCase() : 'ME'}
             </div>
             <div className="flex flex-col text-left">
@@ -230,9 +235,12 @@ export const LocalPlayerSeat = () => {
         <div className={`px-4 py-1.5 rounded-full flex items-center gap-3 bg-white/[0.04] border transition-all ${
           isMyTurn ? 'border-white/50 shadow-[0_0_20px_rgba(255,255,255,0.15)]' : 'border-white/10'
         }`}>
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-serif text-xs font-bold ${
-            me.isAlive ? 'bg-white text-black' : 'bg-white/10 text-white/40'
-          }`}>
+          <div 
+            className={`w-7 h-7 rounded-full flex items-center justify-center font-serif text-xs font-bold border border-white/20 shadow-sm ${
+              me.isAlive ? 'text-black' : 'bg-white/10 text-white/40'
+            }`}
+            style={{ backgroundColor: me.isAlive ? (profile?.color || '#3b93f0') : undefined }}
+          >
             {me.isAlive ? (displayName ? displayName.substring(0, 2).toUpperCase() : 'ME') : '☠'}
           </div>
 

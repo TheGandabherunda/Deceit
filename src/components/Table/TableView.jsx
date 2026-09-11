@@ -65,86 +65,129 @@ export const TableView = () => {
           </div>
         )}
 
-        {/* Opponents (Top) */}
+        {/* Opponents (Top Row: Standoff 1-opp, Triangle 2-opp, or Top-Center in Diamond) */}
         <div className="w-full z-20">
           <OpponentsLayer 
             opponents={opponents} 
             activePlayerPk={activePlayerPk}
             lastPlay={lastPlay}
+            slot="top"
           />
         </div>
 
-        {/* Center Table Surface */}
-        <div className="w-full max-w-3xl bg-white/[0.02] border border-white/10 rounded-[44px] p-6 md:p-8 my-auto relative flex flex-col items-center justify-center shadow-2xl backdrop-blur-sm min-h-[220px]">
-          {gameState === 'lobby' ? (
-            /* Lobby Center Interface */
-            <div className="flex flex-col items-center text-center max-w-md my-auto py-2">
-              <div className="px-3.5 py-1 rounded-full bg-white/10 text-white/80 font-mono text-[11px] uppercase tracking-wider mb-3 border border-white/10 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
-                <span>{isPublic ? 'Public Table' : 'Private Table'} • {players.length}/4 Seats Occupied</span>
-              </div>
+        {/* Mobile secondary row for 4-Player Diamond (Middle-Left and Middle-Right) */}
+        {opponents.length === 3 && (
+          <div className="flex lg:hidden items-center justify-around w-full z-20 my-1 px-4">
+            <OpponentsLayer 
+              opponents={opponents} 
+              activePlayerPk={activePlayerPk}
+              lastPlay={lastPlay}
+              slot="left"
+            />
+            <OpponentsLayer 
+              opponents={opponents} 
+              activePlayerPk={activePlayerPk}
+              lastPlay={lastPlay}
+              slot="right"
+            />
+          </div>
+        )}
 
-              <h2 className="text-2xl font-serif font-bold text-white mb-1 tracking-tight">
-                {isPublic ? 'Public Match' : `Table ${roomCode}`}
-              </h2>
-              <p className="text-xs text-white/50 mb-4">
-                {isPublic 
-                  ? (players.length < 2 ? 'Waiting for matchmaking players to take a seat...' : 'Seated and waiting for all players to ready up.')
-                  : (players.length < 2 ? `Share code ${roomCode} with friends to take a seat.` : 'Seated and waiting for all players to ready up.')}
-              </p>
-
-              {isStartAudioPlaying ? (
-                <div className="flex items-center gap-2.5 px-6 py-2.5 rounded-full bg-white/[0.04] border border-white/10 text-white/70 font-mono text-xs animate-pulse">
-                  <span className="w-2 h-2 rounded-full bg-white animate-ping" />
-                  <span>Entering table...</span>
-                </div>
-              ) : players.length < 2 ? (
-                <div className="flex items-center gap-2 text-white/40 font-mono text-xs px-4 py-2 rounded-full bg-white/[0.02] border border-white/10">
-                  <span className="w-1.5 h-1.5 rounded-full bg-white/40 animate-pulse" />
-                  <span>Waiting for at least 1 more player to join...</span>
-                </div>
-              ) : players.every(p => p.isReady) ? (
-                <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs px-5 py-2.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 animate-pulse">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                  <span>All players ready! Dealing round 1...</span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2.5 text-white/70 font-mono text-xs px-5 py-2.5 rounded-full bg-white/[0.04] border border-white/10">
-                  <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                  <span>
-                    Waiting for players to ready up (<strong className="text-white">{players.filter(p => p.isReady).length}/{players.length}</strong>)
-                  </span>
-                </div>
-              )}
+        {/* Middle Row: [Middle-Left Opponent (4-player)] [Center Table Surface] [Middle-Right Opponent (4-player)] */}
+        <div className="w-full max-w-5xl my-auto flex items-center justify-center gap-3 md:gap-6 relative z-10">
+          {opponents.length === 3 && (
+            <div className="hidden lg:flex flex-shrink-0 z-20">
+              <OpponentsLayer 
+                opponents={opponents} 
+                activePlayerPk={activePlayerPk}
+                lastPlay={lastPlay}
+                slot="left"
+              />
             </div>
-          ) : (
-            /* Active Round Center Dead Zone Interface */
-            <>
-              {/* Action Notification Banner */}
-              {actionBanner && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-30">
-                  <div className="px-4 py-1.5 rounded-full bg-[#0a0a0a] border border-white/20 text-white font-mono text-xs shadow-2xl flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                    <span>{actionBanner}</span>
-                  </div>
-                </div>
-              )}
+          )}
 
-              {/* Center Dead Zone Elements */}
-              <div className="w-full max-w-lg flex items-center justify-around py-1">
-                <TargetCardDisplay target={tableTarget} />
-
-                {/* Minimal Table Center Divider */}
-                <div className="flex flex-col items-center gap-1 opacity-50 select-none">
-                  <div className="w-9 h-9 rounded-full border border-white/20 bg-white/[0.02] flex items-center justify-center">
-                    <span className="material-symbols-rounded text-base text-white/50">casino</span>
-                  </div>
-                  <span className="text-[9px] font-mono uppercase tracking-widest text-white/40">Dead Zone</span>
+          {/* Center Table Surface */}
+          <div className="flex-1 max-w-3xl bg-white/[0.02] border border-white/10 rounded-[44px] p-6 md:p-8 relative flex flex-col items-center justify-center shadow-2xl backdrop-blur-sm min-h-[220px]">
+            {gameState === 'lobby' ? (
+              /* Lobby Center Interface */
+              <div className="flex flex-col items-center text-center max-w-md my-auto py-2">
+                <div className="px-3.5 py-1 rounded-full bg-white/10 text-white/80 font-mono text-[11px] uppercase tracking-wider mb-3 border border-white/10 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+                  <span>{isPublic ? 'Public Table' : 'Private Table'} • {players.length}/4 Seats Occupied</span>
                 </div>
 
-                <CardPile pileCount={pileCount} />
+                <h2 className="text-2xl font-serif font-bold text-white mb-1 tracking-tight">
+                  {isPublic ? 'Public Match' : `Table ${roomCode}`}
+                </h2>
+                <p className="text-xs text-white/50 mb-4">
+                  {isPublic 
+                    ? (players.length < 2 ? 'Waiting for matchmaking players to take a seat...' : 'Seated and waiting for all players to ready up.')
+                    : (players.length < 2 ? `Share code ${roomCode} with friends to take a seat.` : 'Seated and waiting for all players to ready up.')}
+                </p>
+
+                {isStartAudioPlaying ? (
+                  <div className="flex items-center gap-2.5 px-6 py-2.5 rounded-full bg-white/[0.04] border border-white/10 text-white/70 font-mono text-xs animate-pulse">
+                    <span className="w-2 h-2 rounded-full bg-white animate-ping" />
+                    <span>Entering table...</span>
+                  </div>
+                ) : players.length < 2 ? (
+                  <div className="flex items-center gap-2 text-white/40 font-mono text-xs px-4 py-2 rounded-full bg-white/[0.02] border border-white/10">
+                    <span className="w-1.5 h-1.5 rounded-full bg-white/40 animate-pulse" />
+                    <span>Waiting for at least 1 more player to join...</span>
+                  </div>
+                ) : players.every(p => p.isReady) ? (
+                  <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs px-5 py-2.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 animate-pulse">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                    <span>All players ready! Dealing round 1...</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2.5 text-white/70 font-mono text-xs px-5 py-2.5 rounded-full bg-white/[0.04] border border-white/10">
+                    <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                    <span>
+                      Waiting for players to ready up (<strong className="text-white">{players.filter(p => p.isReady).length}/{players.length}</strong>)
+                    </span>
+                  </div>
+                )}
               </div>
-            </>
+            ) : (
+              /* Active Round Center Dead Zone Interface */
+              <>
+                {/* Action Notification Banner */}
+                {actionBanner && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-30">
+                    <div className="px-4 py-1.5 rounded-full bg-[#0a0a0a] border border-white/20 text-white font-mono text-xs shadow-2xl flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                      <span>{actionBanner}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Center Dead Zone Elements */}
+                <div className="w-full max-w-lg flex items-center justify-around py-1">
+                  <TargetCardDisplay target={tableTarget} />
+
+                  <div className="flex flex-col items-center gap-1.5">
+                    <div className="w-10 h-10 rounded-full border border-white/15 bg-white/[0.04] flex items-center justify-center shadow-lg">
+                      <span className="material-symbols-rounded text-base text-white/50">casino</span>
+                    </div>
+                    <span className="text-[9px] font-mono uppercase tracking-widest text-white/40">Dead Zone</span>
+                  </div>
+
+                  <CardPile pileCount={pileCount} />
+                </div>
+              </>
+            )}
+          </div>
+
+          {opponents.length === 3 && (
+            <div className="hidden lg:flex flex-shrink-0 z-20">
+              <OpponentsLayer 
+                opponents={opponents} 
+                activePlayerPk={activePlayerPk}
+                lastPlay={lastPlay}
+                slot="right"
+              />
+            </div>
           )}
         </div>
 
