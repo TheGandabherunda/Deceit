@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { HallwayHeader } from './HallwayHeader';
 import { PrivateRoomModal } from './PrivateRoomModal';
 import { TableSizeModal } from './TableSizeModal';
@@ -11,7 +11,7 @@ import { BloubAvatar } from '../Bloub/BloubAvatar';
 
 export const HallwayView = () => {
   const { displayName, updateDisplayName } = useNostr();
-  const { profile } = useProfile();
+  const { profile, setIsProfileModalOpen } = useProfile();
   const { 
     isMatchmaking, 
     matchmakingStatus, 
@@ -26,6 +26,31 @@ export const HallwayView = () => {
   const [isPrivateOpen, setIsPrivateOpen] = useState(false);
   const [isTableSizeOpen, setIsTableSizeOpen] = useState(false);
   const [isRulesOpen, setIsRulesOpen] = useState(false);
+
+  // Mouse cursor tracking for the home screen hero Bloub avatar
+  const bloubContainerRef = useRef(null);
+  const [gazeTarget, setGazeTarget] = useState(null);
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!bloubContainerRef.current) return;
+      const rect = bloubContainerRef.current.getBoundingClientRect();
+      // Face center in screen coordinates (eyes around 36% from top)
+      const faceX = rect.left + rect.width / 2;
+      const faceY = rect.top + rect.height * 0.36;
+
+      const spanX = Math.max(window.innerWidth / 2, 280);
+      const spanY = Math.max(window.innerHeight / 2, 280);
+
+      const dx = Math.max(-1, Math.min(1, (e.clientX - faceX) / spanX));
+      const dy = Math.max(-1, Math.min(1, (e.clientY - faceY) / spanY));
+
+      setGazeTarget({ x: dx, y: dy });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   return (
     <div className="h-[100dvh] w-screen overflow-hidden flex flex-col antialiased bg-[#050505] relative animate-fade-in select-none">
@@ -48,6 +73,7 @@ export const HallwayView = () => {
             <div className="flex flex-col items-center animate-fade-in relative w-full">
               {/* Big Selected Bloub in Background with bottom fade partial reveal */}
               <div 
+                ref={bloubContainerRef}
                 className="absolute -top-24 sm:-top-28 md:-top-36 left-1/2 -translate-x-1/2 pointer-events-none -z-10 flex items-center justify-center select-none"
                 aria-hidden="true"
               >
@@ -62,11 +88,25 @@ export const HallwayView = () => {
                     shape={profile?.shape}
                     color={profile?.color}
                     expression="idle"
+                    gazeTarget={gazeTarget}
                     size={560}
                     paperColor="#050505"
                   />
                 </div>
               </div>
+
+              {/* Player Name Container at bottom of the Bloub */}
+              <button
+                type="button"
+                onClick={() => setIsProfileModalOpen(true)}
+                title="Customize profile & name"
+                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.08] hover:bg-white/15 border border-white/15 hover:border-white/30 text-white font-medium text-xs sm:text-sm backdrop-blur-md transition-all shadow-md active:scale-95 cursor-pointer mb-3 select-none group"
+              >
+                <span>{profile?.name || 'Player'}</span>
+                <span className="material-symbols-rounded text-xs text-white/40 group-hover:text-white/80 transition-colors">
+                  edit
+                </span>
+              </button>
 
               {/* Title & Subtitle */}
               <h1 className="text-5xl md:text-7xl font-serif font-black text-white tracking-tight mb-4 select-none drop-shadow-[0_4px_24px_rgba(0,0,0,0.8)]">

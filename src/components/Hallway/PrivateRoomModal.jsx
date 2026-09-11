@@ -54,10 +54,6 @@ export const PrivateRoomModal = ({ isOpen, onClose }) => {
         </button>
 
         <div className="mt-1 mb-6 text-center px-4">
-          <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-white/10 text-white/80 font-mono text-[10px] uppercase tracking-wider mb-2 border border-white/10">
-            <span className="material-symbols-rounded text-[13px]">lock</span>
-            Private Match
-          </span>
           <h3 className="text-3xl text-white font-serif tracking-tight">
             Private Table
           </h3>
@@ -71,25 +67,23 @@ export const PrivateRoomModal = ({ isOpen, onClose }) => {
           <button
             type="button"
             onClick={() => setActiveTab('create')}
-            className={`flex-1 py-2 text-xs font-bold rounded-full transition-all flex items-center justify-center gap-1.5 ${
+            className={`flex-1 py-2 text-xs font-bold rounded-full transition-all flex items-center justify-center ${
               activeTab === 'create'
                 ? 'bg-white text-black shadow-md'
-                : 'text-white/50 hover:text-white'
+                : 'text-white/50 hover:text-white cursor-pointer'
             }`}
           >
-            <span className="material-symbols-rounded text-sm">add_circle</span>
             <span>Create Table</span>
           </button>
           <button
             type="button"
             onClick={() => setActiveTab('join')}
-            className={`flex-1 py-2 text-xs font-bold rounded-full transition-all flex items-center justify-center gap-1.5 ${
+            className={`flex-1 py-2 text-xs font-bold rounded-full transition-all flex items-center justify-center ${
               activeTab === 'join'
                 ? 'bg-white text-black shadow-md'
-                : 'text-white/50 hover:text-white'
+                : 'text-white/50 hover:text-white cursor-pointer'
             }`}
           >
-            <span className="material-symbols-rounded text-sm">key</span>
             <span>Join Table</span>
           </button>
         </div>
@@ -114,10 +108,10 @@ export const PrivateRoomModal = ({ isOpen, onClose }) => {
                 <button
                   type="button"
                   onClick={() => setCreateCode(generateCode())}
-                  className="h-[48px] px-4 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white/60 hover:text-white text-xs font-mono transition-colors shrink-0 flex items-center gap-1"
+                  title="Reroll code"
+                  className="w-[48px] h-[48px] rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white/60 hover:text-white transition-colors shrink-0 flex items-center justify-center cursor-pointer active:scale-95"
                 >
-                  <span className="material-symbols-rounded text-sm">refresh</span>
-                  <span>Reroll</span>
+                  <span className="material-symbols-rounded text-lg">refresh</span>
                 </button>
               </div>
               <p className="text-white/30 text-[11px] mt-1.5 ml-3">
@@ -127,9 +121,8 @@ export const PrivateRoomModal = ({ isOpen, onClose }) => {
 
             <button 
               type="submit" 
-              className="w-full bg-white hover:bg-white/90 text-black font-bold rounded-full h-[48px] transition-colors flex items-center justify-center gap-2 text-sm uppercase tracking-wider shadow-xl"
+              className="w-full bg-white hover:bg-white/90 text-black font-semibold rounded-full h-[48px] transition-colors flex items-center justify-center text-sm shadow-xl cursor-pointer active:scale-95"
             >
-              <span className="material-symbols-rounded text-base">table_bar</span>
               <span>Create Private Table</span>
             </button>
           </form>
@@ -161,9 +154,8 @@ export const PrivateRoomModal = ({ isOpen, onClose }) => {
             <button 
               type="submit"
               disabled={joinCode.trim().length !== 4}
-              className="w-full bg-white hover:bg-white/90 disabled:opacity-20 text-black font-bold rounded-full h-[48px] transition-colors flex items-center justify-center gap-2 text-sm uppercase tracking-wider shadow-xl"
+              className="w-full bg-white hover:bg-white/90 disabled:opacity-20 text-black font-semibold rounded-full h-[48px] transition-colors flex items-center justify-center text-sm shadow-xl cursor-pointer active:scale-95"
             >
-              <span className="material-symbols-rounded text-base">login</span>
               <span>Join Private Table</span>
             </button>
           </form>
