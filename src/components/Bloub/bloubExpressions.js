@@ -70,6 +70,37 @@ export const EXPRESSIONS = {
     gaze: { yaw: 0, pitch: -8, roll: -3 },
     split: 17,
     eyes: pair(0.34, 0.22, -15, 0.85)
+  },
+
+  // Thinking: Pondering, inquisitive upward-right gaze, asymmetrical cocked eyes
+  thinking: {
+    id: 'thinking',
+    gaze: { yaw: 18, pitch: -20, roll: 7 },
+    split: 16.2,
+    eyes: [eye(0.18, 0.32, -6, 0.85), eye(0.22, 0.44, 4, 1.05)]
+  },
+
+  // Waiting: Patient, neutral expectant look, gentle curiosity
+  waiting: {
+    id: 'waiting',
+    gaze: { yaw: -14, pitch: -4, roll: -3 },
+    split: 15.6,
+    eyes: pair(0.20, 0.40, 2, 0.96)
+  },
+
+  // Bored / Boarding: Heavy drooping half-shut eyelids, indifferent downward tilt
+  bored: {
+    id: 'bored',
+    gaze: { yaw: 2, pitch: 18, roll: 2 },
+    split: 16.5,
+    eyes: pair(0.25, 0.18, -4, 0.45)
+  },
+
+  boarding: {
+    id: 'boarding',
+    gaze: { yaw: 2, pitch: 18, roll: 2 },
+    split: 16.5,
+    eyes: pair(0.25, 0.18, -4, 0.45)
   }
 };
 
