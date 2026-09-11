@@ -11,7 +11,7 @@ import { BloubAvatar } from '../Bloub/BloubAvatar';
 
 export const HallwayView = () => {
   const { displayName, updateDisplayName } = useNostr();
-  const { profile, setIsProfileModalOpen } = useProfile();
+  const { profile } = useProfile();
   const { 
     isMatchmaking, 
     matchmakingStatus, 
@@ -71,17 +71,17 @@ export const HallwayView = () => {
           {!isMatchmaking ? (
             /* IDLE STATE: PROMINENT "JOIN GAME" BUTTON */
             <div className="flex flex-col items-center animate-fade-in relative w-full">
-              {/* Big Selected Bloub in Background with bottom fade partial reveal */}
+              {/* Big Selected Bloub with bottom fade partial reveal */}
               <div 
                 ref={bloubContainerRef}
-                className="absolute -top-24 sm:-top-28 md:-top-36 left-1/2 -translate-x-1/2 pointer-events-none -z-10 flex items-center justify-center select-none"
+                className="relative pointer-events-none select-none -mb-14 sm:-mb-18 md:-mb-24 flex items-center justify-center shrink-0"
                 aria-hidden="true"
               >
                 <div 
-                  className="relative transition-all duration-500 scale-90 sm:scale-100 md:scale-110"
+                  className="relative transition-all duration-500 scale-90 sm:scale-100 md:scale-105"
                   style={{
-                    maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 18%, rgba(0,0,0,0.85) 45%, rgba(0,0,0,0) 78%)',
-                    WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 18%, rgba(0,0,0,0.85) 45%, rgba(0,0,0,0) 78%)',
+                    maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 32%, rgba(0,0,0,0.85) 65%, rgba(0,0,0,0) 96%)',
+                    WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 32%, rgba(0,0,0,0.85) 65%, rgba(0,0,0,0) 96%)',
                   }}
                 >
                   <BloubAvatar
@@ -89,56 +89,46 @@ export const HallwayView = () => {
                     color={profile?.color}
                     expression="idle"
                     gazeTarget={gazeTarget}
-                    size={560}
+                    size={380}
                     paperColor="#050505"
                   />
                 </div>
               </div>
 
-              {/* Player Name Container at bottom of the Bloub */}
-              <button
-                type="button"
-                onClick={() => setIsProfileModalOpen(true)}
-                title="Customize profile & name"
-                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.08] hover:bg-white/15 border border-white/15 hover:border-white/30 text-white font-medium text-xs sm:text-sm backdrop-blur-md transition-all shadow-md active:scale-95 cursor-pointer mb-3 select-none group"
-              >
-                <span>{profile?.name || 'Player'}</span>
-                <span className="material-symbols-rounded text-xs text-white/40 group-hover:text-white/80 transition-colors">
-                  edit
-                </span>
-              </button>
+              {/* Content Container: Positioned at the bottom of the Bloub */}
+              <div className="flex flex-col items-center relative z-10 w-full">
+                {/* Title & Subtitle */}
+                <h1 className="text-5xl md:text-7xl font-serif font-black text-white tracking-tight mb-3 select-none drop-shadow-[0_4px_24px_rgba(0,0,0,0.8)]">
+                  Deceit
+                </h1>
+                <p className="text-white/60 text-xs md:text-sm font-sans max-w-md mx-auto mb-8 leading-relaxed">
+                  Play cards in the dead zone. Bluff the target, call out liars, and survive the Russian Roulette revolver.
+                </p>
 
-              {/* Title & Subtitle */}
-              <h1 className="text-5xl md:text-7xl font-serif font-black text-white tracking-tight mb-4 select-none drop-shadow-[0_4px_24px_rgba(0,0,0,0.8)]">
-                Deceit
-              </h1>
-              <p className="text-white/70 text-sm md:text-base font-sans max-w-md mx-auto mb-10 leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)]">
-                Play cards in the dead zone. Bluff the target, call out liars, and survive the Russian Roulette revolver.
-              </p>
+                {/* Hero "Join Game" Button */}
+                <div className="relative group mb-8">
+                  <div className="absolute -inset-1 rounded-full bg-white/20 blur-xl group-hover:bg-white/30 transition-all opacity-70 group-hover:opacity-100 animate-pulse" />
+                  <button
+                    onClick={() => setIsTableSizeOpen(true)}
+                    className="relative h-16 px-12 md:px-16 rounded-full bg-white hover:bg-white/95 text-black font-serif text-xl font-bold transition-all shadow-[0_0_50px_rgba(255,255,255,0.2)] hover:shadow-[0_0_80px_rgba(255,255,255,0.45)] hover:scale-105 active:scale-95 flex items-center justify-center cursor-pointer"
+                  >
+                    <span>Join Game</span>
+                  </button>
+                </div>
 
-              {/* Hero "Join Game" Button */}
-              <div className="relative group mb-8">
-                <div className="absolute -inset-1 rounded-full bg-white/20 blur-xl group-hover:bg-white/30 transition-all opacity-70 group-hover:opacity-100 animate-pulse" />
-                <button
-                  onClick={() => setIsTableSizeOpen(true)}
-                  className="relative h-16 px-12 md:px-16 rounded-full bg-white hover:bg-white/95 text-black font-serif text-xl font-bold transition-all shadow-[0_0_50px_rgba(255,255,255,0.2)] hover:shadow-[0_0_80px_rgba(255,255,255,0.45)] hover:scale-105 active:scale-95 flex items-center justify-center cursor-pointer"
-                >
-                  <span>Join Game</span>
-                </button>
-              </div>
-
-              {/* Status Note & Quick Explainer */}
-              <div className="flex flex-col items-center gap-2 text-center">
-                <span className="text-xs font-mono text-white/40">
-                  Quick Match • Select 2, 3, or 4 players & match with active peers
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setIsPrivateOpen(true)}
-                  className="text-[11px] font-mono text-white/30 hover:text-white/60 transition-colors underline underline-offset-4 cursor-pointer"
-                >
-                  Playing with friends? Open a Private Table
-                </button>
+                {/* Status Note & Quick Explainer */}
+                <div className="flex flex-col items-center gap-2 text-center">
+                  <span className="text-xs font-mono text-white/40">
+                    Quick Match • Select 2, 3, or 4 players & match with active peers
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setIsPrivateOpen(true)}
+                    className="text-[11px] font-mono text-white/30 hover:text-white/60 transition-colors underline underline-offset-4 cursor-pointer"
+                  >
+                    Playing with friends? Open a Private Table
+                  </button>
+                </div>
               </div>
             </div>
           ) : (

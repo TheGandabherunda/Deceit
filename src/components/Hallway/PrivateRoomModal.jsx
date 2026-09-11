@@ -36,38 +36,44 @@ export const PrivateRoomModal = ({ isOpen, onClose }) => {
 
   return (
     <div 
-      className="fixed inset-0 bg-black/70 backdrop-blur-md z-[300] flex flex-col justify-end md:justify-center items-center p-4 sm:p-6 pb-6 md:pb-6 animate-fade-in select-none"
+      className="fixed inset-0 bg-black/75 backdrop-blur-md z-[300] flex flex-col justify-end md:justify-center items-center p-4 sm:p-6 pb-6 md:pb-6 animate-fade-in select-none"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
       <div 
-        className="w-full max-w-[420px] bg-[#0a0a0a] rounded-[32px] p-8 shadow-2xl relative border border-white/10"
+        className="w-full max-w-[460px] bg-[#0a0a0a] rounded-[36px] p-6 sm:p-8 shadow-2xl relative border border-white/10"
         style={{ animation: 'slideUpModal 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards' }}
       >
+        {/* Pull Handle for mobile */}
+        <div className="w-12 h-1.5 bg-white/20 rounded-full mx-auto mb-4 md:hidden" />
+
         <button 
           type="button"
           onClick={onClose}
-          className="absolute top-5 right-5 w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-colors z-10"
+          className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-colors z-10 cursor-pointer"
         >
           <span className="material-symbols-rounded text-[20px]">close</span>
         </button>
 
-        <div className="mt-1 mb-6 text-center px-4">
-          <h3 className="text-3xl text-white font-serif tracking-tight">
+        <div className="mt-1 mb-6 text-center px-2 flex flex-col items-center">
+          <h3 
+            className="text-4xl text-white font-serif" 
+            style={{ fontFamily: '"Gloock", serif', letterSpacing: 'normal', fontWeight: 400 }}
+          >
             Private Table
           </h3>
-          <p className="text-white/40 text-xs mt-1">
+          <p className="text-white/40 text-sm mt-1.5">
             Play exclusively with friends using a 4-letter code.
           </p>
         </div>
 
         {/* 2 Tabs */}
-        <div className="flex rounded-full bg-white/[0.04] p-1 mb-6 border border-white/10">
+        <div className="flex rounded-full bg-white/[0.06] p-1.5 mb-6 border border-white/10">
           <button
             type="button"
             onClick={() => setActiveTab('create')}
-            className={`flex-1 py-2 text-xs font-bold rounded-full transition-all flex items-center justify-center ${
+            className={`flex-1 py-2 text-xs font-semibold rounded-full transition-all flex items-center justify-center ${
               activeTab === 'create'
                 ? 'bg-white text-black shadow-md'
                 : 'text-white/50 hover:text-white cursor-pointer'
@@ -78,7 +84,7 @@ export const PrivateRoomModal = ({ isOpen, onClose }) => {
           <button
             type="button"
             onClick={() => setActiveTab('join')}
-            className={`flex-1 py-2 text-xs font-bold rounded-full transition-all flex items-center justify-center ${
+            className={`flex-1 py-2 text-xs font-semibold rounded-full transition-all flex items-center justify-center ${
               activeTab === 'join'
                 ? 'bg-white text-black shadow-md'
                 : 'text-white/50 hover:text-white cursor-pointer'
@@ -90,9 +96,9 @@ export const PrivateRoomModal = ({ isOpen, onClose }) => {
 
         {/* Tab 1: Create Table */}
         {activeTab === 'create' && (
-          <form onSubmit={handleCreateSubmit} className="space-y-6 animate-fade-in">
+          <form onSubmit={handleCreateSubmit} className="space-y-5 animate-fade-in">
             <div>
-              <label className="block text-xs font-mono text-white/50 mb-1.5 ml-2">
+              <label className="block text-sm font-medium text-white/60 mb-1.5 ml-2">
                 Generated Table Code
               </label>
               <div className="flex items-center gap-2">
@@ -102,26 +108,26 @@ export const PrivateRoomModal = ({ isOpen, onClose }) => {
                   value={createCode}
                   onChange={(e) => setCreateCode(e.target.value.toUpperCase())}
                   autoComplete="off"
-                  className="w-full h-[48px] bg-white/[0.06] rounded-full px-6 text-xl font-mono text-center font-bold text-white focus:outline-none focus:ring-1 focus:ring-white/20 transition-colors shadow-inner tracking-widest"
+                  className="w-full h-[50px] bg-white/[0.06] rounded-full px-6 text-2xl font-mono text-center font-bold text-white focus:outline-none focus:ring-1 focus:ring-white/20 transition-colors shadow-inner tracking-widest"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setCreateCode(generateCode())}
                   title="Reroll code"
-                  className="w-[48px] h-[48px] rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white/60 hover:text-white transition-colors shrink-0 flex items-center justify-center cursor-pointer active:scale-95"
+                  className="w-[50px] h-[50px] rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white/60 hover:text-white transition-colors shrink-0 flex items-center justify-center cursor-pointer active:scale-95"
                 >
-                  <span className="material-symbols-rounded text-lg">refresh</span>
+                  <span className="material-symbols-rounded text-xl">refresh</span>
                 </button>
               </div>
-              <p className="text-white/30 text-[11px] mt-1.5 ml-3">
+              <p className="text-white/30 text-xs mt-2 ml-3">
                 Share this code with your friends so they can join.
               </p>
             </div>
 
             <button 
               type="submit" 
-              className="w-full bg-white hover:bg-white/90 text-black font-semibold rounded-full h-[48px] transition-colors flex items-center justify-center text-sm shadow-xl cursor-pointer active:scale-95"
+              className="w-full h-[50px] bg-white hover:bg-white/90 text-black font-semibold rounded-full text-base transition-all flex items-center justify-center shadow-xl cursor-pointer active:scale-[0.98]"
             >
               <span>Create Private Table</span>
             </button>
@@ -130,9 +136,9 @@ export const PrivateRoomModal = ({ isOpen, onClose }) => {
 
         {/* Tab 2: Join Table */}
         {activeTab === 'join' && (
-          <form onSubmit={handleJoinSubmit} className="space-y-6 animate-fade-in">
+          <form onSubmit={handleJoinSubmit} className="space-y-5 animate-fade-in">
             <div>
-              <label className="block text-xs font-mono text-white/50 mb-1.5 ml-2">
+              <label className="block text-sm font-medium text-white/60 mb-1.5 ml-2">
                 Enter 4-Letter Code
               </label>
               <input
@@ -143,10 +149,10 @@ export const PrivateRoomModal = ({ isOpen, onClose }) => {
                 placeholder="XXXX"
                 autoFocus
                 autoComplete="off"
-                className="w-full h-[48px] bg-white/[0.06] rounded-full px-6 text-xl font-mono text-center font-bold text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-white/20 transition-colors shadow-inner tracking-widest uppercase"
+                className="w-full h-[50px] bg-white/[0.06] rounded-full px-6 text-2xl font-mono text-center font-bold text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-white/20 transition-colors shadow-inner tracking-widest uppercase"
                 required
               />
-              <p className="text-white/30 text-[11px] mt-1.5 ml-3">
+              <p className="text-white/30 text-xs mt-2 ml-3">
                 Ask the table host for their 4-letter invite code.
               </p>
             </div>
@@ -154,7 +160,7 @@ export const PrivateRoomModal = ({ isOpen, onClose }) => {
             <button 
               type="submit"
               disabled={joinCode.trim().length !== 4}
-              className="w-full bg-white hover:bg-white/90 disabled:opacity-20 text-black font-semibold rounded-full h-[48px] transition-colors flex items-center justify-center text-sm shadow-xl cursor-pointer active:scale-95"
+              className="w-full h-[50px] bg-white hover:bg-white/90 disabled:opacity-20 text-black font-semibold rounded-full text-base transition-all flex items-center justify-center shadow-xl cursor-pointer active:scale-[0.98]"
             >
               <span>Join Private Table</span>
             </button>
