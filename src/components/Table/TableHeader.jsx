@@ -76,7 +76,7 @@ export const TableHeader = () => {
         <button
           onClick={() => setIsRulesOpen(true)}
           className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white flex items-center justify-center text-xs transition-colors"
-          title="Game Rules & Dominance Scoring"
+          title="Game Rules"
         >
           <span className="material-symbols-rounded text-[18px]">
             menu_book

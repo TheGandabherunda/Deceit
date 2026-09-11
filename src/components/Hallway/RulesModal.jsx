@@ -77,10 +77,11 @@ export const RulesModal = ({ isOpen, onClose }) => {
           <div className="p-4 rounded-2xl bg-white/[0.05] border border-white/15">
             <div className="flex items-center gap-2 mb-2">
               <span className="material-symbols-rounded text-base text-amber-400">bolt</span>
-              <h4 className="font-bold text-white">6. The "Dominance" Score (Action-Based)</h4>
+              <h4 className="font-bold text-white">6. Disconnection Rule & Dominance Calculation</h4>
             </div>
             <p className="text-white/60 text-xs leading-relaxed mb-3">
-              Actively tracks how skillful players are at bluffing and reading opponents. Points are awarded or deducted in real time based on each action:
+              Normal rounds and matches are won strictly by surviving Russian Roulette. Point scores are never displayed on screen during play. 
+              However, if a player disconnects and abandons the table, the backend resolves the winner using an automated Dominance calculation based on round performance:
             </p>
             <div className="space-y-2 font-mono text-xs">
               <div className="flex items-center justify-between p-2 rounded-xl bg-white/[0.03] border border-white/5">
@@ -109,12 +110,11 @@ export const RulesModal = ({ isOpen, onClose }) => {
           <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5">
             <div className="flex items-center gap-2 mb-1">
               <span className="material-symbols-rounded text-base text-blue-400">wifi</span>
-              <h4 className="font-bold text-white">7. Connection & Disconnection Policy</h4>
+              <h4 className="font-bold text-white">7. 30-Second Disconnection Policy</h4>
             </div>
             <p className="text-white/60 text-xs leading-relaxed">
-              Players stay connected at the table without being forced out manually.
               If a player disconnects during a match, a 30-second reconnection grace period is provided.
-              If they do not reconnect in time, <strong>the player with the higher Dominance Score wins the game</strong>.
+              If they reconnect in time, play resumes seamlessly. If they do not return, the backend resolves the winner via the Disconnection Rule, detailing why the player won and how it was calculated.
             </p>
           </div>
         </div>

@@ -101,12 +101,6 @@ export const OpponentSeat = ({ player, isActiveTurn = false, lastAction = null }
           isAlive={isAlive} 
         />
 
-        {/* Dominance Score Chip */}
-        <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 font-mono text-[10px] font-bold" title="Dominance Score">
-          <span className="material-symbols-rounded text-[11px]">bolt</span>
-          <span>{player.dominanceScore ?? 0}</span>
-        </div>
-
         {/* Turn indicator light */}
         {isActiveTurn && isAlive && !isLobby && (
           <div className="w-2 h-2 rounded-full bg-white animate-ping ml-0.5" />

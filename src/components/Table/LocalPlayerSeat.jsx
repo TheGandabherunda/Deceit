@@ -132,10 +132,6 @@ export const LocalPlayerSeat = () => {
               </div>
             </div>
             <PlayerGunBadge chambersRemaining={me.chambersRemaining ?? 6} isAlive={true} />
-            <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 font-mono text-[11px] font-bold shadow-sm" title="Dominance Score">
-              <span className="material-symbols-rounded text-[13px]">bolt</span>
-              <span>{me.dominanceScore ?? 0} pts</span>
-            </div>
           </div>
 
           {/* Universal Collaborative Lobby Ready Actions */}
@@ -259,12 +255,6 @@ export const LocalPlayerSeat = () => {
             chambersRemaining={me.chambersRemaining ?? 6} 
             isAlive={me.isAlive} 
           />
-
-          {/* Dominance Score */}
-          <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 font-mono text-[11px] font-bold shadow-sm" title="Dominance Score">
-            <span className="material-symbols-rounded text-[13px]">bolt</span>
-            <span>{me.dominanceScore ?? 0} pts</span>
-          </div>
 
           {isMyTurn && me.isAlive && (
             <span className="text-[10px] font-mono font-bold text-white ml-2 animate-pulse">

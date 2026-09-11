@@ -1079,17 +1079,13 @@ export const GameProvider = ({ children }) => {
     playersRef.current = updated;
     setPlayers(updated);
 
-    const targetName = updated.find(p => p.pk === targetPk)?.name || 'Player';
-    const sign = delta > 0 ? '+' : '';
-    triggerBanner(`${sign}${delta} pts to ${targetName}: ${reason}`, 3500);
-
     publishSignal('SCORE_UPDATE', {
       playerPk: targetPk,
       delta,
       reason,
       newScore: nextScore
     });
-  }, [publishSignal, triggerBanner]);
+  }, [publishSignal]);
 
   useEffect(() => { adjustDominanceScoreRef.current = adjustDominanceScore; }, [adjustDominanceScore]);
 
@@ -1152,8 +1148,8 @@ export const GameProvider = ({ children }) => {
       sound.playFail();
     }
 
-    triggerBanner(`Game Over: ${winner?.name} won by Dominance Score! (${winner?.dominanceScore || 0} pts)`, 6000);
-  }, [pubkey, triggerBanner, publishSignal]);
+    triggerBanner(`Game Over: ${disconnectedPlayer?.name || 'Opponent'} timed out. Table awarded to ${winner?.name}!`, 6000);
+  }, [pubkey, triggerBanner]);
 
   useEffect(() => { resolveDisconnectionWinnerRef.current = resolveDisconnectionWinner; }, [resolveDisconnectionWinner]);
 
@@ -1586,10 +1582,10 @@ export const GameProvider = ({ children }) => {
 
     if (!isTruth) {
       console.log(`[Deceit:Dominance] +50 pts to ${accuserName} (Guessed Liar) & -50 pts to ${accusedName} (Caught in lie)`);
-      triggerBanner(`🎯 ${accuserName} +50 pts (Called Liar!) • ${accusedName} -50 pts (Caught lying)`, 4500);
+      triggerBanner(`🎯 ${accuserName} called Liar! ${accusedName} was caught in a lie!`, 4000);
     } else {
       console.log(`[Deceit:Dominance] -50 pts to ${accuserName} (False accusation) & +10 pts to ${accusedName} (Truth played)`);
-      triggerBanner(`❌ ${accuserName} -50 pts (False accusation) • ${accusedName} +10 pts (Truth played)`, 4500);
+      triggerBanner(`❌ ${accuserName} called Liar, but ${accusedName} told the truth!`, 4000);
     }
 
     console.log(`[Deceit:Game:Verdict] Cards check complete! isTruth=${isTruth}, cheatDetected=${cheatDetected}, designatedLoser=${loserName} (${designatedLoserPk?.slice(0, 8)})`);
@@ -1993,11 +1989,6 @@ export const GameProvider = ({ children }) => {
             });
             playersRef.current = updated;
             setPlayers(updated);
-            if (pPk !== pubkey) {
-              const pName = updated.find(p => p.pk === pPk)?.name || 'Player';
-              const sign = delta > 0 ? '+' : '';
-              triggerBanner(`${sign}${delta} pts to ${pName}: ${reason}`, 3500);
-            }
 
           } else if (type === 'RESET_TO_LOBBY') {
             sound.stopWin();

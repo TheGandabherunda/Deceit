@@ -44,53 +44,32 @@ export const GameOverModal = () => {
         </p>
 
         {isDisconnectWin ? (
-          <div className="mb-4 px-3 py-2 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-amber-300 text-xs font-mono text-center">
-            <span>Opponent disconnected. Table awarded to player with highest Dominance Score!</span>
+          <div className="w-full bg-white/[0.03] border border-white/10 rounded-2xl p-4 mb-6 text-left space-y-3 font-mono text-xs">
+            <div className="flex items-center gap-2 text-amber-300 font-bold">
+              <span className="material-symbols-rounded text-base">wifi_off</span>
+              <span>Disconnection Rule Decision</span>
+            </div>
+            <p className="text-white/80 leading-relaxed">
+              <strong>{endGameReason?.disconnectedName || 'Opponent'}</strong> disconnected and did not return within the 30-second window.
+            </p>
+            <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5 space-y-1.5 text-[11px] text-white/60">
+              <div className="text-white/90 font-semibold font-sans">How victory was calculated:</div>
+              <div>• Disconnection Rule: Tie-breaker is resolved by backend Dominance Score.</div>
+              <div>• Backend factors: Successful bluff calls (+50), uncalled bluffs (+20), safe truth (+10), and caught bluffs (-50).</div>
+              <div className="text-emerald-400 font-bold pt-1">
+                Result: {soleSurvivor.name} had higher calculated dominance and was awarded the match!
+              </div>
+            </div>
           </div>
         ) : (
-          <p className="text-white/40 text-xs font-mono mb-4 max-w-xs mx-auto">
-            {isWinner 
-              ? 'You outlasted every bluff and survived the revolver.' 
-              : 'Fell in the Russian Roulette. The table belongs to the victor.'}
-          </p>
+          <div className="w-full bg-white/[0.03] border border-white/10 rounded-2xl p-4 mb-6 text-center font-mono text-xs text-white/60">
+            <p className="leading-relaxed">
+              {isWinner 
+                ? 'You outlasted every bluff and survived the Russian Roulette!' 
+                : `${soleSurvivor.name} survived the Russian Roulette to claim the table.`}
+            </p>
+          </div>
         )}
-
-        {/* Dominance Score Leaderboard */}
-        <div className="w-full bg-white/[0.03] border border-white/10 rounded-2xl p-3.5 mb-6 text-left">
-          <div className="flex items-center justify-between text-[11px] font-mono text-white/40 mb-2 uppercase tracking-wider">
-            <span>Player</span>
-            <span className="flex items-center gap-1">
-              <span className="material-symbols-rounded text-xs text-amber-400">bolt</span>
-              Dominance Score
-            </span>
-          </div>
-          <div className="space-y-2">
-            {players.map(p => {
-              const pIsWinner = p.pk === soleSurvivor.pk;
-              return (
-                <div 
-                  key={p.pk} 
-                  className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-mono ${
-                    pIsWinner ? 'bg-white/10 border border-white/20 text-white font-bold' : 'text-white/70 bg-white/[0.02]'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <span>{p.name}</span>
-                    {p.pk === pubkey && <span className="text-[10px] text-white/50">(You)</span>}
-                    {pIsWinner && (
-                      <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-400/20 text-emerald-300 font-bold uppercase tracking-wider">
-                        Winner
-                      </span>
-                    )}
-                  </div>
-                  <span className="font-bold text-sm text-white">
-                    {p.dominanceScore ?? 0} pts
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
 
         {/* Action Buttons: Play Again (Stay in table) or Leave */}
         <div className="flex flex-col gap-2.5">

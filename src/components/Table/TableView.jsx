@@ -60,7 +60,7 @@ export const TableView = () => {
               <span className="px-2.5 py-0.5 rounded-full bg-amber-400/20 text-white font-bold text-xs">
                 {disconnectedPeer.countdown}s
               </span>
-              <span className="text-[10px] text-amber-400/70 hidden sm:inline">(Highest Dominance Score wins on timeout)</span>
+              <span className="text-[10px] text-amber-400/70 hidden sm:inline">(Dominance tie-breaker resolves on timeout)</span>
             </div>
           </div>
         )}
