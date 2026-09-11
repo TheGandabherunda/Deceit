@@ -125,13 +125,13 @@ export const ProfileModal = ({ isOpen, onClose }) => {
         </button>
 
         {/* Header & Character Preview */}
-        <div className="mt-2 mb-6 text-center px-2 flex flex-col items-center">
-          <div className="w-24 h-24 flex items-center justify-center mb-3">
+        <div className="mt-1 mb-5 text-center px-2 flex flex-col items-center">
+          <div className="w-36 h-36 flex items-center justify-center mb-2">
             <BloubAvatar 
               shape={selectedShape}
               color={selectedColor}
               expression="idle"
-              size={92}
+              size={140}
             />
           </div>
 
@@ -141,7 +141,7 @@ export const ProfileModal = ({ isOpen, onClose }) => {
           >
             Player Profile
           </h3>
-          <p className="text-white/40 text-sm mt-2">
+          <p className="text-white/40 text-sm mt-1.5">
             Customize your character and display name.
           </p>
         </div>
