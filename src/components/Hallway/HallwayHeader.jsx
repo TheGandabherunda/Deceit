@@ -3,13 +3,12 @@ import { useNostr } from '../../context/NostrContext';
 import { useProfile } from '../../context/ProfileContext';
 import { BloubAvatar } from '../Bloub/BloubAvatar';
 
-export const HallwayHeader = ({ onOpenPrivate, onOpenEditName, onOpenRules }) => {
+export const HallwayHeader = ({ onOpenPrivate, onOpenRules }) => {
   const { isRelayConnected } = useNostr();
   const { profile, truncatedId, setIsProfileModalOpen } = useProfile();
 
   const handleOpenProfile = () => {
     setIsProfileModalOpen(true);
-    if (onOpenEditName) onOpenEditName();
   };
 
   return (

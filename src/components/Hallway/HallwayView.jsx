@@ -3,7 +3,6 @@ import { HallwayHeader } from './HallwayHeader';
 import { PrivateRoomModal } from './PrivateRoomModal';
 import { TableSizeModal } from './TableSizeModal';
 import { RulesModal } from './RulesModal';
-import EditNameModal from '../EditNameModal';
 import AmbientLight from '../AmbientLight';
 import { useNostr } from '../../context/NostrContext';
 import { useGame } from '../../context/GameContext';
@@ -23,7 +22,6 @@ export const HallwayView = () => {
 
   const [isPrivateOpen, setIsPrivateOpen] = useState(false);
   const [isTableSizeOpen, setIsTableSizeOpen] = useState(false);
-  const [isEditNameOpen, setIsEditNameOpen] = useState(false);
   const [isRulesOpen, setIsRulesOpen] = useState(false);
 
   return (
@@ -35,7 +33,6 @@ export const HallwayView = () => {
       {/* Header with Private Table modal trigger */}
       <HallwayHeader
         onOpenPrivate={() => setIsPrivateOpen(true)}
-        onOpenEditName={() => setIsEditNameOpen(true)}
         onOpenRules={() => setIsRulesOpen(true)}
       />
 
@@ -182,12 +179,6 @@ export const HallwayView = () => {
       <PrivateRoomModal
         isOpen={isPrivateOpen}
         onClose={() => setIsPrivateOpen(false)}
-      />
-      <EditNameModal
-        isOpen={isEditNameOpen}
-        onClose={() => setIsEditNameOpen(false)}
-        currentName={displayName}
-        onSave={(newName) => updateDisplayName(newName)}
       />
       <RulesModal
         isOpen={isRulesOpen}

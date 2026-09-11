@@ -1,25 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useProfile } from '../../context/ProfileContext';
 import { BloubAvatar } from '../Bloub/BloubAvatar';
-import { SHAPES, COLORS } from '../Bloub/bloubShapes';
+import { SHAPES, COLORS, DEFAULT_SHAPE, DEFAULT_COLOR } from '../Bloub/bloubShapes';
 
 export const ProfileModal = ({ isOpen, onClose }) => {
   const { profile, truncatedId, updateProfile } = useProfile();
 
-  const [name, setName] = useState(profile.name || '');
-  const [selectedColor, setSelectedColor] = useState(profile.color || '#3b93f0');
-  const [selectedShape, setSelectedShape] = useState(profile.shape || 'cercle');
+  const getActiveName = () => {
+    return profile?.name || localStorage.getItem('deceit_name') || '';
+  };
+
+  const [name, setName] = useState(getActiveName);
+  const [selectedColor, setSelectedColor] = useState(profile?.color || DEFAULT_COLOR);
+  const [selectedShape, setSelectedShape] = useState(profile?.shape || DEFAULT_SHAPE);
+
+  // Sync state whenever the modal opens or profile changes
+  useEffect(() => {
+    if (isOpen) {
+      const currentName = profile?.name || localStorage.getItem('deceit_name') || '';
+      setName(currentName);
+      setSelectedColor(profile?.color || DEFAULT_COLOR);
+      setSelectedShape(profile?.shape || DEFAULT_SHAPE);
+    }
+  }, [isOpen, profile?.name, profile?.color, profile?.shape]);
+
+  useEffect(() => {
+    const handleNameChange = (e) => {
+      if (e.detail) {
+        setName(e.detail);
+      }
+    };
+    window.addEventListener('deceit:name-change', handleNameChange);
+    return () => window.removeEventListener('deceit:name-change', handleNameChange);
+  }, []);
 
   if (!isOpen) return null;
 
   const handleSave = (e) => {
     e.preventDefault();
-    const cleanName = name.trim() || 'Player';
+    const cleanName = name.trim() || localStorage.getItem('deceit_name') || 'Player';
     updateProfile({
       name: cleanName,
       color: selectedColor,
       shape: selectedShape
     });
+    localStorage.setItem('deceit_name', cleanName);
     onClose();
   };
 

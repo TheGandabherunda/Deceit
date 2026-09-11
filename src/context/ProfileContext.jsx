@@ -33,7 +33,7 @@ export const ProfileProvider = ({ children }) => {
 
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
-  // Keep profile name in sync with NostrContext displayName
+  // Keep profile name in sync with NostrContext displayName & window events
   useEffect(() => {
     if (displayName && displayName !== profile.name) {
       setProfile((prev) => {
@@ -43,6 +43,20 @@ export const ProfileProvider = ({ children }) => {
       });
     }
   }, [displayName]);
+
+  useEffect(() => {
+    const handleNameEvent = (e) => {
+      if (e.detail && e.detail !== profile.name) {
+        setProfile((prev) => {
+          const updated = { ...prev, name: e.detail };
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+          return updated;
+        });
+      }
+    };
+    window.addEventListener('deceit:name-change', handleNameEvent);
+    return () => window.removeEventListener('deceit:name-change', handleNameEvent);
+  }, [profile.name]);
 
   // Update profile
   const updateProfile = ({ name, color, shape }) => {
