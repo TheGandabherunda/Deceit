@@ -43,8 +43,8 @@ export const TableSizeModal = ({ isOpen, onClose, onSelectSize }) => {
           </p>
         </div>
 
-        {/* Clean Options */}
-        <div className="space-y-3">
+        {/* 3 Boxes Side by Side (2, 3, 4) */}
+        <div className="grid grid-cols-3 gap-3 sm:gap-3.5 my-2">
           {options.map((opt) => (
             <button
               key={opt.size}
@@ -53,11 +53,16 @@ export const TableSizeModal = ({ isOpen, onClose, onSelectSize }) => {
                 onSelectSize(opt.size);
                 onClose();
               }}
-              className="w-full h-[52px] px-6 rounded-full bg-white/[0.06] hover:bg-white text-white hover:text-black font-semibold text-base transition-all border border-white/10 hover:border-white flex items-center justify-between cursor-pointer active:scale-[0.98] shadow-sm group"
+              className="h-28 sm:h-32 rounded-2xl sm:rounded-[24px] bg-white/[0.05] hover:bg-white text-white hover:text-black border border-white/10 hover:border-white transition-all flex flex-col items-center justify-center gap-1 cursor-pointer active:scale-95 shadow-sm group select-none"
             >
-              <span>{opt.label}</span>
-              <span className="text-xs font-mono text-white/40 group-hover:text-black/60 transition-colors">
-                {opt.tag}
+              <span 
+                className="text-4xl sm:text-5xl font-serif transition-transform duration-200 group-hover:scale-110"
+                style={{ fontFamily: '"Gloock", serif', fontWeight: 400 }}
+              >
+                {opt.size}
+              </span>
+              <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-white/40 group-hover:text-black/70 transition-colors">
+                Players
               </span>
             </button>
           ))}
