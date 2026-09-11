@@ -34,6 +34,76 @@ class SoundFX {
     // Active generic audio objects
     this.activeAudios = new Set();
     this.hasUserInteracted = false;
+
+    // Global UI Hover Audio state
+    this.hoverAudioUrl = '/sounds/hover.mp3';
+    this.hoverBuffer = null;
+    this.rawHoverData = null;
+    this.hoverAudioPool = [];
+    this.hoverPoolIdx = 0;
+    this.lastHoverTime = 0;
+    this.loadHoverBuffer();
+  }
+
+  loadHoverBuffer() {
+    if (typeof window === 'undefined') return;
+    try {
+      fetch(this.hoverAudioUrl)
+        .then((res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.arrayBuffer();
+        })
+        .then((data) => {
+          if (this.ctx) {
+            this.ctx.decodeAudioData(data.slice(0), (buffer) => {
+              this.hoverBuffer = buffer;
+            }, () => {});
+          } else {
+            this.rawHoverData = data;
+          }
+        })
+        .catch(() => {});
+
+      // Pre-create audio element pool for instant response
+      for (let i = 0; i < 6; i++) {
+        const a = new Audio(this.hoverAudioUrl);
+        a.volume = 0.45;
+        a.preload = 'auto';
+        this.hoverAudioPool.push(a);
+      }
+    } catch (e) {}
+  }
+
+  playHover() {
+    if (this.muted) return;
+    const now = Date.now();
+    if (now - this.lastHoverTime < 25) return;
+    this.lastHoverTime = now;
+
+    // 1. Web Audio API with decoded buffer (ultra-low latency)
+    if (this.ctx && this.ctx.state === 'running' && this.hoverBuffer) {
+      try {
+        const source = this.ctx.createBufferSource();
+        source.buffer = this.hoverBuffer;
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(0.45, this.ctx.currentTime);
+        source.connect(gain);
+        gain.connect(this.ctx.destination);
+        source.start(0);
+        return;
+      } catch (e) {}
+    }
+
+    // 2. HTMLAudioElement pool fallback
+    try {
+      if (this.hoverAudioPool && this.hoverAudioPool.length > 0) {
+        const audio = this.hoverAudioPool[this.hoverPoolIdx];
+        this.hoverPoolIdx = (this.hoverPoolIdx + 1) % this.hoverAudioPool.length;
+        audio.currentTime = 0;
+        const p = audio.play();
+        if (p !== undefined) p.catch(() => {});
+      }
+    } catch (e) {}
   }
 
   init() {
@@ -49,6 +119,15 @@ class SoundFX {
     if (this.ctx && this.ctx.state === 'suspended') {
       try {
         this.ctx.resume().catch(() => {});
+      } catch (e) {}
+    }
+    if (this.ctx && this.rawHoverData && !this.hoverBuffer) {
+      try {
+        const dataCopy = this.rawHoverData.slice(0);
+        this.ctx.decodeAudioData(dataCopy, (buffer) => {
+          this.hoverBuffer = buffer;
+          this.rawHoverData = null;
+        }, () => {});
       } catch (e) {}
     }
   }
@@ -743,4 +822,33 @@ if (typeof window !== 'undefined') {
   window.addEventListener('keydown', unlockAudio, { passive: true });
   window.addEventListener('touchstart', unlockAudio, { passive: true });
   window.addEventListener('pointerdown', unlockAudio, { passive: true });
+
+  // Global hover audio for all interactive UI elements in the website
+  const INTERACTIVE_SELECTOR = 'button, a, input, select, textarea, [role="button"], [role="radio"], [role="tab"], .cursor-pointer, [tabindex]:not([tabindex="-1"])';
+
+  let lastHoveredElement = null;
+
+  document.addEventListener('mouseover', (e) => {
+    if (!e.target || !(e.target instanceof Element)) return;
+    const target = e.target.closest(INTERACTIVE_SELECTOR);
+    if (!target) {
+      lastHoveredElement = null;
+      return;
+    }
+    if (target === lastHoveredElement) {
+      return; // Same element, ignore inner DOM boundary crossings
+    }
+    lastHoveredElement = target;
+
+    // Skip disabled elements
+    if (target.disabled || target.getAttribute('aria-disabled') === 'true') {
+      return;
+    }
+
+    sound.playHover();
+  }, { passive: true });
+
+  window.addEventListener('mouseleave', () => {
+    lastHoveredElement = null;
+  });
 }
