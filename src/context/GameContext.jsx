@@ -2,9 +2,10 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { useNostr } from './NostrContext';
 import { useProfile } from './ProfileContext';
 import { pool, DEFAULT_RELAYS, publishEvent } from '../services/nostr';
-import { KINDS, createSignalEvent, createGameEvent } from '../services/nostrProtocol';
+import { KINDS, createSignalEvent, createGameEvent, createMatchRecordEvent } from '../services/nostrProtocol';
 import { dealHands, isCardTruthful, rollTableTarget } from '../services/deck';
 import { createCardCommitment, verifyCardCommitment, encryptHand, decryptHand, sha256 } from '../services/crypto';
+import { recordPublicMatchOutcome } from '../services/scoreboardService';
 import { sound } from '../services/sound';
 import confetti from 'canvas-confetti';
 
@@ -1185,6 +1186,36 @@ export const GameProvider = ({ children }) => {
       localScore
     });
 
+    // Record to Global Scoreboard if this was a Public table match
+    if (isPublicRef.current && winner) {
+      const defeatedList = playersRef.current.filter(p => p.pk !== winner.pk);
+      recordPublicMatchOutcome({
+        winner: {
+          pk: winner.pk,
+          name: winner.name,
+          color: winner.color,
+          shape: winner.shape
+        },
+        defeated: defeatedList.map(p => ({
+          pk: p.pk,
+          name: p.name,
+          color: p.color,
+          shape: p.shape
+        })),
+        roomCode: roomCodeRef.current
+      });
+
+      if (isHostRef.current) {
+        const matchRecordEvent = createMatchRecordEvent({
+          roomCode: roomCodeRef.current,
+          winner,
+          defeated: defeatedList
+        });
+        const sk = isExtension ? 'extension' : (secretKey || privKeyHex);
+        publishEvent(matchRecordEvent, sk, relays).catch(() => {});
+      }
+    }
+
     try {
       localStorage.removeItem('deceit_active_session');
     } catch (e) {}
@@ -1509,6 +1540,38 @@ export const GameProvider = ({ children }) => {
               status: 'closed',
               soleSurvivor: winner.name
             });
+          }
+
+          // Record to Global Scoreboard if this was a Public table match
+          if (isPublicRef.current && winner) {
+            const defeatedList = updated.filter(p => p.pk !== winner.pk);
+            recordPublicMatchOutcome({
+              winner: {
+                pk: winner.pk,
+                name: winner.name,
+                color: winner.color,
+                shape: winner.shape
+              },
+              defeated: defeatedList.map(p => ({
+                pk: p.pk,
+                name: p.name,
+                color: p.color,
+                shape: p.shape
+              })),
+              roomCode: roomCodeRef.current
+            });
+
+            if (isHostRef.current) {
+              const matchRecordEvent = createMatchRecordEvent({
+                roomCode: roomCodeRef.current,
+                winner,
+                defeated: defeatedList
+              });
+              const sk = isExtension ? 'extension' : (secretKey || privKeyHex);
+              publishEvent(matchRecordEvent, sk, relays).catch(err => {
+                console.warn('[Deceit:Scoreboard] Failed to publish match record:', err);
+              });
+            }
           }
         } else {
           // Next round with living players (> 1 left)

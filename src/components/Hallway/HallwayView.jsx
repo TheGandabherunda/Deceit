@@ -4,6 +4,8 @@ import { MatchingModal } from './MatchingModal';
 import { PrivateRoomModal } from './PrivateRoomModal';
 import { TableSizeModal } from './TableSizeModal';
 import { RulesModal } from './RulesModal';
+import Imprints from './Imprints';
+import { ScoreboardView } from '../Scoreboard/ScoreboardView';
 import { SettingsModal } from '../Settings/SettingsModal';
 import AmbientLight from '../AmbientLight';
 import { useNostr } from '../../context/NostrContext';
@@ -29,6 +31,8 @@ export const HallwayView = () => {
   const [isTableSizeOpen, setIsTableSizeOpen] = useState(false);
   const [isRulesOpen, setIsRulesOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isImprintsOpen, setIsImprintsOpen] = useState(false);
+  const [currentScreen, setCurrentScreen] = useState('home'); // 'home' | 'scoreboard'
 
   // Mouse cursor tracking for the home screen hero Bloub avatar
   const bloubContainerRef = useRef(null);
@@ -55,6 +59,11 @@ export const HallwayView = () => {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
+  // Separate Screen for Global Scoreboard
+  if (currentScreen === 'scoreboard') {
+    return <ScoreboardView onBack={() => setCurrentScreen('home')} />;
+  }
+
   return (
     <div className="h-[100dvh] w-screen overflow-hidden flex flex-col antialiased bg-[#050505] relative animate-fade-in select-none">
 
@@ -66,6 +75,8 @@ export const HallwayView = () => {
         onOpenPrivate={() => setIsPrivateOpen(true)}
         onOpenRules={() => setIsRulesOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenScoreboard={() => setCurrentScreen('scoreboard')}
+        onOpenImprints={() => setIsImprintsOpen(true)}
       />
 
       {/* Main Center Interface */}
@@ -119,17 +130,20 @@ export const HallwayView = () => {
                 </button>
               </div>
 
-              {/* Status Note & Quick Explainer */}
-              <div className="flex flex-col items-center gap-2 text-center">
-                <span className="text-xs font-mono text-white/40">
+              {/* Status Note & Quick Actions */}
+              <div className="flex flex-col items-center gap-4 text-center">
+                <span className="text-xs text-white/40">
                   Quick Match • Select 2, 3, or 4 players & match with active peers
                 </span>
+
+                {/* Private Table Button */}
                 <button
                   type="button"
                   onClick={() => setIsPrivateOpen(true)}
-                  className="text-[11px] font-mono text-white/30 hover:text-white/60 transition-colors underline underline-offset-4 cursor-pointer"
+                  className="flex items-center gap-2 px-5 py-2 rounded-full bg-white/[0.07] hover:bg-white/[0.12] text-white/70 hover:text-white text-sm font-medium transition-all cursor-pointer active:scale-95"
                 >
-                  Playing with friends? Open a Private Table
+                  <span className="material-symbols-rounded text-base">lock</span>
+                  <span>Private Table</span>
                 </button>
               </div>
             </div>
@@ -137,6 +151,17 @@ export const HallwayView = () => {
 
         </div>
       </main>
+
+      {/* Fixed bottom: IMPRINTS label */}
+      <div className="absolute bottom-0 left-0 right-0 flex justify-center pb-4 z-30 pointer-events-none">
+        <button
+          type="button"
+          onClick={() => setIsImprintsOpen(true)}
+          className="text-white/40 hover:text-white text-xs font-semibold tracking-wider uppercase transition-colors hover:underline focus:outline-none cursor-pointer pointer-events-auto"
+        >
+          IMPRINTS
+        </button>
+      </div>
 
       {/* Modals */}
       <MatchingModal
@@ -168,6 +193,11 @@ export const HallwayView = () => {
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
       />
+
+      {/* Imprints Full-Screen Overlay */}
+      {isImprintsOpen && (
+        <Imprints onClose={() => setIsImprintsOpen(false)} />
+      )}
     </div>
   );
 };

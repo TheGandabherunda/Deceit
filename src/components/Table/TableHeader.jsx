@@ -4,7 +4,7 @@ import { useNostr } from '../../context/NostrContext';
 import { useProfile } from '../../context/ProfileContext';
 import { BloubAvatar } from '../Bloub/BloubAvatar';
 
-export const TableHeader = ({ onOpenRules, onOpenSettings }) => {
+export const TableHeader = ({ onOpenRules, onOpenSettings, onOpenScoreboard }) => {
   const { roomCode, isHost, isPublic, togglePublic, players, roundNumber, gameState, startGame, leaveRoom, isStartAudioPlaying, tableTarget } = useGame();
   const { pubkey } = useNostr();
   const { profile, truncatedId, setIsProfileModalOpen } = useProfile();
@@ -95,8 +95,18 @@ export const TableHeader = ({ onOpenRules, onOpenSettings }) => {
         )}
       </div>
 
-      {/* Right: Rules, Settings & Leave */}
+      {/* Right: Scoreboard, Rules, Settings & Leave */}
       <div className="flex items-center gap-2 z-20">
+        <button
+          onClick={onOpenScoreboard}
+          className="text-white/50 hover:text-white transition-colors p-2 flex items-center justify-center rounded-full hover:bg-white/10 cursor-pointer"
+          title="Global Scoreboard"
+        >
+          <span className="material-symbols-rounded text-[20px]">
+            leaderboard
+          </span>
+        </button>
+
         <button
           onClick={onOpenRules}
           className="text-white/50 hover:text-white transition-colors p-2 flex items-center justify-center rounded-full hover:bg-white/10 cursor-pointer"

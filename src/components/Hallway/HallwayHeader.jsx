@@ -3,7 +3,7 @@ import { useNostr } from '../../context/NostrContext';
 import { useProfile } from '../../context/ProfileContext';
 import { BloubAvatar } from '../Bloub/BloubAvatar';
 
-export const HallwayHeader = ({ onOpenPrivate, onOpenRules, onOpenSettings }) => {
+export const HallwayHeader = ({ onOpenPrivate, onOpenRules, onOpenSettings, onOpenScoreboard, onOpenImprints }) => {
   const { isRelayConnected } = useNostr();
   const { profile, truncatedId, setIsProfileModalOpen } = useProfile();
 
@@ -16,10 +16,15 @@ export const HallwayHeader = ({ onOpenPrivate, onOpenRules, onOpenSettings }) =>
       
       {/* Left: App Brand & Player Profile Chip */}
       <div className="flex items-center gap-3 z-20">
-        <div className="flex items-center gap-2 font-bold text-white tracking-wide text-2xl">
+        <button
+          type="button"
+          onClick={onOpenImprints}
+          className="flex items-center gap-2 font-bold text-white tracking-wide text-2xl cursor-pointer hover:opacity-80 transition-opacity"
+          title="Imprints & Open Source Credits"
+        >
           <span className="font-serif">Deceit</span>
           <span className="text-white/20 font-bold select-none leading-none hidden sm:inline">•</span>
-        </div>
+        </button>
 
         {/* Player Profile (Bloub & Name only, no background, no padding, no stroke, no ID, no icon) */}
         <button
@@ -45,8 +50,16 @@ export const HallwayHeader = ({ onOpenPrivate, onOpenRules, onOpenSettings }) =>
         </button>
       </div>
 
-      {/* Right Controls: Rules, Settings & Private Table */}
-      <div className="flex items-center gap-2 z-20">
+      {/* Right Controls: Scoreboard, Rules, Settings */}
+      <div className="flex items-center gap-1.5 sm:gap-2 z-20">
+        <button
+          onClick={onOpenScoreboard}
+          title="Global Scoreboard"
+          className="text-white/50 hover:text-white transition-colors p-2 flex items-center justify-center rounded-full hover:bg-white/10 cursor-pointer"
+        >
+          <span className="material-symbols-rounded text-[20px]">leaderboard</span>
+        </button>
+
         <button
           onClick={onOpenRules}
           title="Game Rules"
@@ -61,14 +74,6 @@ export const HallwayHeader = ({ onOpenPrivate, onOpenRules, onOpenSettings }) =>
           className="text-white/50 hover:text-white transition-colors p-2 flex items-center justify-center rounded-full hover:bg-white/10 cursor-pointer"
         >
           <span className="material-symbols-rounded text-[20px]">settings</span>
-        </button>
-
-        <button 
-          onClick={onOpenPrivate}
-          className="bg-white/10 hover:bg-white/15 text-white px-4 py-2 rounded-full font-medium sm:font-semibold transition-all items-center flex text-xs sm:text-sm shadow-md active:scale-95 cursor-pointer ml-1"
-          title="Create or Join a Private Table"
-        >
-          <span>Private Table</span>
         </button>
       </div>
 

@@ -7,6 +7,7 @@ import { RevealSummaryModal } from './Modals/RevealSummaryModal';
 import { RevolverCinematic } from './Modals/RevolverCinematic';
 import { GameOverModal } from './Modals/GameOverModal';
 import { RulesModal } from '../Hallway/RulesModal';
+import { ScoreboardView } from '../Scoreboard/ScoreboardView';
 import { SettingsModal } from '../Settings/SettingsModal';
 import AmbientLight from '../AmbientLight';
 import { useGame } from '../../context/GameContext';
@@ -17,6 +18,7 @@ export const TableView = () => {
   const { pubkey } = useNostr();
   const [isRulesOpen, setIsRulesOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isScoreboardOpen, setIsScoreboardOpen] = useState(false);
   const [showRoundSplash, setShowRoundSplash] = useState(false);
   const [splashFading, setSplashFading] = useState(false);
   const lastSplashKeyRef = useRef(null);
@@ -124,6 +126,7 @@ export const TableView = () => {
       <TableHeader 
         onOpenRules={() => setIsRulesOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenScoreboard={() => setIsScoreboardOpen(true)}
       />
 
       {/* Floating System Notification Toast */}
@@ -293,6 +296,11 @@ export const TableView = () => {
       <RevolverCinematic />
       <GameOverModal />
       <RulesModal isOpen={isRulesOpen} onClose={() => setIsRulesOpen(false)} />
+      {isScoreboardOpen && (
+        <div className="fixed inset-0 z-50">
+          <ScoreboardView onBack={() => setIsScoreboardOpen(false)} />
+        </div>
+      )}
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
 
       {/* Round Intro / Target Splash Overlay — Over all UI elements with blurred background */}

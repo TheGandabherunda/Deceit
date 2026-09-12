@@ -1,7 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
 export const RulesModal = ({ isOpen, onClose }) => {
+  const [activeTab, setActiveTab] = useState('how-to-play'); // 'how-to-play' | 'details'
+
   // Handle escape key
   useEffect(() => {
     if (!isOpen) return;
@@ -12,23 +14,31 @@ export const RulesModal = ({ isOpen, onClose }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
+  // Reset to first tab on open
+  useEffect(() => {
+    if (isOpen) {
+      setActiveTab('how-to-play');
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
   if (typeof document === 'undefined') return null;
 
   return createPortal(
     <div 
-      className="fixed inset-0 bg-black/75 backdrop-blur-md z-[300] flex flex-col justify-end md:justify-center items-center p-4 sm:p-6 pb-6 md:pb-6 animate-fade-in select-none"
+      className="fixed inset-0 bg-black/80 backdrop-blur-md z-[300] flex flex-col justify-end md:justify-center items-center p-3 sm:p-6 pb-4 md:pb-6 animate-fade-in select-none"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
       <div 
-        className="w-full max-w-[520px] max-h-[85vh] overflow-y-auto bg-[#0a0a0a] rounded-[32px] p-6 sm:p-8 shadow-2xl relative border border-white/10 no-scrollbar"
+        className="w-full max-w-[560px] max-h-[88vh] flex flex-col bg-[#0c0c0c] rounded-[28px] sm:rounded-[32px] p-5 sm:p-7 shadow-2xl relative border border-white/10 overflow-hidden"
         style={{ animation: 'slideUpModal 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards' }}
       >
-        {/* Pull Handle for mobile */}
-        <div className="w-12 h-1.5 bg-white/20 rounded-full mx-auto mb-4 md:hidden" />
+        {/* Mobile drag handle */}
+        <div className="w-12 h-1.5 bg-white/20 rounded-full mx-auto mb-3 md:hidden shrink-0" />
 
+        {/* Top Close Button */}
         <button 
           type="button"
           onClick={onClose}
@@ -38,111 +48,277 @@ export const RulesModal = ({ isOpen, onClose }) => {
           <span className="material-symbols-rounded text-[20px]">close</span>
         </button>
 
-        <div className="mt-1 mb-6 text-center px-2">
-          <h3 
-            className="text-4xl text-white font-serif tracking-normal"
+        {/* Header Title */}
+        <div className="text-center px-2 shrink-0 mb-4">
+          <h2 
+            className="text-3xl sm:text-4xl text-white font-normal tracking-tight"
             style={{ fontFamily: '"Gloock", serif', fontWeight: 400 }}
           >
-            Game Rules
-          </h3>
-          <p className="text-white/40 text-sm mt-1.5">
-            How to bluff, survive, and win.
+            How to Play Deceit
+          </h2>
+          <p className="text-white/40 text-xs sm:text-sm mt-1">
+            Bluff with cards. Survive the gun. Be the last player standing.
           </p>
         </div>
 
-        <div className="space-y-3.5 text-left text-sm text-white/80 select-text">
-          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10">
-            <h4 className="font-bold text-white mb-1">1. The 20-Card Deck & Table Target</h4>
-            <p className="text-white/60 text-xs leading-relaxed">
-              The deck has exactly 20 cards: 6 Aces, 6 Kings, 6 Queens, and 2 Jokers.
-              Each round rolls a random Table Target (Ace, King, or Queen).
-              Jokers are wild and are ALWAYS considered telling the truth, regardless of the target.
-            </p>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10">
-            <h4 className="font-bold text-white mb-1">2. Turns & Calling Liar</h4>
-            <p className="text-white/60 text-xs leading-relaxed">
-              The active player selects 1 to 3 cards and plays them face-down, claiming they match the target.
-              The next player must either play their own cards or call "Liar!".
-            </p>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10">
-            <h4 className="font-bold text-white mb-1">3. Verification</h4>
-            <p className="text-white/60 text-xs leading-relaxed">
-              When Liar is called, only the previous cards flip face-up. If any card doesn't match the target (and isn't a Joker), the Liar loses.
-              If all match (or are Jokers), the Accuser loses.
-            </p>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10">
-            <h4 className="font-bold text-white mb-1">4. Empty Hand Rule</h4>
-            <p className="text-white/60 text-xs leading-relaxed">
-              If a player plays their last card and the next player does not call Liar, the round ends.
-              The empty-handed player wins safely, and the preceding player takes the revolver penalty.
-            </p>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10">
-            <h4 className="font-bold text-white mb-1">5. The Revolver Penalty</h4>
-            <p className="text-white/60 text-xs leading-relaxed">
-              The loser faces the 6-chamber revolver.
-              If they survive, the chamber count drops by 1, hands refill, and the survivor starts the next round.
-              If eliminated, the chamber count resets to 6. Last player standing is the Sole Survivor.
-            </p>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-white/[0.04] border border-white/15">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="material-symbols-rounded text-base text-amber-400">bolt</span>
-              <h4 className="font-bold text-white">6. Disconnection Rule & Dominance Calculation</h4>
-            </div>
-            <p className="text-white/60 text-xs leading-relaxed mb-3">
-              Normal rounds and matches are won strictly by surviving Russian Roulette. Point scores are never displayed on screen during play. 
-              However, if a player disconnects and abandons the table, the backend resolves the winner using an automated Dominance calculation based on round performance:
-            </p>
-            <div className="space-y-2 font-mono text-xs">
-              <div className="flex items-center justify-between p-2 rounded-xl bg-white/[0.03] border border-white/5">
-                <span className="text-emerald-400 font-bold">+50 Points</span>
-                <span className="text-white/70 text-right text-[11px]">Successfully calling out a Liar (guessed right)</span>
-              </div>
-              <div className="flex items-center justify-between p-2 rounded-xl bg-white/[0.03] border border-white/5">
-                <span className="text-emerald-400 font-bold">+20 Points</span>
-                <span className="text-white/70 text-right text-[11px]">Getting away with a lie (uncalled bluff)</span>
-              </div>
-              <div className="flex items-center justify-between p-2 rounded-xl bg-white/[0.03] border border-white/5">
-                <span className="text-emerald-400 font-bold">+10 Points</span>
-                <span className="text-white/70 text-right text-[11px]">Safely playing the truth</span>
-              </div>
-              <div className="flex items-center justify-between p-2 rounded-xl bg-white/[0.03] border border-white/5">
-                <span className="text-rose-400 font-bold">-50 Points</span>
-                <span className="text-white/70 text-right text-[11px]">Falsely accusing someone (they told truth)</span>
-              </div>
-              <div className="flex items-center justify-between p-2 rounded-xl bg-white/[0.03] border border-white/5">
-                <span className="text-rose-400 font-bold">-50 Points</span>
-                <span className="text-white/70 text-right text-[11px]">Getting caught in a lie</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="material-symbols-rounded text-base text-blue-400">wifi</span>
-              <h4 className="font-bold text-white">7. 30-Second Disconnection Policy</h4>
-            </div>
-            <p className="text-white/60 text-xs leading-relaxed">
-              If a player disconnects during a match, a 30-second reconnection grace period is provided.
-              If they reconnect in time, play resumes seamlessly. If they do not return, the backend resolves the winner via the Disconnection Rule, detailing why the player won and how it was calculated.
-            </p>
-          </div>
+        {/* Mode Selector Tabs */}
+        <div className="flex items-center justify-center p-1 bg-white/5 rounded-full border border-white/10 mb-4 mx-auto w-full max-w-[320px] shrink-0">
+          <button
+            type="button"
+            onClick={() => setActiveTab('how-to-play')}
+            className={`flex-1 py-1.5 text-xs font-semibold rounded-full transition-all cursor-pointer ${
+              activeTab === 'how-to-play' 
+                ? 'bg-white text-black shadow-md' 
+                : 'text-white/50 hover:text-white'
+            }`}
+          >
+            Quick Guide (4 Steps)
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('details')}
+            className={`flex-1 py-1.5 text-xs font-semibold rounded-full transition-all cursor-pointer ${
+              activeTab === 'details' 
+                ? 'bg-white text-black shadow-md' 
+                : 'text-white/50 hover:text-white'
+            }`}
+          >
+            Cards & Details
+          </button>
         </div>
 
-        <div className="mt-6 pt-2">
+        {/* Scrollable Content Body */}
+        <div className="overflow-y-auto pr-1 -mr-1 space-y-3.5 text-left text-sm text-white/80 select-text no-scrollbar flex-1">
+          {activeTab === 'how-to-play' ? (
+            /* TAB 1: HOW TO PLAY (BEGINNER WALKTHROUGH) */
+            <>
+              {/* Objective Banner */}
+              <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-white/[0.04] to-transparent border border-amber-500/20 flex items-start gap-3">
+                <span className="material-symbols-rounded text-xl text-amber-400 shrink-0 mt-0.5">
+                  target
+                </span>
+                <div className="text-xs text-white/70 leading-relaxed">
+                  <strong className="text-white block font-sans text-sm mb-0.5">The Goal</strong>
+                  Out-bluff opponents and empty your cards. If you get caught lying or wrongly accuse someone, you must pull the trigger on a personal revolver!
+                </div>
+              </div>
+
+              {/* Step 1 */}
+              <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2">
+                <div className="flex items-center gap-2.5">
+                  <span className="w-6 h-6 rounded-full bg-white text-black font-bold font-mono text-xs flex items-center justify-center shrink-0">
+                    1
+                  </span>
+                  <h3 className="font-bold text-white text-sm">The Table Target</h3>
+                </div>
+                <p className="text-white/70 text-xs leading-relaxed pl-8">
+                  Each round chooses a Target card: <strong>Ace</strong>, <strong>King</strong>, or <strong>Queen</strong>.
+                  All cards played in this round must be claimed as that target!
+                </p>
+                <div className="flex flex-wrap items-center gap-1.5 pl-8 pt-1">
+                  <span className="px-2 py-0.5 rounded-md bg-white/10 text-white font-mono text-[11px]">Aces</span>
+                  <span className="px-2 py-0.5 rounded-md bg-white/10 text-white font-mono text-[11px]">Kings</span>
+                  <span className="px-2 py-0.5 rounded-md bg-white/10 text-white font-mono text-[11px]">Queens</span>
+                  <span className="px-2 py-0.5 rounded-md bg-amber-400/20 text-amber-300 font-mono text-[11px] font-semibold border border-amber-400/30">
+                    ★ Joker (Wild)
+                  </span>
+                </div>
+              </div>
+
+              {/* Step 2 */}
+              <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2">
+                <div className="flex items-center gap-2.5">
+                  <span className="w-6 h-6 rounded-full bg-white text-black font-bold font-mono text-xs flex items-center justify-center shrink-0">
+                    2
+                  </span>
+                  <h3 className="font-bold text-white text-sm">Play Cards or Bluff</h3>
+                </div>
+                <p className="text-white/70 text-xs leading-relaxed pl-8">
+                  On your turn, select <strong>1, 2, or 3 cards</strong> from your hand and play them face-down into the center pile.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pl-8 pt-1 text-xs">
+                  <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-200">
+                    <strong className="block text-emerald-400 font-semibold mb-0.5">Tell the Truth</strong>
+                    Play real target cards or Jokers (Jokers always count as the target!).
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-200">
+                    <strong className="block text-rose-400 font-semibold mb-0.5">Tell a Lie (Bluff)</strong>
+                    Play mismatched cards face-down and pretend they are the target!
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 3 */}
+              <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2">
+                <div className="flex items-center gap-2.5">
+                  <span className="w-6 h-6 rounded-full bg-white text-black font-bold font-mono text-xs flex items-center justify-center shrink-0">
+                    3
+                  </span>
+                  <h3 className="font-bold text-white text-sm">Call "Liar!"</h3>
+                </div>
+                <p className="text-white/70 text-xs leading-relaxed pl-8">
+                  When an opponent plays cards, you have two choices:
+                </p>
+                <div className="space-y-1.5 pl-8 text-xs text-white/70">
+                  <div className="flex items-start gap-2">
+                    <span className="text-white font-bold">•</span>
+                    <span><strong>Believe them:</strong> Play your own cards to continue the stack.</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-white font-bold">•</span>
+                    <span><strong>Challenge them:</strong> Hit <strong>Call Liar!</strong> to reveal their cards.</span>
+                  </div>
+                </div>
+
+                <div className="pl-8 pt-1">
+                  <div className="p-3 rounded-xl bg-white/[0.04] border border-white/10 space-y-1.5 text-xs">
+                    <div className="text-white font-semibold font-sans">Who loses the showdown?</div>
+                    <div className="text-rose-300">
+                      • <strong>If they lied:</strong> The bluffer loses and faces the gun.
+                    </div>
+                    <div className="text-amber-300">
+                      • <strong>If they told the truth:</strong> The accuser was wrong and faces the gun!
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 4 */}
+              <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2">
+                <div className="flex items-center gap-2.5">
+                  <span className="w-6 h-6 rounded-full bg-white text-black font-bold font-mono text-xs flex items-center justify-center shrink-0">
+                    4
+                  </span>
+                  <h3 className="font-bold text-white text-sm">The Russian Roulette</h3>
+                </div>
+                <p className="text-white/70 text-xs leading-relaxed pl-8">
+                  The loser of the showdown pulls the trigger on their personal revolver:
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pl-8 pt-1 text-xs">
+                  <div className="p-2.5 rounded-xl bg-white/[0.04] border border-white/10 text-white/80">
+                    <strong className="block text-white font-semibold mb-0.5">Click! (Empty Chamber)</strong>
+                    You survive! But your revolver loses an empty slot (e.g. 6 $\to$ 5 $\to$ 4). Odds get deadlier each round you lose!
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-200">
+                    <strong className="block text-rose-400 font-semibold mb-0.5">BANG! (Fired Bullet)</strong>
+                    You are eliminated from the match! The remaining players duel until one Sole Survivor remains.
+                  </div>
+                </div>
+              </div>
+
+              {/* Pro Tips Section */}
+              <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-2 text-xs">
+                <div className="flex items-center gap-2 text-amber-300 font-bold">
+                  <span className="material-symbols-rounded text-base">lightbulb</span>
+                  <span>Beginner Tips</span>
+                </div>
+                <ul className="space-y-1 text-white/60 pl-6 list-disc leading-relaxed">
+                  <li><strong>Count cards:</strong> There are only 6 of each card. If you hold 4 Queens and someone plays 3 Queens, they are definitely lying!</li>
+                  <li><strong>Jokers are wild:</strong> Jokers can NEVER be caught in a lie—they always count as truth.</li>
+                  <li><strong>Empty Hand escape:</strong> If you play your last card and nobody calls Liar, you win the round safely!</li>
+                </ul>
+              </div>
+            </>
+          ) : (
+            /* TAB 2: CARDS & TECHNICAL DETAILS */
+            <>
+              {/* 20-Card Deck Breakdown */}
+              <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2.5">
+                <h3 className="font-bold text-white text-sm flex items-center gap-2">
+                  <span className="material-symbols-rounded text-base text-blue-400">style</span>
+                  The 20-Card Deck
+                </h3>
+                <p className="text-white/60 text-xs leading-relaxed">
+                  Deceit is played with a tight, fast-cycling 20-card deck designed for intense bluff detection:
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 font-mono text-xs">
+                  <div className="p-2 rounded-xl bg-white/[0.04] text-center">
+                    <div className="text-lg font-bold text-white">6</div>
+                    <div className="text-[11px] text-white/50">Aces</div>
+                  </div>
+                  <div className="p-2 rounded-xl bg-white/[0.04] text-center">
+                    <div className="text-lg font-bold text-white">6</div>
+                    <div className="text-[11px] text-white/50">Kings</div>
+                  </div>
+                  <div className="p-2 rounded-xl bg-white/[0.04] text-center">
+                    <div className="text-lg font-bold text-white">6</div>
+                    <div className="text-[11px] text-white/50">Queens</div>
+                  </div>
+                  <div className="p-2 rounded-xl bg-amber-400/10 text-center">
+                    <div className="text-lg font-bold text-amber-300">2</div>
+                    <div className="text-[11px] text-amber-300/70">Jokers (Wild)</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Personal Revolver Odds */}
+              <div className="p-4 rounded-2xl bg-white/[0.03] space-y-2.5">
+                <h3 className="font-bold text-white text-sm flex items-center gap-2">
+                  <span className="material-symbols-rounded text-base text-rose-400">crisis_alert</span>
+                  Personal Revolver Chambers & Odds
+                </h3>
+                <p className="text-white/60 text-xs leading-relaxed">
+                  Each player has their own personal gun with 6 chambers. Each time you survive the gun, one empty chamber is spent, raising the danger on your next standoff:
+                </p>
+                <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 font-mono text-xs pt-1">
+                  <div className="p-2 rounded-lg bg-white/[0.04] text-center">
+                    <div className="text-white font-bold">6/6</div>
+                    <div className="text-[10px] text-emerald-400">17% Risk</div>
+                  </div>
+                  <div className="p-2 rounded-lg bg-white/[0.04] text-center">
+                    <div className="text-white font-bold">5/6</div>
+                    <div className="text-[10px] text-emerald-400">20% Risk</div>
+                  </div>
+                  <div className="p-2 rounded-lg bg-white/[0.04] text-center">
+                    <div className="text-white font-bold">4/6</div>
+                    <div className="text-[10px] text-amber-400">25% Risk</div>
+                  </div>
+                  <div className="p-2 rounded-lg bg-white/[0.04] text-center">
+                    <div className="text-white font-bold">3/6</div>
+                    <div className="text-[10px] text-amber-400">33% Risk</div>
+                  </div>
+                  <div className="p-2 rounded-lg bg-white/[0.04] text-center">
+                    <div className="text-white font-bold">2/6</div>
+                    <div className="text-[10px] text-rose-400 font-bold">50% Risk</div>
+                  </div>
+                  <div className="p-2 rounded-lg bg-rose-500/20 text-center">
+                    <div className="text-rose-300 font-bold">1/6</div>
+                    <div className="text-[10px] text-rose-400 font-bold">100% Lethal</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Empty Hand Rule */}
+              <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2">
+                <h3 className="font-bold text-white text-sm flex items-center gap-2">
+                  <span className="material-symbols-rounded text-base text-amber-400">done_all</span>
+                  Empty Hand Escape
+                </h3>
+                <p className="text-white/60 text-xs leading-relaxed">
+                  When a player places their last card, a <strong>12-second countdown</strong> starts. If the next player does not call Liar (or passes), the empty-handed player wins the round safely. The hesitant challenger who let them escape faces the gun penalty!
+                </p>
+              </div>
+
+              {/* Disconnection Policy */}
+              <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2">
+                <h3 className="font-bold text-white text-sm flex items-center gap-2">
+                  <span className="material-symbols-rounded text-base text-cyan-400">wifi_off</span>
+                  Disconnection Resolution
+                </h3>
+                <p className="text-white/60 text-xs leading-relaxed">
+                  If a player loses connection, a 30-second reconnection window opens. If they do not return, the match is awarded to the surviving player with the highest calculated bluff dominance (+50 for caught bluffs, +20 for successful bluffs, -50 for false accusations).
+                </p>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Bottom Confirmation Action */}
+        <div className="mt-4 pt-2 shrink-0">
           <button
             type="button"
             onClick={onClose}
-            className="w-full h-[48px] rounded-full bg-white hover:bg-white/90 text-black font-bold text-sm transition-all flex items-center justify-center cursor-pointer shadow-lg active:scale-98"
+            className="w-full h-12 rounded-full bg-white hover:bg-white/90 text-black font-semibold text-sm transition-all flex items-center justify-center cursor-pointer shadow-lg active:scale-98"
           >
             Understood
           </button>
