@@ -124,7 +124,7 @@ export const HallwayView = () => {
                 <div className="absolute -inset-1 rounded-full bg-white/20 blur-xl group-hover:bg-white/30 transition-all opacity-70 group-hover:opacity-100 animate-pulse" />
                 <button
                   onClick={() => setIsTableSizeOpen(true)}
-                  className="relative h-13 sm:h-14 md:h-15 px-10 sm:px-14 md:px-16 rounded-full bg-white hover:bg-white/95 text-black font-inter text-base sm:text-lg md:text-xl font-bold tracking-tight transition-all shadow-[0_0_50px_rgba(255,255,255,0.2)] hover:shadow-[0_0_80px_rgba(255,255,255,0.45)] hover:scale-105 active:scale-95 flex items-center justify-center cursor-pointer"
+                  className="relative h-14 sm:h-14 md:h-15 px-14 sm:px-14 md:px-16 rounded-full bg-white hover:bg-white/95 text-black font-inter text-lg sm:text-lg md:text-xl font-bold tracking-tight transition-all shadow-[0_0_50px_rgba(255,255,255,0.2)] hover:shadow-[0_0_80px_rgba(255,255,255,0.45)] hover:scale-105 active:scale-95 flex items-center justify-center cursor-pointer min-w-[220px] sm:min-w-0"
                   style={{ fontFamily: "'Inter', sans-serif" }}
                 >
                   <span>Join Game</span>

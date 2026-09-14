@@ -1728,10 +1728,8 @@ export const GameProvider = ({ children }) => {
 
     if (!isTruth) {
       console.log(`[Deceit:Dominance] +50 pts to ${accuserName} (Guessed Liar) & -50 pts to ${accusedName} (Caught in lie)`);
-      triggerBanner(`🎯 ${accuserName} called Liar! ${accusedName} was caught in a lie!`, 4000);
     } else {
       console.log(`[Deceit:Dominance] -50 pts to ${accuserName} (False accusation) & +10 pts to ${accusedName} (Truth played)`);
-      triggerBanner(`❌ ${accuserName} called Liar, but ${accusedName} told the truth!`, 4000);
     }
 
     console.log(`[Deceit:Game:Verdict] Cards check complete! isTruth=${isTruth}, cheatDetected=${cheatDetected}, designatedLoser=${loserName} (${designatedLoserPk?.slice(0, 8)})`);
@@ -1811,7 +1809,6 @@ export const GameProvider = ({ children }) => {
     const accuserName = playersRef.current.find(p => p.pk === accuserPk)?.name || 'Someone';
     const accusedName = playersRef.current.find(p => p.pk === accusedPk)?.name || 'Opponent';
     console.log(`[Deceit:Game:Liar] ${accuserName} (${accuserPk?.slice(0, 8)}) calls LIAR on ${accusedName} (${accusedPk?.slice(0, 8)})! turnId=${targetTurnId}`);
-    triggerBanner(`${accuserName} calls LIAR on ${accusedName}!`, 4000);
 
     publishGameAction('CALL_LIAR', {
       accuserPk,
@@ -2351,7 +2348,6 @@ export const GameProvider = ({ children }) => {
             const accuserName = playersRef.current.find(p => p.pk === parsed.accuserPk)?.name || 'Someone';
             const accusedName = playersRef.current.find(p => p.pk === parsed.accusedPk)?.name || 'Opponent';
             console.log(`[Deceit:Game:In] Received CALL_LIAR: ${accuserName} challenged ${accusedName} (targetTurn: ${parsed.targetTurnId})`);
-            triggerBanner(`${accuserName} calls LIAR on ${accusedName}!`, 4000);
 
             if (parsed.accusedPk === pubkey) {
               const lp = lastPlayRef.current;

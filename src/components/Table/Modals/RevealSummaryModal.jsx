@@ -62,7 +62,7 @@ export const RevealSummaryModal = () => {
     ? (accuserPk === pubkey ? (profile.name || 'You') : accuserName)
     : (accusedPk === pubkey ? (profile.name || 'You') : accusedName);
 
-  const bloubSize = isMobile ? 110 : 200;
+  const bloubSize = isMobile ? 85 : 200;
 
   return (
     <div className="fixed inset-0 z-[300] bg-black/80 backdrop-blur-md flex flex-col items-center justify-between p-4 sm:p-8 md:p-10 select-none animate-fade-in overflow-hidden">
@@ -97,9 +97,9 @@ export const RevealSummaryModal = () => {
           </span>
         </div>
 
-        {/* Center: Revealed Cards */}
+        {/* Center: Revealed Cards (Vertical on Mobile, Horizontal on Desktop) */}
         <div className="flex flex-col items-center justify-center flex-1 px-1 sm:px-4">
-          <div className="flex items-center justify-center -space-x-5 sm:space-x-3 md:space-x-4 overflow-visible py-2">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-0 sm:space-x-3 md:space-x-4 overflow-y-auto sm:overflow-visible max-h-[58vh] sm:max-h-none py-2">
             {cards && cards.length > 0 ? (
               cards.map((card, idx) => {
                 const matchesTarget = card.rank === tableTarget || card.rank === 'JOKER';
