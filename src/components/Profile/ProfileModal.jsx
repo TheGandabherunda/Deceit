@@ -57,6 +57,49 @@ export const ProfileModal = ({ isOpen, onClose }) => {
     }
   };
 
+  // Shape row horizontal scroll state & arrows
+  const shapeScrollRef = useRef(null);
+  const [canScrollShapeLeft, setCanScrollShapeLeft] = useState(false);
+  const [canScrollShapeRight, setCanScrollShapeRight] = useState(false);
+
+  const updateShapeScrollArrows = () => {
+    const el = shapeScrollRef.current;
+    if (!el) return;
+    const { scrollLeft, scrollWidth, clientWidth } = el;
+    setCanScrollShapeLeft(scrollLeft > 4);
+    setCanScrollShapeRight(scrollLeft + clientWidth < scrollWidth - 4);
+  };
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const el = shapeScrollRef.current;
+    if (!el) return;
+
+    const t = setTimeout(updateShapeScrollArrows, 60);
+
+    const observer = new ResizeObserver(() => {
+      updateShapeScrollArrows();
+    });
+    observer.observe(el);
+
+    return () => {
+      clearTimeout(t);
+      observer.disconnect();
+    };
+  }, [isOpen]);
+
+  const handleShapeScrollLeft = () => {
+    if (shapeScrollRef.current) {
+      shapeScrollRef.current.scrollBy({ left: -140, behavior: 'smooth' });
+    }
+  };
+
+  const handleShapeScrollRight = () => {
+    if (shapeScrollRef.current) {
+      shapeScrollRef.current.scrollBy({ left: 140, behavior: 'smooth' });
+    }
+  };
+
   // Sync state whenever the modal opens or profile changes
   useEffect(() => {
     if (isOpen) {
@@ -115,7 +158,17 @@ export const ProfileModal = ({ isOpen, onClose }) => {
         {/* Bottom Sheet Handle (Mobile only) */}
         <div className="absolute top-3 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-white/10 rounded-full md:hidden" />
         
-        {/* Close button */}
+        {/* Mobile Save Button (Top Left) */}
+        <button 
+          type="button"
+          onClick={handleSubmit}
+          disabled={!name.trim()}
+          className="md:hidden absolute top-3.5 left-4 z-10 px-3.5 py-1.5 rounded-full bg-white hover:bg-white/90 disabled:opacity-40 text-black text-xs font-bold tracking-tight transition-all active:scale-95 cursor-pointer shadow-md flex items-center justify-center"
+        >
+          Save
+        </button>
+
+        {/* Close button (Top Right) */}
         <button 
           type="button"
           onClick={onClose}
@@ -228,42 +281,81 @@ export const ProfileModal = ({ isOpen, onClose }) => {
             </div>
           </div>
 
-          {/* Shape Selection */}
+          {/* Shape Selection - Single row with external left & right arrows, just like colors */}
           <div>
-            <label className="block text-sm font-medium text-white/60 mb-1.5 ml-2">Character Shape</label>
-            <div className="grid grid-cols-4 gap-2">
-              {SHAPES.map((s) => {
-                const isSelected = selectedShape === s.id;
-                return (
-                  <button
-                    key={s.id}
-                    type="button"
-                    onClick={() => setSelectedShape(s.id)}
-                    className={`flex flex-col items-center justify-center p-2 rounded-2xl transition-all cursor-pointer border-2 ${
-                      isSelected
-                        ? 'border-white scale-105'
-                        : 'border-transparent hover:border-white/20 text-white/60'
-                    }`}
-                  >
-                    <div className="w-10 h-10 flex items-center justify-center pointer-events-none">
-                      <BloubAvatar
-                        shape={s.id}
-                        color={selectedColor}
-                        expression="idle"
-                        size={36}
-                      />
-                    </div>
-                    <span className="text-[11px] font-mono mt-1 text-white/80">
-                      {s.label}
-                    </span>
-                  </button>
-                );
-              })}
+            <div className="flex items-center justify-between mb-1.5 ml-1 mr-1">
+              <label className="block text-sm font-medium text-white/60">Character Shape</label>
+              <span className="text-xs font-mono text-white/40">
+                {SHAPES.find((s) => s.id === selectedShape)?.label || ''}
+              </span>
+            </div>
+
+            <div className="flex items-center w-full min-w-0">
+              {/* Left Arrow (only rendered when shapes are available to scroll left) */}
+              {canScrollShapeLeft && (
+                <button
+                  type="button"
+                  onClick={handleShapeScrollLeft}
+                  aria-label="Scroll left to more shapes"
+                  className="w-8 h-8 shrink-0 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all cursor-pointer active:scale-95 mr-1"
+                >
+                  <span className="material-symbols-rounded text-lg leading-none">chevron_left</span>
+                </button>
+              )}
+
+              {/* Shape Scroll Track */}
+              <div
+                ref={shapeScrollRef}
+                onScroll={updateShapeScrollArrows}
+                className="flex-1 min-w-0 py-2.5 px-1 flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth"
+              >
+                {SHAPES.map((s) => {
+                  const isSelected = selectedShape === s.id;
+                  return (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => setSelectedShape(s.id)}
+                      aria-label={s.label}
+                      className={`shrink-0 flex flex-col items-center justify-center py-2 px-2 rounded-2xl transition-all cursor-pointer border-2 ${
+                        isSelected
+                          ? 'border-white bg-white/10 scale-105 shadow-sm'
+                          : 'border-transparent hover:border-white/20 text-white/60 hover:bg-white/5'
+                      }`}
+                      style={{ width: '68px' }}
+                    >
+                      <div className="w-9 h-9 flex items-center justify-center pointer-events-none">
+                        <BloubAvatar
+                          shape={s.id}
+                          color={selectedColor}
+                          expression="idle"
+                          size={34}
+                        />
+                      </div>
+                      <span className="text-[10px] font-mono mt-1 text-white/80 truncate max-w-full text-center">
+                        {s.label}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Right Arrow (only rendered when shapes are available to scroll right) */}
+              {canScrollShapeRight && (
+                <button
+                  type="button"
+                  onClick={handleShapeScrollRight}
+                  aria-label="Scroll right to more shapes"
+                  className="w-8 h-8 shrink-0 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all cursor-pointer active:scale-95 ml-1"
+                >
+                  <span className="material-symbols-rounded text-lg leading-none">chevron_right</span>
+                </button>
+              )}
             </div>
           </div>
           
-          {/* Submit Button */}
-          <div className="mt-8 pt-2">
+          {/* Submit Button (Desktop: visible at bottom; Mobile: top-left) */}
+          <div className="mt-8 pt-2 hidden md:block">
             <button 
               type="submit" 
               disabled={!name.trim()}
