@@ -72,7 +72,7 @@ export const TableHeader = ({ onOpenRules, onOpenSettings, onOpenScoreboard }) =
               size={36}
             />
           </div>
-          <span className="text-xs sm:text-sm font-semibold text-white group-hover:text-white/80 transition-colors max-w-[90px] sm:max-w-[130px] truncate">
+          <span className="hidden sm:inline text-xs sm:text-sm font-semibold text-white group-hover:text-white/80 transition-colors max-w-[90px] sm:max-w-[130px] truncate">
             {profile.name || 'Player'}
           </span>
         </button>
@@ -174,8 +174,31 @@ export const TableHeader = ({ onOpenRules, onOpenSettings, onOpenScoreboard }) =
           {isMenuOpen && (
             <div 
               ref={menuRef}
-              className="absolute right-0 top-11 w-48 rounded-2xl bg-[#121212]/95 backdrop-blur-2xl border border-white/15 shadow-2xl p-1.5 flex flex-col gap-1 z-50 animate-fade-in"
+              className="absolute right-0 top-11 w-52 rounded-2xl bg-[#121212]/95 backdrop-blur-2xl border border-white/15 shadow-2xl p-1.5 flex flex-col gap-1 z-50 animate-fade-in"
             >
+              {/* Profile Tile in Dropdown (Visible on Mobile) */}
+              <button
+                type="button"
+                onClick={() => { setIsMenuOpen(false); setIsProfileModalOpen(true); }}
+                className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/10 text-white/90 text-sm font-medium transition-colors text-left cursor-pointer"
+              >
+                <div className="w-7 h-7 flex items-center justify-center shrink-0">
+                  <BloubAvatar
+                    shape={profile.shape}
+                    color={profile.color}
+                    expression={!isAlive ? 'dead' : 'idle'}
+                    size={26}
+                  />
+                </div>
+                <div className="flex flex-col min-w-0 flex-1">
+                  <span className="text-[10px] text-white/40 uppercase tracking-wider font-semibold">Profile</span>
+                  <span className="text-sm font-semibold text-white truncate">{profile.name || 'Player'}</span>
+                </div>
+                <span className="material-symbols-rounded text-base text-white/50">tune</span>
+              </button>
+
+              <div className="h-[1px] bg-white/10 my-0.5" />
+
               {!isPublic && roomCode && (
                 <button
                   type="button"
@@ -183,7 +206,7 @@ export const TableHeader = ({ onOpenRules, onOpenSettings, onOpenScoreboard }) =
                   className="flex items-center justify-between px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white text-xs font-mono transition-colors text-left cursor-pointer border border-white/10"
                 >
                   <span className="opacity-70">Room: <strong>{roomCode}</strong></span>
-                  <span className="material-symbols-rounded text-sm">
+                  <span className="material-symbols-rounded text-sm text-white/70">
                     {copied ? 'check' : 'content_copy'}
                   </span>
                 </button>
@@ -194,7 +217,7 @@ export const TableHeader = ({ onOpenRules, onOpenSettings, onOpenScoreboard }) =
                 onClick={() => { setIsMenuOpen(false); onOpenScoreboard(); }}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/10 text-white/90 text-sm font-medium transition-colors text-left cursor-pointer"
               >
-                <span className="material-symbols-rounded text-lg text-amber-400">leaderboard</span>
+                <span className="material-symbols-rounded text-lg text-white/70">leaderboard</span>
                 <span>Scoreboard</span>
               </button>
 
@@ -203,7 +226,7 @@ export const TableHeader = ({ onOpenRules, onOpenSettings, onOpenScoreboard }) =
                 onClick={() => { setIsMenuOpen(false); onOpenRules(); }}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/10 text-white/90 text-sm font-medium transition-colors text-left cursor-pointer"
               >
-                <span className="material-symbols-rounded text-lg text-blue-400">help_outline</span>
+                <span className="material-symbols-rounded text-lg text-white/70">help_outline</span>
                 <span>Game Rules</span>
               </button>
 
@@ -212,7 +235,7 @@ export const TableHeader = ({ onOpenRules, onOpenSettings, onOpenScoreboard }) =
                 onClick={() => { setIsMenuOpen(false); onOpenSettings(); }}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/10 text-white/90 text-sm font-medium transition-colors text-left cursor-pointer"
               >
-                <span className="material-symbols-rounded text-lg text-purple-400">settings</span>
+                <span className="material-symbols-rounded text-lg text-white/70">settings</span>
                 <span>Settings</span>
               </button>
 
@@ -223,7 +246,7 @@ export const TableHeader = ({ onOpenRules, onOpenSettings, onOpenScoreboard }) =
                 onClick={() => { setIsMenuOpen(false); leaveRoom(); }}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-rose-500/20 text-rose-400 text-sm font-medium transition-colors text-left cursor-pointer"
               >
-                <span className="material-symbols-rounded text-lg text-rose-400">logout</span>
+                <span className="material-symbols-rounded text-lg text-white/70">logout</span>
                 <span>Leave Table</span>
               </button>
             </div>

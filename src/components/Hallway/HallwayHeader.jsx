@@ -123,7 +123,7 @@ export const HallwayHeader = ({ onOpenPrivate, onOpenRules, onOpenSettings, onOp
                 onClick={() => { setIsMenuOpen(false); onOpenScoreboard(); }}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/10 text-white/90 text-sm font-medium transition-colors text-left cursor-pointer"
               >
-                <span className="material-symbols-rounded text-lg text-amber-400">leaderboard</span>
+                <span className="material-symbols-rounded text-lg text-white/70">leaderboard</span>
                 <span>Scoreboard</span>
               </button>
               <button
@@ -131,7 +131,7 @@ export const HallwayHeader = ({ onOpenPrivate, onOpenRules, onOpenSettings, onOp
                 onClick={() => { setIsMenuOpen(false); onOpenRules(); }}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/10 text-white/90 text-sm font-medium transition-colors text-left cursor-pointer"
               >
-                <span className="material-symbols-rounded text-lg text-blue-400">help_outline</span>
+                <span className="material-symbols-rounded text-lg text-white/70">help_outline</span>
                 <span>Game Rules</span>
               </button>
               <button
@@ -139,7 +139,7 @@ export const HallwayHeader = ({ onOpenPrivate, onOpenRules, onOpenSettings, onOp
                 onClick={() => { setIsMenuOpen(false); onOpenSettings(); }}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/10 text-white/90 text-sm font-medium transition-colors text-left cursor-pointer"
               >
-                <span className="material-symbols-rounded text-lg text-purple-400">settings</span>
+                <span className="material-symbols-rounded text-lg text-white/70">settings</span>
                 <span>Settings</span>
               </button>
             </div>

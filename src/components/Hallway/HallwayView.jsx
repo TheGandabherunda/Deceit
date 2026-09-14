@@ -80,19 +80,19 @@ export const HallwayView = () => {
       />
 
       {/* Main Center Interface - Strictly non-scrollable with dedicated bottom clearance for IMPRINTS */}
-      <main className="flex-1 overflow-hidden px-4 pt-1 sm:pt-2 pb-12 sm:pb-16 md:pb-18 z-10 flex flex-col items-center justify-center relative select-none">
+      <main className="flex-1 overflow-hidden px-4 pt-1 sm:pt-2 pb-16 sm:pb-16 md:pb-18 z-10 flex flex-col items-center justify-center relative select-none">
         <div className="max-w-xl mx-auto w-full text-center flex flex-col items-center justify-center my-auto py-1 relative">
 
           {/* IDLE STATE: PROMINENT "JOIN GAME" BUTTON */}
-          <div className="flex flex-col items-center animate-fade-in relative w-full -translate-y-1 sm:-translate-y-3">
+          <div className="flex flex-col items-center animate-fade-in relative w-full -translate-y-6 sm:-translate-y-3">
             {/* Big Selected Bloub with bottom fade partial reveal - Layered behind title & text */}
             <div 
               ref={bloubContainerRef}
-              className="relative pointer-events-none select-none -mb-40 sm:-mb-48 md:-mb-56 -translate-y-6 sm:-translate-y-8 md:-translate-y-10 flex items-center justify-center shrink-0 z-0"
+              className="relative pointer-events-none select-none -mb-44 sm:-mb-48 md:-mb-56 -translate-y-10 sm:-translate-y-8 md:-translate-y-10 flex items-center justify-center shrink-0 z-0"
               aria-hidden="true"
             >
               <div 
-                className="relative transition-all duration-500 scale-90 sm:scale-95 md:scale-100"
+                className="relative transition-all duration-500 scale-[0.78] sm:scale-95 md:scale-100"
                 style={{
                   maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 28%, rgba(0,0,0,0.85) 62%, rgba(0,0,0,0) 92%)',
                   WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 28%, rgba(0,0,0,0.85) 62%, rgba(0,0,0,0) 92%)',
@@ -115,12 +115,12 @@ export const HallwayView = () => {
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif font-black text-white tracking-tight mb-2 select-none drop-shadow-[0_4px_24px_rgba(0,0,0,0.8)]">
                 Deceit
               </h1>
-              <p className="text-white/60 text-xs sm:text-sm font-sans max-w-md mx-auto mb-4 sm:mb-6 leading-relaxed px-4">
+              <p className="text-white/60 text-xs sm:text-sm font-sans max-w-md mx-auto mb-3 sm:mb-6 leading-relaxed px-4">
                 Play cards in the dead zone. Bluff the target, call out liars, and survive the Russian Roulette revolver.
               </p>
 
               {/* Hero "Join Game" Button */}
-              <div className="relative group mb-4 sm:mb-6">
+              <div className="relative group mb-3 sm:mb-6">
                 <div className="absolute -inset-1 rounded-full bg-white/20 blur-xl group-hover:bg-white/30 transition-all opacity-70 group-hover:opacity-100 animate-pulse" />
                 <button
                   onClick={() => setIsTableSizeOpen(true)}
@@ -132,7 +132,7 @@ export const HallwayView = () => {
               </div>
 
               {/* Status Note & Quick Actions */}
-              <div className="flex flex-col items-center gap-2 sm:gap-2.5 text-center">
+              <div className="flex flex-col items-center gap-1.5 sm:gap-2.5 text-center">
                 <span className="text-[11px] sm:text-xs text-white/40">
                   Quick Match • Select 2, 3, or 4 players & match with active peers
                 </span>
