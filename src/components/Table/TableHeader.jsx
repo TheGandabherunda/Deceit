@@ -57,12 +57,12 @@ export const TableHeader = ({ onOpenRules, onOpenSettings, onOpenScoreboard }) =
           <span className="text-white/20 font-bold select-none leading-none hidden sm:inline">•</span>
         </div>
 
-        {/* Player Profile (Bloub & Name only) */}
+        {/* Player Profile (Bloub & Name only, hidden on mobile, visible on desktop) */}
         <button
           type="button"
           onClick={() => setIsProfileModalOpen(true)}
           title="Customize character & profile"
-          className="flex items-center gap-2 transition-opacity cursor-pointer group hover:opacity-85 select-none"
+          className="hidden sm:flex items-center gap-2 transition-opacity cursor-pointer group hover:opacity-85 select-none"
         >
           <div className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center shrink-0">
             <BloubAvatar
@@ -72,7 +72,7 @@ export const TableHeader = ({ onOpenRules, onOpenSettings, onOpenScoreboard }) =
               size={36}
             />
           </div>
-          <span className="hidden sm:inline text-xs sm:text-sm font-semibold text-white group-hover:text-white/80 transition-colors max-w-[90px] sm:max-w-[130px] truncate">
+          <span className="text-xs sm:text-sm font-semibold text-white group-hover:text-white/80 transition-colors max-w-[90px] sm:max-w-[130px] truncate">
             {profile.name || 'Player'}
           </span>
         </button>
@@ -176,25 +176,21 @@ export const TableHeader = ({ onOpenRules, onOpenSettings, onOpenScoreboard }) =
               ref={menuRef}
               className="absolute right-0 top-11 w-52 rounded-2xl bg-[#121212]/95 backdrop-blur-2xl border border-white/15 shadow-2xl p-1.5 flex flex-col gap-1 z-50 animate-fade-in"
             >
-              {/* Profile Tile in Dropdown (Visible on Mobile) */}
+              {/* Profile Tile in Dropdown (Visible on Mobile: Bloub and Name only) */}
               <button
                 type="button"
                 onClick={() => { setIsMenuOpen(false); setIsProfileModalOpen(true); }}
-                className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/10 text-white/90 text-sm font-medium transition-colors text-left cursor-pointer"
+                className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/10 text-white text-sm font-semibold transition-colors text-left cursor-pointer"
               >
-                <div className="w-7 h-7 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 flex items-center justify-center shrink-0">
                   <BloubAvatar
                     shape={profile.shape}
                     color={profile.color}
                     expression={!isAlive ? 'dead' : 'idle'}
-                    size={26}
+                    size={30}
                   />
                 </div>
-                <div className="flex flex-col min-w-0 flex-1">
-                  <span className="text-[10px] text-white/40 uppercase tracking-wider font-semibold">Profile</span>
-                  <span className="text-sm font-semibold text-white truncate">{profile.name || 'Player'}</span>
-                </div>
-                <span className="material-symbols-rounded text-base text-white/50">tune</span>
+                <span className="truncate">{profile.name || 'Player'}</span>
               </button>
 
               <div className="h-[1px] bg-white/10 my-0.5" />
