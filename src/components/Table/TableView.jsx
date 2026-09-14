@@ -10,12 +10,15 @@ import { RulesModal } from '../Hallway/RulesModal';
 import { ScoreboardView } from '../Scoreboard/ScoreboardView';
 import { SettingsModal } from '../Settings/SettingsModal';
 import AmbientLight from '../AmbientLight';
+import { TableIntroConfrontation } from './Modals/TableIntroConfrontation';
 import { useGame } from '../../context/GameContext';
 import { useNostr } from '../../context/NostrContext';
+import { useProfile } from '../../context/ProfileContext';
 import { sound } from '../../services/sound';
 
 export const TableView = () => {
   const { pubkey } = useNostr();
+  const { profile } = useProfile();
   const [isRulesOpen, setIsRulesOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isScoreboardOpen, setIsScoreboardOpen] = useState(false);
@@ -46,8 +49,29 @@ export const TableView = () => {
     roundNumber
   } = useGame();
 
+  const [showIntro, setShowIntro] = useState(() => isStartAudioPlaying);
+
+  useEffect(() => {
+    if (isStartAudioPlaying) {
+      setShowIntro(true);
+    }
+  }, [isStartAudioPlaying]);
+
   const opponents = players.filter(p => p.pk !== pubkey);
   const me = players.find(p => p.pk === pubkey);
+
+  const localPlayerData = me ? {
+    ...me,
+    shape: me.shape || profile?.shape || 'cercle',
+    color: me.color || profile?.color || '#3b93f0',
+    name: me.name || profile?.name || 'You'
+  } : {
+    shape: profile?.shape || 'cercle',
+    color: profile?.color || '#3b93f0',
+    name: profile?.name || 'You'
+  };
+
+  const primaryOpponent = opponents[0] || null;
 
   const targetName = 
     tableTarget === 'K' ? "King's Table" : 
@@ -120,7 +144,7 @@ export const TableView = () => {
       {isFlashActive && <div className="flash-overlay" />}
 
       {/* Atmospheric Table Lighting */}
-      <AmbientLight target={gameState === 'lobby' ? 'A' : (tableTarget || 'A')} />
+      <AmbientLight target={gameState === 'lobby' ? 'default' : (tableTarget || 'default')} />
 
       {/* Persistent Navigation Header */}
       <TableHeader 
@@ -232,39 +256,31 @@ export const TableView = () => {
                 )}
 
                 {/* Ready Action Button in Middle Table Arena Container */}
-                {isStartAudioPlaying ? (
-                  <div className="mt-4 flex items-center gap-2.5 px-6 py-2.5 rounded-full bg-white text-black font-semibold text-xs tracking-wider animate-pulse">
-                    <span>Entering match...</span>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={togglePlayerReady}
-                    className={`mt-4 h-[44px] px-8 rounded-full font-bold text-sm transition-all shadow-xl flex items-center justify-center cursor-pointer active:scale-98 ${
-                      me?.isReady
-                        ? 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30'
-                        : 'bg-white hover:bg-white/90 text-black'
-                    }`}
-                  >
-                    Ready
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={togglePlayerReady}
+                  className={`mt-4 h-[44px] px-8 rounded-full font-bold text-sm transition-all shadow-xl flex items-center justify-center cursor-pointer active:scale-98 ${
+                    me?.isReady
+                      ? 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30'
+                      : 'bg-white hover:bg-white/90 text-black'
+                  }`}
+                >
+                  Ready
+                </button>
 
                 {/* Minimal Status Indicator */}
-                {!isStartAudioPlaying && (
-                  players.length < 2 ? (
-                    <div className="mt-3 text-xs font-mono text-white/40">
-                      Waiting for opponents ({players.length}/4 seated)
-                    </div>
-                  ) : players.every(p => p.isReady) ? (
-                    <div className="mt-3 text-xs font-medium text-emerald-400 animate-pulse">
-                      All players ready • Dealing Round 1
-                    </div>
-                  ) : (
-                    <div className="mt-3 text-xs font-mono text-white/50">
-                      {players.filter(p => p.isReady).length}/{players.length} players ready
-                    </div>
-                  )
+                {players.length < 2 ? (
+                  <div className="mt-3 text-xs font-mono text-white/40">
+                    Waiting for opponents ({players.length}/4 seated)
+                  </div>
+                ) : players.every(p => p.isReady) ? (
+                  <div className="mt-3 text-xs font-medium text-emerald-400 animate-pulse">
+                    All players ready • Dealing Round 1
+                  </div>
+                ) : (
+                  <div className="mt-3 text-xs font-mono text-white/50">
+                    {players.filter(p => p.isReady).length}/{players.length} players ready
+                  </div>
                 )}
               </div>
             ) : (
@@ -302,6 +318,17 @@ export const TableView = () => {
         </div>
       )}
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+
+      {/* Cinematic Standoff Intro: Both player Bloubs facing each other in the center during start music */}
+      {showIntro && (
+        <TableIntroConfrontation 
+          localPlayer={localPlayerData}
+          opponentPlayer={primaryOpponent}
+          isAudioPlaying={isStartAudioPlaying}
+          tableTarget={tableTarget}
+          onComplete={() => setShowIntro(false)}
+        />
+      )}
 
       {/* Round Intro / Target Splash Overlay — Over all UI elements with blurred background */}
       {showRoundSplash && (

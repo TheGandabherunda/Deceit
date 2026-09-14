@@ -68,20 +68,60 @@ export const MatchingModal = ({
           <span className="material-symbols-rounded text-[20px]">close</span>
         </button>
 
-        {/* Character Preview with expression shuffle (size 140 matching user profile modal) */}
+        {/* Character Preview: Two Bloubs with 3 wave dots in between */}
         <div className="mt-2 mb-2 text-center px-2 flex flex-col items-center">
-          <div className="w-36 h-36 flex items-center justify-center mb-3">
-            <BloubAvatar 
-              shape={profile?.shape}
-              color={profile?.color}
-              expression={currentExpression}
-              size={140}
-              paperColor="#0a0a0a"
-            />
+          <div className="h-32 flex items-center justify-center gap-3 sm:gap-4 mb-3">
+            {/* My Bloub (Left) */}
+            <div className="flex flex-col items-center">
+              <BloubAvatar 
+                shape={profile?.shape}
+                color={profile?.color}
+                expression={currentExpression}
+                directGaze={{ yaw: 24, pitch: 0 }}
+                size={96}
+                paperColor="#0a0a0a"
+              />
+              <span className="text-[11px] font-mono text-white/50 mt-1 truncate max-w-[80px]">
+                {profile?.name || 'You'}
+              </span>
+            </div>
+
+            {/* 3 Dots Loading Wave Animation */}
+            <div className="flex items-center gap-1.5 px-2 pb-5">
+              <span 
+                className="w-2 h-2 rounded-full bg-white animate-wave-dot" 
+                style={{ animationDelay: '0ms' }} 
+              />
+              <span 
+                className="w-2 h-2 rounded-full bg-white animate-wave-dot" 
+                style={{ animationDelay: '180ms' }} 
+              />
+              <span 
+                className="w-2 h-2 rounded-full bg-white animate-wave-dot" 
+                style={{ animationDelay: '360ms' }} 
+              />
+            </div>
+
+            {/* Opponent Bloub (Right): Black color with white stroke, minimal & simple */}
+            <div className="flex flex-col items-center">
+              <BloubAvatar 
+                shape="cercle"
+                color="#000000"
+                stroke="#ffffff"
+                strokeWidth={2.5}
+                expression="idle"
+                directGaze={{ yaw: -24, pitch: 0 }}
+                size={96}
+                paperColor="#ffffff"
+              />
+              <span className="text-[11px] font-mono text-white/40 mt-1">
+                Opponent
+              </span>
+            </div>
           </div>
 
           <h3 
-            className="text-4xl text-white font-serif tracking-normal" 
+            className="text-3xl sm:text-4xl text-white font-serif tracking-normal" 
             style={{ fontFamily: '"Gloock", serif', fontWeight: 400 }}
           >
             Finding Match

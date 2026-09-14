@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { CardView } from './CardView';
-import { RevolverTrayIcon } from './RevolverTrayIcon';
 import { BloubAvatar } from '../Bloub/BloubAvatar';
 import { useGame } from '../../context/GameContext';
 import { useNostr } from '../../context/NostrContext';
@@ -65,15 +64,16 @@ export const LocalPlayerSeat = () => {
               const rot = offset * (isLaptop ? 5.2 : 6);
               // Quadratic arc: center card at apex, outer cards dip smoothly
               const arcY = offset * offset * (isLaptop ? 2.1 : 3);
-              const targetY = isSelected ? (isLaptop ? -18 : -24) : arcY;
+              const lift = isLaptop ? 20 : 26;
+              const targetY = arcY - (isSelected ? lift : 0);
 
               return (
                 <div 
                   key={`${roundNumber}_${card.id}`} 
                   style={{ 
                     '--target-y': `${targetY}px`,
-                    '--target-rot': `${isSelected ? 0 : rot}deg`,
-                    transform: `translateY(${targetY}px) rotate(${isSelected ? 0 : rot}deg)`, 
+                    '--target-rot': `${rot}deg`,
+                    transform: `translateY(${targetY}px) rotate(${rot}deg)`, 
                     transformOrigin: 'center bottom',
                     zIndex: idx,
                     animationDelay: `${idx * 75}ms`
@@ -116,18 +116,11 @@ export const LocalPlayerSeat = () => {
         )}
       </div>
 
-      {/* Local Player Reference at Bottom - Just like before */}
+      {/* Local Player Reference at Bottom */}
       <div className="flex items-center gap-2 text-xs sm:text-sm font-mono text-white/70 select-none mt-1">
         <span className="font-semibold text-white">You</span>
         <span className="text-white/30">•</span>
-        <div className="flex items-center gap-1.5 text-white/80">
-          <RevolverTrayIcon 
-            chambersRemaining={me.chambersRemaining ?? 6} 
-            isAlive={me.isAlive} 
-            className="w-4 h-4 sm:w-4.5 sm:h-4.5"
-          />
-          <span className="font-semibold">{me.isAlive ? `${me.chambersRemaining ?? 6}/6` : '0/6'}</span>
-        </div>
+        <span className="font-semibold text-white/80">{me.isAlive ? `${me.chambersRemaining ?? 6}/6` : '0/6'}</span>
       </div>
     </div>
   );

@@ -79,23 +79,23 @@ export const HallwayView = () => {
         onOpenImprints={() => setIsImprintsOpen(true)}
       />
 
-      {/* Main Center Interface */}
-      <main className="flex-1 overflow-y-auto p-4 md:p-8 z-10 flex flex-col items-center justify-center relative">
-        <div className="max-w-xl mx-auto w-full text-center flex flex-col items-center justify-center my-auto py-6 relative">
+      {/* Main Center Interface - Strictly non-scrollable with dedicated bottom clearance for IMPRINTS */}
+      <main className="flex-1 overflow-hidden px-4 pt-1 sm:pt-2 pb-12 sm:pb-16 md:pb-18 z-10 flex flex-col items-center justify-center relative select-none">
+        <div className="max-w-xl mx-auto w-full text-center flex flex-col items-center justify-center my-auto py-1 relative">
 
           {/* IDLE STATE: PROMINENT "JOIN GAME" BUTTON */}
-          <div className="flex flex-col items-center animate-fade-in relative w-full">
-            {/* Big Selected Bloub with bottom fade partial reveal */}
+          <div className="flex flex-col items-center animate-fade-in relative w-full -translate-y-1 sm:-translate-y-3">
+            {/* Big Selected Bloub with bottom fade partial reveal - Layered behind title & text */}
             <div 
               ref={bloubContainerRef}
-              className="relative pointer-events-none select-none -mb-28 sm:-mb-36 md:-mb-44 flex items-center justify-center shrink-0"
+              className="relative pointer-events-none select-none -mb-40 sm:-mb-48 md:-mb-56 -translate-y-6 sm:-translate-y-8 md:-translate-y-10 flex items-center justify-center shrink-0 z-0"
               aria-hidden="true"
             >
               <div 
-                className="relative transition-all duration-500 scale-90 sm:scale-100 md:scale-105"
+                className="relative transition-all duration-500 scale-90 sm:scale-95 md:scale-100"
                 style={{
-                  maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 26%, rgba(0,0,0,0.85) 60%, rgba(0,0,0,0) 95%)',
-                  WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 26%, rgba(0,0,0,0.85) 60%, rgba(0,0,0,0) 95%)',
+                  maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 28%, rgba(0,0,0,0.85) 62%, rgba(0,0,0,0) 92%)',
+                  WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 28%, rgba(0,0,0,0.85) 62%, rgba(0,0,0,0) 92%)',
                 }}
               >
                 <BloubAvatar
@@ -103,7 +103,7 @@ export const HallwayView = () => {
                   color={profile?.color}
                   expression="idle"
                   gazeTarget={gazeTarget}
-                  size={520}
+                  size={540}
                   paperColor="#050505"
                 />
               </div>
@@ -112,27 +112,28 @@ export const HallwayView = () => {
             {/* Content Container: Positioned at the bottom of the Bloub */}
             <div className="flex flex-col items-center relative z-10 w-full">
               {/* Title & Subtitle */}
-              <h1 className="text-5xl md:text-7xl font-serif font-black text-white tracking-tight mb-3 select-none drop-shadow-[0_4px_24px_rgba(0,0,0,0.8)]">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif font-black text-white tracking-tight mb-2 select-none drop-shadow-[0_4px_24px_rgba(0,0,0,0.8)]">
                 Deceit
               </h1>
-              <p className="text-white/60 text-xs md:text-sm font-sans max-w-md mx-auto mb-8 leading-relaxed">
+              <p className="text-white/60 text-xs sm:text-sm font-sans max-w-md mx-auto mb-4 sm:mb-6 leading-relaxed px-4">
                 Play cards in the dead zone. Bluff the target, call out liars, and survive the Russian Roulette revolver.
               </p>
 
               {/* Hero "Join Game" Button */}
-              <div className="relative group mb-8">
+              <div className="relative group mb-4 sm:mb-6">
                 <div className="absolute -inset-1 rounded-full bg-white/20 blur-xl group-hover:bg-white/30 transition-all opacity-70 group-hover:opacity-100 animate-pulse" />
                 <button
                   onClick={() => setIsTableSizeOpen(true)}
-                  className="relative h-16 px-12 md:px-16 rounded-full bg-white hover:bg-white/95 text-black font-serif text-xl font-bold transition-all shadow-[0_0_50px_rgba(255,255,255,0.2)] hover:shadow-[0_0_80px_rgba(255,255,255,0.45)] hover:scale-105 active:scale-95 flex items-center justify-center cursor-pointer"
+                  className="relative h-13 sm:h-14 md:h-15 px-10 sm:px-14 md:px-16 rounded-full bg-white hover:bg-white/95 text-black font-inter text-base sm:text-lg md:text-xl font-bold tracking-tight transition-all shadow-[0_0_50px_rgba(255,255,255,0.2)] hover:shadow-[0_0_80px_rgba(255,255,255,0.45)] hover:scale-105 active:scale-95 flex items-center justify-center cursor-pointer"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
                 >
                   <span>Join Game</span>
                 </button>
               </div>
 
               {/* Status Note & Quick Actions */}
-              <div className="flex flex-col items-center gap-4 text-center">
-                <span className="text-xs text-white/40">
+              <div className="flex flex-col items-center gap-2 sm:gap-2.5 text-center">
+                <span className="text-[11px] sm:text-xs text-white/40">
                   Quick Match • Select 2, 3, or 4 players & match with active peers
                 </span>
 
@@ -140,9 +141,9 @@ export const HallwayView = () => {
                 <button
                   type="button"
                   onClick={() => setIsPrivateOpen(true)}
-                  className="flex items-center gap-2 px-5 py-2 rounded-full bg-white/[0.07] hover:bg-white/[0.12] text-white/70 hover:text-white text-sm font-medium transition-all cursor-pointer active:scale-95"
+                  className="flex items-center gap-2 px-4 sm:px-5 py-1.5 sm:py-2 rounded-full bg-white/[0.07] hover:bg-white/[0.12] text-white/70 hover:text-white text-xs sm:text-sm font-medium transition-all cursor-pointer active:scale-95"
                 >
-                  <span className="material-symbols-rounded text-base">lock</span>
+                  <span className="material-symbols-rounded text-sm sm:text-base">lock</span>
                   <span>Private Table</span>
                 </button>
               </div>

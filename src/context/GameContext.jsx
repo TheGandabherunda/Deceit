@@ -942,7 +942,7 @@ export const GameProvider = ({ children }) => {
   }, [isHost, gameState, roomCode, publishSignal, triggerBanner]);
 
   // Deal a new round (Host action)
-  const dealNewRound = useCallback((roundNum, currentPlayers) => {
+  const dealNewRound = useCallback((roundNum, currentPlayers, preferredStarterPk = null) => {
     sound.stopChallengeTimer();
     sound.stopStartAudio();
     setIsStartAudioPlaying(false);
@@ -998,9 +998,27 @@ export const GameProvider = ({ children }) => {
       encryptedHands[pk] = encryptHand(hands[pk], pk, hostSecret);
     });
 
-    const initialTurnPk = living[0].pk;
+    // DETERMINE WHO PLAYS FIRST IN THE NEW ROUND (Liar's Bar rules):
+    // 1. If preferredStarterPk is specified and living, they start (e.g. Survivor of previous round's Russian roulette)
+    // 2. In Round 1: Select a random living player so the host does not always go first
+    // 3. Fallback: Clockwise round-robin rotation based on round number
+    let initialTurnPk = null;
+    if (preferredStarterPk && living.some(p => p.pk === preferredStarterPk)) {
+      initialTurnPk = preferredStarterPk;
+      console.log(`[Deceit:Round:Deal] Designated starter ${initialTurnPk.slice(0, 8)} begins round ${roundNum}.`);
+    } else if (roundNum === 1) {
+      const randomIndex = Math.floor(Math.random() * living.length);
+      initialTurnPk = living[randomIndex].pk;
+      console.log(`[Deceit:Round:Deal] Round 1 random starter selected: ${initialTurnPk.slice(0, 8)}.`);
+    } else {
+      const rotateIndex = (roundNum - 1) % living.length;
+      initialTurnPk = living[rotateIndex].pk;
+      console.log(`[Deceit:Round:Deal] Round-robin starter selected: ${initialTurnPk.slice(0, 8)}.`);
+    }
+
+    const initialTurnIndex = living.findIndex(p => p.pk === initialTurnPk);
     setActivePlayerPk(initialTurnPk);
-    setTurnIndex(0);
+    setTurnIndex(Math.max(0, initialTurnIndex));
 
     // Reset card counts while preserving each player's individual chambersRemaining and dominanceScore!
     const updatedPlayers = currentPlayers.map(p => ({
@@ -1589,7 +1607,27 @@ export const GameProvider = ({ children }) => {
             console.log(`[Deceit:Roulette:Outcome] Dismissing roulette modal, dealing round ${roundNumberRef.current + 1}...`);
             setIsRouletteActive(false);
             if (isHostRef.current && dealNewRoundRef.current) {
-              dealNewRoundRef.current(roundNumberRef.current + 1, updated);
+              // Determine next starter according to Liar's Bar rules:
+              // Rule 1: If the victim survived the roulette (!isDead), the survivor starts the next round!
+              // Rule 2: If the victim was eliminated (isDead), the next living player clockwise from the victim starts!
+              let nextStarterPk = null;
+              if (!isDead && updated.some(p => p.pk === victimPk && p.isAlive)) {
+                nextStarterPk = victimPk;
+                console.log(`[Deceit:Roulette:Outcome] Survivor ${victimPk.slice(0, 8)} takes the first turn in round ${roundNumberRef.current + 1}.`);
+              } else {
+                const totalPlayers = playersRef.current.length;
+                const victimIndex = playersRef.current.findIndex(p => p.pk === victimPk);
+                for (let i = 1; i <= totalPlayers; i++) {
+                  const candidateIndex = (victimIndex + i) % totalPlayers;
+                  const candidate = playersRef.current[candidateIndex];
+                  if (candidate && updated.some(p => p.pk === candidate.pk && p.isAlive)) {
+                    nextStarterPk = candidate.pk;
+                    break;
+                  }
+                }
+                console.log(`[Deceit:Roulette:Outcome] Victim eliminated. Next living player clockwise ${nextStarterPk?.slice(0, 8)} takes first turn in round ${roundNumberRef.current + 1}.`);
+              }
+              dealNewRoundRef.current(roundNumberRef.current + 1, updated, nextStarterPk);
             }
           }, 1500);
         }
@@ -2212,6 +2250,9 @@ export const GameProvider = ({ children }) => {
             if (parsed.players) {
               setPlayers(parsed.players);
               playersRef.current = parsed.players;
+              const peerLiving = parsed.players.filter(p => p.isAlive);
+              const peerTurnIndex = peerLiving.findIndex(p => p.pk === parsed.activeTurnPk);
+              setTurnIndex(Math.max(0, peerTurnIndex));
             }
 
             // Decrypt peer hand

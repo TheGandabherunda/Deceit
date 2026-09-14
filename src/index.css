@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Gloock&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -17,8 +18,16 @@
 }
 
 .font-serif,
+.font-serif *,
 .font-gloock,
-.font-display {
+.font-gloock *,
+.font-display,
+.font-display *,
+.card-corner-label,
+.card-corner-label span,
+.card-corner-label *,
+.card-gold-label,
+.card-gold-label * {
   font-family: 'Gloock', serif !important;
 }
 
@@ -113,6 +122,35 @@ input:-webkit-autofill:active {
   animation: wave-drift ease-in-out infinite;
 }
 
+@keyframes color-flow {
+  0% {
+    filter: hue-rotate(0deg) saturate(120%);
+  }
+  100% {
+    filter: hue-rotate(360deg) saturate(120%);
+  }
+}
+
+.animate-color-flow {
+  animation: color-flow 20s linear infinite;
+}
+
+/* Wave Dots Loading Animation */
+@keyframes wave-dot {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translateY(-8px);
+    opacity: 1;
+  }
+}
+
+.animate-wave-dot {
+  animation: wave-dot 1.2s ease-in-out infinite;
+}
+
 /* Playing Card Hover Lift */
 .playing-card {
   transition: transform 0.22s cubic-bezier(0.25, 1, 0.5, 1);
@@ -122,39 +160,26 @@ input:-webkit-autofill:active {
   transform: translateY(-8px);
 }
 
-/* Selected Card Minimal White Shimmer Stroke (Zero Drop Shadow) */
-@keyframes cardStrokeShimmer {
+/* Selected Card Running Shimmer Border Beam */
+@keyframes cardBorderBeam {
   0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
+    transform: translate(-50%, -50%) rotate(0deg);
   }
   100% {
-    background-position: 0% 50%;
+    transform: translate(-50%, -50%) rotate(360deg);
   }
 }
 
-.card-shimmer-stroke {
+.card-border-beam {
   position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 2px;
-  background: linear-gradient(
-    120deg,
-    rgba(255, 255, 255, 0.4) 0%,
-    rgba(255, 255, 255, 1) 30%,
-    rgba(255, 255, 255, 0.35) 60%,
-    rgba(255, 255, 255, 1) 85%,
-    rgba(255, 255, 255, 0.4) 100%
-  );
-  background-size: 250% 250%;
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  animation: cardStrokeShimmer 3.2s ease-in-out infinite;
+  top: 50%;
+  left: 50%;
+  width: 400%;
+  aspect-ratio: 1 / 1;
   pointer-events: none;
-  z-index: 30;
+  animation: cardBorderBeam 3.2s linear infinite;
+  will-change: transform;
+  z-index: 1;
 }
 
 /* Card Deal Distribution Animation (Local Player: Flies from center deck down to hand) */
@@ -280,5 +305,58 @@ input:-webkit-autofill:active {
 
 .table-cards-overlap > * + * {
   margin-left: var(--table-card-overlap) !important;
+}
+
+/* Cinematic Standoff Micro-Animations */
+@keyframes standoff-float-left {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(1deg);
+  }
+}
+
+@keyframes standoff-float-right {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(-1deg);
+  }
+}
+
+.animate-standoff-left {
+  animation: standoff-float-left 3.2s ease-in-out infinite;
+}
+
+.animate-standoff-right {
+  animation: standoff-float-right 3.2s ease-in-out infinite 0.35s;
+}
+
+@keyframes standoff-float-top {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes standoff-float-bottom {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(6px);
+  }
+}
+
+.animate-standoff-top {
+  animation: standoff-float-top 3.2s ease-in-out infinite;
+}
+
+.animate-standoff-bottom {
+  animation: standoff-float-bottom 3.2s ease-in-out infinite 0.35s;
 }
 

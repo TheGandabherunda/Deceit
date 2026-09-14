@@ -10,18 +10,22 @@ const DEMI_VIEWBOX = 158;
 export const BloubAvatar = ({
   shape = DEFAULT_SHAPE,
   color = '#3b93f0',
+  stroke = null,
+  strokeWidth = 2,
   expression = DEFAULT_EXPRESSION,
   gazeTarget = null, // { x: -1..1, y: -1..1 } relative direction
   directGaze = null, // { yaw, pitch, roll }
   isFocusTarget = false,
   size = 96,
   className = '',
-  paperColor = '#000000'
+  paperColor = '#000000',
+  filter = null
 }) => {
   const maskUid = useId().replace(/:/g, '');
   const maskId = `bloub-mask-${maskUid}`;
 
   const bodyPathRef = useRef(null);
+  const strokePathRef = useRef(null);
   const eye0Ref = useRef(null);
   const eye1Ref = useRef(null);
   const svgRef = useRef(null);
@@ -107,12 +111,19 @@ export const BloubAvatar = ({
       });
 
       // Composite head orientation: Dead characters face front directly at screen
+      // When directGaze or gazeTarget is provided, gaze direction is controlled explicitly
+      const hasExplicitGaze = Boolean(directGaze || gazeTarget);
+      const baseYaw = hasExplicitGaze ? 0 : (exp.gaze?.yaw || 0);
+      const basePitch = hasExplicitGaze ? 0 : (exp.gaze?.pitch || 0);
+      const baseRoll = hasExplicitGaze ? 0 : (exp.gaze?.roll || 0);
+      const wanderWeight = hasExplicitGaze ? 0.15 : 1.0;
+
       const headGaze = isDeadEye
         ? { yaw: 0, pitch: 0, roll: 0 }
         : {
-            yaw: (exp.gaze?.yaw || 0) + st.currentYaw + live.dYaw,
-            pitch: (exp.gaze?.pitch || 0) + st.currentPitch + live.dPitch,
-            roll: (exp.gaze?.roll || 0) + live.dRoll
+            yaw: baseYaw + st.currentYaw + live.dYaw * wanderWeight,
+            pitch: basePitch + st.currentPitch + live.dPitch * wanderWeight,
+            roll: baseRoll + live.dRoll * wanderWeight
           };
 
       // 1. Update Body Silhouette
@@ -129,6 +140,9 @@ export const BloubAvatar = ({
       if (bodyPathRef.current) {
         bodyPathRef.current.setAttribute('d', bodyD);
       }
+      if (strokePathRef.current) {
+        strokePathRef.current.setAttribute('d', bodyD);
+      }
 
       // 2. Update Eye Projections
       const poses = eyePoses(headGaze, RAYON, exp.split || EYE_SPLIT);
@@ -138,9 +152,9 @@ export const BloubAvatar = ({
       // Left Eye
       if (eye0Ref.current && poses[0].depth > -0.1) {
         const eyeCfg = exp.eyes[0] || { w: 0.186, h: 0.412 };
-        const w = (eyeCfg.w || (isDeadEye ? 0.48 : 0.186)) * RAYON;
-        const h = (eyeCfg.h || (isDeadEye ? 0.48 : 0.412)) * RAYON;
-        const eyeD = isDeadEye ? crossPath(w, h, 0.30) : capsulePath(w, h);
+        const w = (eyeCfg.w || (isDeadEye ? 0.66 : 0.186)) * RAYON;
+        const h = (eyeCfg.h || (isDeadEye ? 0.66 : 0.412)) * RAYON;
+        const eyeD = isDeadEye ? crossPath(w, h, 0.26) : capsulePath(w, h);
         const p = poses[0];
         const a = r2(p.a);
         const b = r2(p.b * effectiveLid);
@@ -157,9 +171,9 @@ export const BloubAvatar = ({
       // Right Eye
       if (eye1Ref.current && poses[1].depth > -0.1) {
         const eyeCfg = exp.eyes[1] || { w: 0.186, h: 0.412 };
-        const w = (eyeCfg.w || (isDeadEye ? 0.48 : 0.186)) * RAYON;
-        const h = (eyeCfg.h || (isDeadEye ? 0.48 : 0.412)) * RAYON;
-        const eyeD = isDeadEye ? crossPath(w, h, 0.30) : capsulePath(w, h);
+        const w = (eyeCfg.w || (isDeadEye ? 0.66 : 0.186)) * RAYON;
+        const h = (eyeCfg.h || (isDeadEye ? 0.66 : 0.412)) * RAYON;
+        const eyeD = isDeadEye ? crossPath(w, h, 0.26) : capsulePath(w, h);
         const p = poses[1];
         const a = r2(p.a);
         const b = r2(p.b * effectiveLid);
@@ -231,7 +245,19 @@ export const BloubAvatar = ({
           height={DEMI_VIEWBOX * 2}
           fill={color}
           mask={`url(#${maskId})`}
+          filter={filter}
         />
+
+        {/* Optional Stroke Outline */}
+        {stroke && (
+          <path
+            ref={strokePathRef}
+            fill="none"
+            stroke={stroke}
+            strokeWidth={strokeWidth}
+            strokeLinejoin="round"
+          />
+        )}
       </svg>
     </div>
   );

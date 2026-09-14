@@ -103,17 +103,22 @@ export const RevealSummaryModal = () => {
             {cards && cards.length > 0 ? (
               cards.map((card, idx) => {
                 const matchesTarget = card.rank === tableTarget || card.rank === 'JOKER';
+                const status = matchesTarget ? 'truth' : 'bluff';
                 return (
                   <div 
                     key={idx} 
-                    className="flex flex-col items-center gap-2 transition-transform duration-300 hover:-translate-y-2 hover:scale-105"
+                    className="flex flex-col items-center gap-2.5 sm:gap-3 transition-transform duration-300 hover:-translate-y-2 hover:scale-105"
                     style={{ zIndex: idx }}
                   >
-                    <CardView card={card} faceDown={false} />
-                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-mono font-bold border shadow-md ${
+                    <CardView 
+                      card={card} 
+                      faceDown={false} 
+                      shimmerStatus={status}
+                    />
+                    <span className={`text-sm sm:text-base md:text-lg font-gloock tracking-wider select-none ${
                       matchesTarget 
-                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' 
-                        : 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+                        ? 'text-emerald-400 drop-shadow-[0_0_14px_rgba(52,211,153,0.9)]' 
+                        : 'text-rose-500 drop-shadow-[0_0_14px_rgba(244,63,94,0.9)]'
                     }`}>
                       {matchesTarget ? 'Truth' : 'Bluff'}
                     </span>

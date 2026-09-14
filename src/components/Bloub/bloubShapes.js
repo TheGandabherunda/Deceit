@@ -59,23 +59,45 @@ export function capsulePath(w, h) {
   );
 }
 
-export function crossPath(w, h, t = 0.28) {
-  const s = Math.min(Math.max(w, 0.01), Math.max(h, 0.01)) / 2;
-  const k = s * t;
-  return (
-    `M${r2(-s + k)} ${r2(-s)} ` +
-    `L0 ${r2(-k)} ` +
-    `L${r2(s - k)} ${r2(-s)} ` +
-    `L${r2(s)} ${r2(-s + k)} ` +
-    `L${r2(k)} 0 ` +
-    `L${r2(s)} ${r2(s - k)} ` +
-    `L${r2(s - k)} ${r2(s)} ` +
-    `L0 ${r2(k)} ` +
-    `L${r2(-s + k)} ${r2(s)} ` +
-    `L${r2(-s)} ${r2(s - k)} ` +
-    `L${r2(-k)} 0 ` +
-    `L${r2(-s)} ${r2(-s + k)}Z`
-  );
+function rotatedCapsulePath(len, thick, deg) {
+  const hw = Math.max(len, 0.01) / 2;
+  const hh = Math.max(thick, 0.01) / 2;
+  const r = hh;
+  const rad = (deg * Math.PI) / 180;
+  const cos = Math.cos(rad);
+  const sin = Math.sin(rad);
+  const rot = (x, y) => ({
+    x: +(x * cos - y * sin).toFixed(2),
+    y: +(x * sin + y * cos).toFixed(2)
+  });
+
+  const k = 0.5522847498 * r;
+
+  const pts = [
+    { type: 'M', p: rot(-hw + r, -hh) },
+    { type: 'L', p: rot(hw - r, -hh) },
+    { type: 'C', c1: rot(hw - r + k, -hh), c2: rot(hw, -k), p: rot(hw, 0) },
+    { type: 'C', c1: rot(hw, k), c2: rot(hw - r + k, hh), p: rot(hw - r, hh) },
+    { type: 'L', p: rot(-hw + r, hh) },
+    { type: 'C', c1: rot(-hw + r - k, hh), c2: rot(-hw, k), p: rot(-hw, 0) },
+    { type: 'C', c1: rot(-hw, -k), c2: rot(-hw + r - k, -hh), p: rot(-hw + r, -hh) },
+    { type: 'Z' }
+  ];
+
+  let d = '';
+  for (const pt of pts) {
+    if (pt.type === 'M') d += `M${pt.p.x} ${pt.p.y} `;
+    else if (pt.type === 'L') d += `L${pt.p.x} ${pt.p.y} `;
+    else if (pt.type === 'C') d += `C${pt.c1.x} ${pt.c1.y} ${pt.c2.x} ${pt.c2.y} ${pt.p.x} ${pt.p.y} `;
+    else if (pt.type === 'Z') d += 'Z ';
+  }
+  return d.trim();
+}
+
+export function crossPath(w, h, thicknessRatio = 0.26) {
+  const size = Math.max(w, h, 10);
+  const thickness = Math.max(size * thicknessRatio, 4);
+  return `${rotatedCapsulePath(size, thickness, 45)} ${rotatedCapsulePath(size, thickness, -45)}`;
 }
 
 function normalize(radii, max = 1) {

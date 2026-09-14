@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { CardView } from './CardView';
-import { RevolverTrayIcon } from './RevolverTrayIcon';
 import { useGame } from '../../context/GameContext';
 import { BloubAvatar } from '../Bloub/BloubAvatar';
 
@@ -61,16 +60,9 @@ export const OpponentSeat = ({
           {name}
         </span>
         <span className="text-white/30">•</span>
-        <div className="flex items-center gap-1.5 text-white/70">
-          <RevolverTrayIcon 
-            chambersRemaining={player.chambersRemaining !== undefined ? player.chambersRemaining : 6} 
-            isAlive={isAlive} 
-            className="w-3.5 h-3.5 sm:w-4 sm:h-4"
-          />
-          <span className="font-semibold">
-            {isAlive ? `${player.chambersRemaining !== undefined ? player.chambersRemaining : 6}/6` : '0/6'}
-          </span>
-        </div>
+        <span className="font-semibold text-white/70">
+          {isAlive ? `${player.chambersRemaining !== undefined ? player.chambersRemaining : 6}/6` : '0/6'}
+        </span>
       </div>
 
       {/* 2. Bloub Character Avatar - Responsively scaled on laptops */}

@@ -46,21 +46,29 @@ export const EXPRESSIONS = {
     eyes: pair(0.32, 0.16, 28, 0.95)
   },
 
-  // Dead / Defeat: Lifeless head front-facing screen with large X X eyes and clean spacing
+  // Duel / Confrontation: Symmetrical, intense, narrowed stare locked directly on opponent
+  duel: {
+    id: 'duel',
+    gaze: { ...REST_GAZE },
+    split: 16,
+    eyes: pair(0.24, 0.34, 6, 0.95)
+  },
+
+  // Dead / Defeat: Lifeless head front-facing screen with refined pill-shaped X X eyes
   dead: {
     id: 'dead',
     isDead: true,
     gaze: { yaw: 0, pitch: 0, roll: 0 },
-    split: 22,
-    eyes: pair(0.48, 0.48, 0, 1)
+    split: 25,
+    eyes: pair(0.66, 0.66, 0, 1)
   },
 
   defeat: {
     id: 'defeat',
     isDead: true,
     gaze: { yaw: 0, pitch: 0, roll: 0 },
-    split: 22,
-    eyes: pair(0.48, 0.48, 0, 1)
+    split: 25,
+    eyes: pair(0.66, 0.66, 0, 1)
   },
 
   // Victory / Triumphant: Confident raised gaze, victorious squint

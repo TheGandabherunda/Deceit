@@ -204,6 +204,19 @@ export const RulesModal = ({ isOpen, onClose }) => {
                     You are eliminated from the match! The remaining players duel until one Sole Survivor remains.
                   </div>
                 </div>
+
+                {/* Who Plays First Explanation */}
+                <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 space-y-1 text-xs text-amber-200 ml-8 mt-2">
+                  <div className="font-semibold text-amber-300 flex items-center gap-1.5">
+                    <span className="material-symbols-rounded text-sm">play_circle</span>
+                    <span>Who Plays First in Each Round?</span>
+                  </div>
+                  <div className="text-white/80 leading-relaxed text-[11px] sm:text-xs">
+                    • <strong>Round 1:</strong> A random player is chosen to start the game.<br />
+                    • <strong>Roulette Survivor:</strong> If the challenged player survives the trigger pull, they start the next round!<br />
+                    • <strong>Elimination:</strong> If the player is eliminated, the next living player clockwise starts.
+                  </div>
+                </div>
               </div>
 
               {/* Pro Tips Section */}
