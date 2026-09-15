@@ -346,9 +346,9 @@ export const PlayerCardModal = ({ player, onClose }) => {
             </div>
           </div>
 
-          {/* ================= CARD BACK FACE (PLAYER STATS) ================= */}
+          {/* ================= CARD BACK FACE (AUTHENTIC PLAYING CARD REVERSE) ================= */}
           <div 
-            className="absolute inset-0 rounded-[8px] sm:rounded-[12px] overflow-hidden z-20 flex flex-col justify-between p-3.5 sm:p-4 text-white"
+            className="absolute inset-0 rounded-[8px] sm:rounded-[12px] overflow-hidden z-20 flex flex-col justify-between p-3 select-none pointer-events-auto"
             style={{ 
               margin: '2px',
               width: 'calc(100% - 4px)',
@@ -363,99 +363,285 @@ export const PlayerCardModal = ({ player, onClose }) => {
               className="absolute inset-0 pointer-events-none z-0 bg-cover bg-center"
               style={{
                 backgroundImage: 'url("/cards/leather-macro-shot.jpg")',
-                opacity: 0.28,
+                opacity: 0.22,
                 mixBlendMode: 'overlay'
               }}
             />
 
-            {/* Dark glass tint inside stats card for high contrast readability */}
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-0 pointer-events-none" />
+            {/* Mouse Ambient Lighting Sheen */}
+            <div 
+              className="absolute inset-0 pointer-events-none z-0 transition-opacity duration-200"
+              style={{
+                background: 'radial-gradient(circle 140px at var(--mouse-x, 50%) var(--mouse-y, 35%), rgba(255,255,255,0.3) 0%, transparent 100%)',
+                mixBlendMode: 'screen'
+              }}
+            />
 
-            {/* Content Container */}
-            <div className="relative z-10 flex flex-col h-full justify-between">
-              {/* Header: Player Mini-Card */}
-              <div className="flex items-center gap-2.5 pb-2 border-b border-white/10 shrink-0">
-                <div className="w-8 h-8 rounded-lg bg-black/50 border border-white/10 flex items-center justify-center shrink-0 overflow-hidden">
-                  <BloubAvatar 
-                    shape={displayShape} 
-                    color={displayColor} 
-                    expression={isFirst ? 'victory' : 'idle'} 
-                    size={28} 
-                  />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-white text-xs sm:text-sm truncate">
-                    {displayName}
-                  </h3>
-                  <p className="text-[10px] text-white/50 font-mono">
-                    Rank #{player.rank} • {isFirst ? 'Champion' : 'Contender'}
-                  </p>
-                </div>
-              </div>
-
-              {/* Stats Grid */}
-              <div className="grid grid-cols-2 gap-2 my-auto py-1">
-                {/* Victories */}
-                <div className="p-2 sm:p-2.5 rounded-xl bg-black/40 border border-white/10 flex flex-col">
-                  <span className="text-[9px] sm:text-[10px] uppercase font-mono text-white/40 tracking-wider">
-                    Victories
-                  </span>
-                  <span className="text-base sm:text-lg font-extrabold text-emerald-400 mt-0.5">
-                    {player.wins || 0}
-                  </span>
-                </div>
-
-                {/* Defeats */}
-                <div className="p-2 sm:p-2.5 rounded-xl bg-black/40 border border-white/10 flex flex-col">
-                  <span className="text-[9px] sm:text-[10px] uppercase font-mono text-white/40 tracking-wider">
-                    Defeats
-                  </span>
-                  <span className="text-base sm:text-lg font-extrabold text-rose-400 mt-0.5">
-                    {player.defeats || 0}
-                  </span>
-                </div>
-
-                {/* Win Rate */}
-                <div className="p-2 sm:p-2.5 rounded-xl bg-black/40 border border-white/10 flex flex-col">
-                  <span className="text-[9px] sm:text-[10px] uppercase font-mono text-white/40 tracking-wider">
-                    Win Rate
-                  </span>
-                  <span className="text-base sm:text-lg font-extrabold text-amber-400 mt-0.5">
-                    {winRate}%
-                  </span>
-                </div>
-
-                {/* Total Matches */}
-                <div className="p-2 sm:p-2.5 rounded-xl bg-black/40 border border-white/10 flex flex-col">
-                  <span className="text-[9px] sm:text-[10px] uppercase font-mono text-white/40 tracking-wider">
-                    Matches
-                  </span>
-                  <span className="text-base sm:text-lg font-extrabold text-white mt-0.5">
-                    {totalMatches}
-                  </span>
-                </div>
-              </div>
-
-              {/* Nostr Public Key ID with Copy */}
-              <div className="pt-2 border-t border-white/10 shrink-0">
-                <div className="flex items-center justify-between text-[10px] text-white/40 mb-1 font-mono">
-                  <span>NOSTR IDENTITY</span>
-                  {copiedPk && <span className="text-emerald-400">Copied!</span>}
-                </div>
-                <button
-                  type="button"
-                  onClick={handleCopyId}
-                  className="w-full py-1.5 px-2 bg-black/50 hover:bg-black/70 rounded-lg border border-white/10 text-[10px] font-mono text-white/70 flex items-center justify-between transition-colors cursor-pointer"
-                  title="Click to copy Nostr Pubkey ID"
+            {/* TOP LEFT: Rank in 3D Gold Metal Gloock */}
+            <div 
+              className="absolute z-20 pointer-events-none select-none card-gold-label"
+              style={{ top: 12, left: 14 }}
+            >
+              <svg viewBox="0 0 100 24" className="h-5 sm:h-6 w-auto overflow-visible pointer-events-none">
+                <text
+                  x="0"
+                  y="19"
+                  fontFamily="'Gloock', serif"
+                  fontSize="18"
+                  fontWeight="400"
+                  fill="url(#card-gold-pattern)"
+                  filter="url(#card-metal-text)"
+                  letterSpacing="0.02em"
                 >
-                  <span className="truncate pr-2">
-                    {player.pk ? `${player.pk.slice(0, 10)}...${player.pk.slice(-6)}` : 'pk-unknown'}
-                  </span>
-                  <span className="material-symbols-rounded text-xs shrink-0 text-white/50">
-                    {copiedPk ? 'check' : 'content_copy'}
-                  </span>
-                </button>
+                  {isFirst ? 'Winner' : `#${player.rank}`}
+                </text>
+              </svg>
+            </div>
+
+            {/* BOTTOM RIGHT: Rank in 3D Gold Metal Gloock */}
+            <div 
+              className="absolute z-20 pointer-events-none select-none card-gold-label"
+              style={{ bottom: 12, right: 14 }}
+            >
+              <svg viewBox="0 0 100 24" className="h-5 sm:h-6 w-auto overflow-visible pointer-events-none">
+                <text
+                  x="100"
+                  y="19"
+                  textAnchor="end"
+                  fontFamily="'Gloock', serif"
+                  fontSize="18"
+                  fontWeight="400"
+                  fill="url(#card-gold-pattern)"
+                  filter="url(#card-metal-text)"
+                  letterSpacing="0.02em"
+                >
+                  {isFirst ? 'Winner' : `#${player.rank}`}
+                </text>
+              </svg>
+            </div>
+
+            {/* FULL-CARD ENGRAVED GOLD METALLIC DOSSIER */}
+            <svg 
+              viewBox="0 0 250 350" 
+              className="absolute inset-0 w-full h-full pointer-events-none z-10 overflow-visible"
+            >
+              {/* 1. Double Inset Filigree Border Frame */}
+              <rect 
+                x="12" y="12" width="226" height="326" rx="9" 
+                fill="none" 
+                stroke="url(#card-gold-pattern)" 
+                strokeWidth="1.6" 
+                filter="url(#card-metal-text)" 
+              />
+              <rect 
+                x="16" y="16" width="218" height="318" rx="6" 
+                fill="none" 
+                stroke="url(#card-gold-pattern)" 
+                strokeWidth="0.7" 
+                opacity="0.65" 
+              />
+
+              {/* 4 Corner Fleur Accents */}
+              <polygon points="20,17 23,20 20,23 17,20" fill="url(#card-gold-pattern)" filter="url(#card-metal-text)" />
+              <polygon points="230,17 233,20 230,23 227,20" fill="url(#card-gold-pattern)" filter="url(#card-metal-text)" />
+              <polygon points="20,327 23,330 20,333 17,330" fill="url(#card-gold-pattern)" filter="url(#card-metal-text)" />
+              <polygon points="230,327 233,330 230,333 227,330" fill="url(#card-gold-pattern)" filter="url(#card-metal-text)" />
+
+              {/* 2. Top Header / Player Name in 3D Gold Metal */}
+              <text 
+                x="125" y="32" 
+                textAnchor="middle" 
+                fontFamily="'Inter', sans-serif" 
+                fontSize="7.5" 
+                fontWeight="700" 
+                letterSpacing="0.32em" 
+                fill="url(#card-gold-pattern)" 
+                filter="url(#card-metal-text)"
+              >
+                {isFirst ? '★ CHAMPION DOSSIER ★' : 'PLAYER DOSSIER'}
+              </text>
+
+              <text 
+                x="125" y="58" 
+                textAnchor="middle" 
+                fontFamily="'Gloock', serif" 
+                fontSize="24" 
+                fontWeight="400" 
+                fill="url(#card-gold-pattern)" 
+                filter="url(#card-metal-name)"
+                letterSpacing="0.02em"
+              >
+                {displayName}
+              </text>
+
+              <text 
+                x="125" y="73" 
+                textAnchor="middle" 
+                fontFamily="'Inter', sans-serif" 
+                fontSize="8.5" 
+                fontWeight="600" 
+                letterSpacing="0.22em" 
+                fill="url(#card-gold-pattern)" 
+                opacity="0.8"
+              >
+                {isFirst ? 'TABLE CHAMPION • RANK #1' : `RANK #${player.rank} CONTENDER`}
+              </text>
+
+              {/* Top Flourish Divider */}
+              <path 
+                d="M 40 82 L 105 82 M 145 82 L 210 82" 
+                stroke="url(#card-gold-pattern)" 
+                strokeWidth="0.8" 
+                opacity="0.6" 
+              />
+              <polygon points="125,79 128,82 125,85 122,82" fill="url(#card-gold-pattern)" filter="url(#card-metal-text)" />
+
+              {/* 3. Engraved Four Pillars Cartouche (Stats Grid) */}
+              <rect 
+                x="26" y="92" width="198" height="152" rx="10" 
+                fill="#000000" 
+                fillOpacity="0.16" 
+                stroke="url(#card-gold-pattern)" 
+                strokeWidth="1" 
+                opacity="0.85" 
+              />
+
+              {/* Inner Crosshair Dividers */}
+              <line x1="34" y1="168" x2="216" y2="168" stroke="url(#card-gold-pattern)" strokeWidth="0.8" opacity="0.5" />
+              <line x1="125" y1="100" x2="125" y2="236" stroke="url(#card-gold-pattern)" strokeWidth="0.8" opacity="0.5" />
+              <polygon points="125,164 129,168 125,172 121,168" fill="url(#card-gold-pattern)" filter="url(#card-metal-text)" />
+
+              {/* Quadrant 1: VICTORIES */}
+              <text 
+                x="75" y="136" 
+                textAnchor="middle" 
+                fontFamily="'Gloock', serif" 
+                fontSize="32" 
+                fontWeight="400" 
+                fill="url(#card-gold-pattern)" 
+                filter="url(#card-metal-name)"
+              >
+                {player.wins || 0}
+              </text>
+              <text 
+                x="75" y="152" 
+                textAnchor="middle" 
+                fontFamily="'Inter', sans-serif" 
+                fontSize="7.5" 
+                fontWeight="700" 
+                letterSpacing="0.22em" 
+                fill="url(#card-gold-pattern)" 
+                filter="url(#card-metal-text)"
+              >
+                VICTORIES
+              </text>
+
+              {/* Quadrant 2: WIN RATE */}
+              <text 
+                x="175" y="136" 
+                textAnchor="middle" 
+                fontFamily="'Gloock', serif" 
+                fontSize="32" 
+                fontWeight="400" 
+                fill="url(#card-gold-pattern)" 
+                filter="url(#card-metal-name)"
+              >
+                {winRate}%
+              </text>
+              <text 
+                x="175" y="152" 
+                textAnchor="middle" 
+                fontFamily="'Inter', sans-serif" 
+                fontSize="7.5" 
+                fontWeight="700" 
+                letterSpacing="0.22em" 
+                fill="url(#card-gold-pattern)" 
+                filter="url(#card-metal-text)"
+              >
+                WIN RATE
+              </text>
+
+              {/* Quadrant 3: DEFEATS */}
+              <text 
+                x="75" y="210" 
+                textAnchor="middle" 
+                fontFamily="'Gloock', serif" 
+                fontSize="28" 
+                fontWeight="400" 
+                fill="url(#card-gold-pattern)" 
+                filter="url(#card-metal-name)"
+              >
+                {player.defeats || 0}
+              </text>
+              <text 
+                x="75" y="226" 
+                textAnchor="middle" 
+                fontFamily="'Inter', sans-serif" 
+                fontSize="7.5" 
+                fontWeight="700" 
+                letterSpacing="0.22em" 
+                fill="url(#card-gold-pattern)" 
+                filter="url(#card-metal-text)"
+              >
+                DEFEATS
+              </text>
+
+              {/* Quadrant 4: MATCHES */}
+              <text 
+                x="175" y="210" 
+                textAnchor="middle" 
+                fontFamily="'Gloock', serif" 
+                fontSize="28" 
+                fontWeight="400" 
+                fill="url(#card-gold-pattern)" 
+                filter="url(#card-metal-name)"
+              >
+                {totalMatches}
+              </text>
+              <text 
+                x="175" y="226" 
+                textAnchor="middle" 
+                fontFamily="'Inter', sans-serif" 
+                fontSize="7.5" 
+                fontWeight="700" 
+                letterSpacing="0.22em" 
+                fill="url(#card-gold-pattern)" 
+                filter="url(#card-metal-text)"
+              >
+                MATCHES
+              </text>
+
+              {/* Bottom Decorative Flourish */}
+              <path 
+                d="M 50 256 L 105 256 M 145 256 L 200 256" 
+                stroke="url(#card-gold-pattern)" 
+                strokeWidth="0.8" 
+                opacity="0.6" 
+              />
+              <polygon points="125,253 128,256 125,259 122,256" fill="url(#card-gold-pattern)" filter="url(#card-metal-text)" />
+            </svg>
+
+            {/* 4. Bottom Nostr Identity Ribbon (Click to Copy) */}
+            <div 
+              className="absolute bottom-5 inset-x-8 z-20 flex flex-col items-center pointer-events-auto cursor-pointer group/ribbon"
+              onClick={handleCopyId}
+            >
+              <div className="w-full py-1 px-3 rounded-full bg-black/35 hover:bg-black/55 border border-white/20 group-hover/ribbon:border-white/40 transition-all flex items-center justify-between shadow-inner">
+                <span className="material-symbols-rounded text-xs text-white/50 group-hover/ribbon:text-white/80">
+                  key
+                </span>
+                <span className="font-mono text-[10px] text-white/80 tracking-wider truncate px-1">
+                  {copiedPk 
+                    ? '✓ COPIED TO CLIPBOARD' 
+                    : (player.pk ? `${player.pk.slice(0, 10)}...${player.pk.slice(-6)}` : 'IDENTITY SECRET')}
+                </span>
+                <span className="material-symbols-rounded text-xs text-white/50 group-hover/ribbon:text-white/80">
+                  {copiedPk ? 'check' : 'content_copy'}
+                </span>
               </div>
+              <span className="text-[7.5px] font-mono uppercase tracking-[0.2em] text-white/40 mt-1">
+                Tap to copy Nostr identity
+              </span>
             </div>
           </div>
         </div>
