@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNostr } from '../../context/NostrContext';
 import { useProfile } from '../../context/ProfileContext';
+import { sound } from '../../services/sound';
 import { BloubAvatar } from '../Bloub/BloubAvatar';
 import AmbientLight from '../AmbientLight';
 import { fetchGlobalScoreboard, getStoredScoreboard } from '../../services/scoreboardService';
+import { PlayerCardModal } from './PlayerCardModal';
 
 export const ScoreboardView = ({ onBack }) => {
   const { pubkey, relays } = useNostr();
@@ -13,6 +15,8 @@ export const ScoreboardView = ({ onBack }) => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedPk, setCopiedPk] = useState(null);
+  const [sortBy, setSortBy] = useState('wins'); // 'wins' | 'winRate'
+  const [selectedPlayer, setSelectedPlayer] = useState(null);
 
   // Sync with Nostr relays on mount
   useEffect(() => {
@@ -40,11 +44,11 @@ export const ScoreboardView = ({ onBack }) => {
   // Handle escape key to go back
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape' && onBack) onBack();
+      if (e.key === 'Escape' && onBack && !selectedPlayer) onBack();
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onBack]);
+  }, [onBack, selectedPlayer]);
 
   const handleManualRefresh = () => {
     setIsSyncing(true);
@@ -60,23 +64,46 @@ export const ScoreboardView = ({ onBack }) => {
     setTimeout(() => setIsSyncing(false), 2500);
   };
 
-
-  const handleCopyId = (pk) => {
+  const handleCopyId = (pk, e) => {
+    if (e) e.stopPropagation();
     if (!pk) return;
     navigator.clipboard.writeText(pk);
     setCopiedPk(pk);
     setTimeout(() => setCopiedPk(null), 1800);
   };
 
-  // Filter players based on search query
-  const filteredPlayers = useMemo(() => {
-    if (!searchQuery.trim()) return players;
-    const q = searchQuery.toLowerCase().trim();
-    return players.filter(p => 
-      (p.name && p.name.toLowerCase().includes(q)) || 
-      (p.pk && p.pk.toLowerCase().includes(q))
-    );
-  }, [players, searchQuery]);
+  const handleOpenPlayerCard = (player, rank) => {
+    try {
+      sound.playClick();
+    } catch (e) {}
+    setSelectedPlayer({ ...player, rank });
+  };
+
+  // Filter and sort players based on active metric (Wins vs Win Rate)
+  const sortedAndFilteredPlayers = useMemo(() => {
+    let list = [...players];
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      list = list.filter(p => 
+        (p.name && p.name.toLowerCase().includes(q)) || 
+        (p.pk && p.pk.toLowerCase().includes(q))
+      );
+    }
+
+    return list.sort((a, b) => {
+      if (sortBy === 'wins') {
+        // Most Wins as primary, Win Rate as tiebreaker, Defeats as secondary tiebreaker
+        if ((b.wins || 0) !== (a.wins || 0)) return (b.wins || 0) - (a.wins || 0);
+        if ((b.winRate || 0) !== (a.winRate || 0)) return (b.winRate || 0) - (a.winRate || 0);
+        return (a.defeats || 0) - (b.defeats || 0);
+      } else {
+        // Win Rate % as primary, Wins as tiebreaker, Total Matches as secondary tiebreaker
+        if ((b.winRate || 0) !== (a.winRate || 0)) return (b.winRate || 0) - (a.winRate || 0);
+        if ((b.wins || 0) !== (a.wins || 0)) return (b.wins || 0) - (a.wins || 0);
+        return (b.totalMatches || 0) - (a.totalMatches || 0);
+      }
+    });
+  }, [players, searchQuery, sortBy]);
 
   return (
     <div className="h-[100dvh] w-screen overflow-hidden flex flex-col antialiased bg-[#050505] relative animate-fade-in select-none">
@@ -108,7 +135,6 @@ export const ScoreboardView = ({ onBack }) => {
 
         {/* Right: Sync Button & Player Profile Info */}
         <div className="flex items-center gap-2 sm:gap-2.5 z-20">
-
           <button
             type="button"
             onClick={handleManualRefresh}
@@ -122,7 +148,7 @@ export const ScoreboardView = ({ onBack }) => {
             <span className="hidden sm:inline">{isSyncing ? 'Syncing...' : 'Sync'}</span>
           </button>
 
-          {/* Current Local User Pill (Frameless / No Stroke) */}
+          {/* Current Local User Pill */}
           <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.05]">
             <div className="w-6 h-6 flex items-center justify-center shrink-0">
               <BloubAvatar
@@ -144,7 +170,7 @@ export const ScoreboardView = ({ onBack }) => {
         <div className="w-full max-w-3xl flex flex-col items-center">
           
           {/* Title in Gloock font */}
-          <div className="text-center mt-2 mb-6 sm:mb-8">
+          <div className="text-center mt-2 mb-4 sm:mb-5">
             <h1 
               className="text-4xl sm:text-6xl md:text-7xl text-white font-normal tracking-tight text-center drop-shadow-[0_4px_30px_rgba(255,255,255,0.2)]"
               style={{ fontFamily: '"Gloock", serif', fontWeight: 400 }}
@@ -152,11 +178,39 @@ export const ScoreboardView = ({ onBack }) => {
               Global Scoreboard
             </h1>
             <p 
-              className="text-white/50 text-sm sm:text-base font-normal mt-2 sm:mt-2.5 tracking-normal"
+              className="text-white/50 text-xs sm:text-sm font-normal mt-1.5 sm:mt-2 tracking-normal"
               style={{ fontFamily: "'Inter', sans-serif" }}
             >
-              Ranked by victories
+              {sortBy === 'wins' 
+                ? 'Ranked by total victories • Tap any player to inspect card' 
+                : 'Ranked by win percentage • Tap any player to inspect card'}
             </p>
+          </div>
+
+          {/* Ranking Metric Tabs (Wins vs Win Rate) */}
+          <div className="flex items-center justify-center p-1 bg-white/5 rounded-full border border-white/10 mb-5 mx-auto w-full max-w-[280px] shrink-0">
+            <button
+              type="button"
+              onClick={() => setSortBy('wins')}
+              className={`flex-1 py-1.5 text-xs font-semibold rounded-full transition-all cursor-pointer ${
+                sortBy === 'wins' 
+                  ? 'bg-white text-black shadow-md' 
+                  : 'text-white/50 hover:text-white'
+              }`}
+            >
+              Most Wins
+            </button>
+            <button
+              type="button"
+              onClick={() => setSortBy('winRate')}
+              className={`flex-1 py-1.5 text-xs font-semibold rounded-full transition-all cursor-pointer ${
+                sortBy === 'winRate' 
+                  ? 'bg-white text-black shadow-md' 
+                  : 'text-white/50 hover:text-white'
+              }`}
+            >
+              Win Rate %
+            </button>
           </div>
 
           {/* Search Bar - Full width */}
@@ -184,10 +238,10 @@ export const ScoreboardView = ({ onBack }) => {
             </div>
           </div>
 
-          {/* Player Ranking List - Frameless Tiles (NO STROKES) */}
+          {/* Player Ranking List - Clickable Tiles */}
           <div className="w-full space-y-2.5 pb-12">
-            {filteredPlayers.length > 0 ? (
-              filteredPlayers.map((player, index) => {
+            {sortedAndFilteredPlayers.length > 0 ? (
+              sortedAndFilteredPlayers.map((player, index) => {
                 const isLocalUser = player.pk === pubkey;
                 const rank = index + 1;
 
@@ -198,12 +252,15 @@ export const ScoreboardView = ({ onBack }) => {
                 return (
                   <div
                     key={player.pk}
-                    className={`flex items-center justify-between p-3.5 sm:p-4 rounded-2xl transition-all ${
+                    onClick={() => handleOpenPlayerCard(player, rank)}
+                    role="button"
+                    tabIndex={0}
+                    className={`flex items-center justify-between p-3.5 sm:p-4 rounded-2xl transition-all cursor-pointer group active:scale-[0.99] select-none ${
                       isLocalUser
-                        ? 'bg-white/[0.08] shadow-[0_0_30px_rgba(255,255,255,0.04)]'
+                        ? 'bg-white/[0.08] hover:bg-white/[0.12] shadow-[0_0_30px_rgba(255,255,255,0.04)]'
                         : isFirst
-                          ? 'bg-amber-400/[0.08] shadow-[0_0_30px_rgba(251,191,36,0.06)]'
-                          : 'bg-white/[0.03] hover:bg-white/[0.06]'
+                          ? 'bg-amber-400/[0.08] hover:bg-amber-400/[0.12] shadow-[0_0_30px_rgba(251,191,36,0.06)]'
+                          : 'bg-white/[0.03] hover:bg-white/[0.07]'
                     }`}
                   >
                     {/* Left: Rank + Character Bloub + Name / Pubkey */}
@@ -249,7 +306,7 @@ export const ScoreboardView = ({ onBack }) => {
                       {/* Name & Player ID */}
                       <div className="min-w-0 flex flex-col">
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-white text-sm sm:text-base truncate">
+                          <span className="font-bold text-white text-sm sm:text-base truncate group-hover:text-white transition-colors">
                             {player.name || 'Anonymous'}
                           </span>
                           {isLocalUser && (
@@ -262,19 +319,19 @@ export const ScoreboardView = ({ onBack }) => {
                         {/* Truncated Nostr Pubkey ID with Click to Copy */}
                         <button
                           type="button"
-                          onClick={() => handleCopyId(player.pk)}
+                          onClick={(e) => handleCopyId(player.pk, e)}
                           title="Click to copy Nostr Pubkey ID"
-                          className="text-[11px] text-white/40 hover:text-white/80 transition-colors text-left flex items-center gap-1 cursor-pointer w-fit group mt-0.5"
+                          className="text-[11px] text-white/40 hover:text-white/80 transition-colors text-left flex items-center gap-1 cursor-pointer w-fit group/btn mt-0.5"
                         >
                           <span>{player.pk ? `${player.pk.slice(0, 10)}...${player.pk.slice(-4)}` : 'pk-unknown'}</span>
-                          <span className="material-symbols-rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                          <span className="material-symbols-rounded text-xs opacity-0 group-hover/btn:opacity-100 transition-opacity">
                             {copiedPk === player.pk ? 'check' : 'content_copy'}
                           </span>
                         </button>
                       </div>
                     </div>
 
-                    {/* Right: Wins, Defeats & Win Rate Badges (NO STROKES) */}
+                    {/* Right: Wins, Defeats & Win Rate Badges + Inspection Arrow */}
                     <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                       {/* Wins Badge */}
                       <div className="flex flex-col items-center px-3 sm:px-4 py-1.5 rounded-xl bg-emerald-500/10 text-center min-w-[56px] sm:min-w-[64px]">
@@ -305,6 +362,11 @@ export const ScoreboardView = ({ onBack }) => {
                           Rate
                         </span>
                       </div>
+
+                      {/* Right Chevron arrow */}
+                      <span className="material-symbols-rounded text-white/20 group-hover:text-white/60 text-xl transition-colors shrink-0 ml-1">
+                        chevron_right
+                      </span>
                     </div>
                   </div>
                 );
@@ -344,6 +406,14 @@ export const ScoreboardView = ({ onBack }) => {
         <span className="font-bold text-white">{players.length}</span>
         <span>{players.length === 1 ? 'player' : 'players'} ranked</span>
       </div>
+
+      {/* Player Card Inspection Modal (Exact GameOver Card Layout with 3D Flip to Stats) */}
+      {selectedPlayer && (
+        <PlayerCardModal
+          player={selectedPlayer}
+          onClose={() => setSelectedPlayer(null)}
+        />
+      )}
     </div>
   );
 };
