@@ -30,22 +30,7 @@ const hexToHsl = (hex) => {
 
 export const PlayerCardModal = ({ player, onClose }) => {
   const [isFlipped, setIsFlipped] = useState(false);
-  const cardRef = useRef(null);
-  const containerRef = useRef(null);
-  const isFlippedRef = useRef(false);
-  const isFlippingRef = useRef(false);
-  const flipTimeoutRef = useRef(null);
-
-  // Sync ref with state
-  useEffect(() => {
-    isFlippedRef.current = isFlipped;
-  }, [isFlipped]);
-
-  useEffect(() => {
-    return () => {
-      if (flipTimeoutRef.current) clearTimeout(flipTimeoutRef.current);
-    };
-  }, []);
+  const tiltRef = useRef(null);
 
   const [windowSize, setWindowSize] = useState({
     isMobile: typeof window !== 'undefined' ? window.innerWidth < 640 : false,
@@ -115,60 +100,39 @@ export const PlayerCardModal = ({ player, onClose }) => {
 
   const handleCardClick = (e) => {
     e.stopPropagation();
-    if (isFlippingRef.current) return;
     try {
       sound.playCardFlip();
     } catch (err) {}
-
-    isFlippingRef.current = true;
-    const nextFlipped = !isFlippedRef.current;
-    isFlippedRef.current = nextFlipped;
-    setIsFlipped(nextFlipped);
-
-    if (cardRef.current) {
-      cardRef.current.style.transition = 'transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease';
-      cardRef.current.style.transform = nextFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)';
-      cardRef.current.style.boxShadow = '0 12px 32px rgba(0,0,0,0.45)';
-    }
-
-    if (flipTimeoutRef.current) clearTimeout(flipTimeoutRef.current);
-    flipTimeoutRef.current = setTimeout(() => {
-      isFlippingRef.current = false;
-    }, 650);
+    setIsFlipped(prev => !prev);
   };
 
   const handleMouseMove = (e) => {
-    if (isFlippingRef.current) return;
-    const container = containerRef.current;
-    const card = cardRef.current;
-    if (!container || !card) return;
+    const card = tiltRef.current;
+    if (!card) return;
 
-    const rect = container.getBoundingClientRect();
+    const rect = card.getBoundingClientRect();
     const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
     const y = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
 
-    const lightX = isFlippedRef.current ? (1 - x) : x;
-    card.style.setProperty('--mouse-x', `${(lightX * 100).toFixed(1)}%`);
+    card.style.setProperty('--mouse-x', `${(x * 100).toFixed(1)}%`);
     card.style.setProperty('--mouse-y', `${(y * 100).toFixed(1)}%`);
 
-    const rotX = ((0.5 - y) * 18).toFixed(2);
-    const rotY = ((x - 0.5) * 18).toFixed(2);
-    const targetRotY = isFlippedRef.current ? (180 + parseFloat(rotY)).toFixed(2) : rotY;
+    const rotX = ((0.5 - y) * 20).toFixed(2);
+    const rotY = ((x - 0.5) * 20).toFixed(2);
 
-    card.style.transition = 'transform 0.08s ease-out, box-shadow 0.2s ease';
-    card.style.transform = `rotateX(${rotX}deg) rotateY(${targetRotY}deg) scale3d(1.035, 1.035, 1.035)`;
+    card.style.transition = 'transform 0.1s ease-out, box-shadow 0.2s ease';
+    card.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg) scale3d(1.04, 1.04, 1.04)`;
     card.style.boxShadow = '0 24px 48px -8px rgba(0,0,0,0.55)';
   };
 
   const handleMouseLeave = () => {
-    if (isFlippingRef.current) return;
-    const card = cardRef.current;
+    const card = tiltRef.current;
     if (!card) return;
 
     card.style.setProperty('--mouse-x', '50%');
     card.style.setProperty('--mouse-y', '35%');
     card.style.transition = 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s ease';
-    card.style.transform = isFlippedRef.current ? 'rotateY(180deg)' : 'rotateY(0deg)';
+    card.style.transform = 'rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
     card.style.boxShadow = '0 12px 32px rgba(0,0,0,0.45)';
   };
 
@@ -273,28 +237,31 @@ export const PlayerCardModal = ({ player, onClose }) => {
         className="flex flex-col items-center justify-center my-auto py-4 sm:py-6 z-20 animate-slide-up" 
         style={{ perspective: '1200px' }}
       >
-        {/* Outer stable interaction anchor (un-rotated 2D boundary prevents coordinate feedback loop) */}
+        {/* Tilt Element: Handles 3D slight perspective tilt towards cursor & light sheen variables */}
         <div
-          ref={containerRef}
+          ref={tiltRef}
           onClick={handleCardClick}
           data-card-flip="true"
-          className="relative select-none cursor-pointer group"
+          className="relative select-none rounded-xl sm:rounded-2xl shadow-[0_12px_32px_rgba(0,0,0,0.45)] cursor-pointer group"
           style={{
             width: windowSize.isMobile ? '215px' : (windowSize.isLaptop ? '235px' : '255px'),
             aspectRatio: '250 / 350',
+            transformStyle: 'preserve-3d',
+            transform: 'rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)',
+            transition: 'transform 0.1s ease-out, box-shadow 0.25s ease',
+            willChange: 'transform'
           }}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
         >
-          {/* 3D Transforming Card Element */}
+          {/* Flip Element: Handles the 180deg flip between front and back */}
           <div
-            ref={cardRef}
             data-card-flip="true"
-            className="w-full h-full relative rounded-xl sm:rounded-2xl shadow-[0_12px_32px_rgba(0,0,0,0.45)]"
+            className="w-full h-full relative"
             style={{
               transformStyle: 'preserve-3d',
               transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
-              transition: 'transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease',
+              transition: 'transform 0.65s cubic-bezier(0.16, 1, 0.3, 1)',
               willChange: 'transform'
             }}
           >
@@ -483,11 +450,11 @@ export const PlayerCardModal = ({ player, onClose }) => {
               }}
             />
 
-            {/* Mouse Ambient Lighting Sheen (Refined soft champagne highlight) */}
+            {/* Mouse Ambient Lighting Sheen (Warm Champagne Sheen following hover) */}
             <div 
               className="absolute inset-0 pointer-events-none z-0 transition-opacity duration-200"
               style={{
-                background: 'radial-gradient(circle 170px at var(--mouse-x, 50%) var(--mouse-y, 35%), rgba(255, 245, 220, 0.10) 0%, transparent 100%)',
+                background: 'radial-gradient(circle 140px at var(--mouse-x, 50%) var(--mouse-y, 35%), rgba(255, 238, 180, 0.28) 0%, transparent 100%)',
                 mixBlendMode: 'screen'
               }}
             />
