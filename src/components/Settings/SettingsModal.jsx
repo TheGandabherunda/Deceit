@@ -203,19 +203,19 @@ export const SettingsModal = ({ isOpen, onClose }) => {
 
   return createPortal(
     <div 
-      className="fixed inset-0 bg-black/80 backdrop-blur-md z-[300] flex flex-col justify-end md:justify-center items-center p-3 sm:p-6 pb-6 md:pb-6 animate-fade-in select-none"
+      className="fixed inset-0 bg-black/80 backdrop-blur-md z-[300] flex flex-col justify-end md:justify-center items-center p-3 sm:p-6 pb-4 md:pb-6 animate-fade-in select-none"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
       <div 
-        className="w-full max-w-[440px] max-h-[88vh] flex flex-col bg-[#0a0a0a] rounded-[32px] p-5 sm:p-7 shadow-2xl relative border border-white/10 overflow-hidden"
+        className="w-full max-w-[540px] max-h-[88vh] flex flex-col bg-[#0c0c0c] rounded-[28px] sm:rounded-[32px] p-5 sm:p-7 shadow-2xl relative border border-white/10 overflow-hidden"
         style={{ animation: 'slideUpModal 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards' }}
       >
-        {/* Pull Handle for mobile */}
+        {/* Mobile drag handle */}
         <div className="w-12 h-1.5 bg-white/20 rounded-full mx-auto mb-3 md:hidden shrink-0" />
 
-        {/* Top-right close button */}
+        {/* Top Close Button */}
         <button 
           type="button"
           onClick={onClose}
@@ -225,49 +225,47 @@ export const SettingsModal = ({ isOpen, onClose }) => {
           <span className="material-symbols-rounded text-[20px]">close</span>
         </button>
 
-        {/* Header */}
-        <div className="mt-1 mb-4 text-center px-2 shrink-0">
-          <h3 
-            className="text-3xl sm:text-4xl text-white font-serif tracking-normal" 
+        {/* Header Title */}
+        <div className="text-center px-2 shrink-0 mb-4">
+          <h2 
+            className="text-3xl sm:text-4xl text-white font-normal tracking-tight" 
             style={{ fontFamily: '"Gloock", serif', fontWeight: 400 }}
           >
             Settings
-          </h3>
+          </h2>
           <p className="text-white/40 text-xs sm:text-sm mt-1">
             Audio preferences & account backup management.
           </p>
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="flex bg-white/5 p-1 rounded-2xl border border-white/10 mb-4 shrink-0">
+        {/* Mode Selector Tabs */}
+        <div className="flex items-center justify-center p-1 bg-white/5 rounded-full border border-white/10 mb-4 mx-auto w-full max-w-[320px] shrink-0">
           <button
             type="button"
             onClick={() => setActiveTab('audio')}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+            className={`flex-1 py-1.5 text-xs font-semibold rounded-full transition-all cursor-pointer ${
               activeTab === 'audio' 
                 ? 'bg-white text-black shadow-md' 
-                : 'text-white/60 hover:text-white'
+                : 'text-white/50 hover:text-white'
             }`}
           >
-            <span className="material-symbols-rounded text-base">volume_up</span>
             Audio
           </button>
           <button
             type="button"
             onClick={() => setActiveTab('account')}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+            className={`flex-1 py-1.5 text-xs font-semibold rounded-full transition-all cursor-pointer ${
               activeTab === 'account' 
                 ? 'bg-white text-black shadow-md' 
-                : 'text-white/60 hover:text-white'
+                : 'text-white/50 hover:text-white'
             }`}
           >
-            <span className="material-symbols-rounded text-base">shield</span>
             Account & Backup
           </button>
         </div>
 
-        {/* Modal Scrollable Body */}
-        <div className="overflow-y-auto no-scrollbar flex-1 pr-0.5 space-y-4">
+        {/* Scrollable Content Body */}
+        <div className="overflow-y-auto pr-1 -mr-1 space-y-3.5 text-left text-sm text-white/80 select-text no-scrollbar flex-1">
           {activeTab === 'audio' ? (
             /* ================= AUDIO TAB ================= */
             <div className="space-y-3.5">
@@ -542,14 +540,16 @@ export const SettingsModal = ({ isOpen, onClose }) => {
           )}
         </div>
 
-        {/* Done Button */}
-        <button
-          type="button"
-          onClick={onClose}
-          className="w-full h-[46px] rounded-full bg-white hover:bg-white/90 text-black font-bold text-sm transition-all flex items-center justify-center cursor-pointer shadow-lg active:scale-98 mt-4 shrink-0"
-        >
-          Done
-        </button>
+        {/* Bottom Confirmation Action */}
+        <div className="mt-4 pt-2 shrink-0">
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-full h-12 rounded-full bg-white hover:bg-white/90 text-black font-semibold text-sm transition-all flex items-center justify-center cursor-pointer shadow-lg active:scale-98"
+          >
+            Done
+          </button>
+        </div>
       </div>
     </div>,
     document.body
