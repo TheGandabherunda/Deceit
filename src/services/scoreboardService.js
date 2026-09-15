@@ -202,6 +202,49 @@ export const recordPublicMatchOutcome = ({ winner, defeated = [], roomCode, time
 };
 
 /**
+ * Validate match record event integrity to prevent fake or forged match injections
+ */
+export const validateMatchRecordEvent = (event) => {
+  if (!event || !event.content || !event.pubkey) return null;
+  try {
+    const data = JSON.parse(event.content);
+    if (!data || !data.winner || !data.winner.pk) return null;
+    if (!Array.isArray(data.defeated) || data.defeated.length === 0) return null;
+
+    // Winner pubkey format (64-character hex)
+    if (!/^[a-f0-9]{64}$/i.test(data.winner.pk)) return null;
+
+    // Room code must be 4 characters
+    const roomCode = (data.roomCode || '').trim();
+    if (!roomCode || roomCode.length !== 4) return null;
+
+    // Filter valid opponents who are not the winner
+    const validDefeated = data.defeated.filter(d => 
+      d && d.pk && /^[a-f0-9]{64}$/i.test(d.pk) && d.pk !== data.winner.pk
+    );
+    if (validDefeated.length === 0) return null;
+
+    // The signer of the Nostr event must be an actual participant in the table (the host)
+    const isParticipant = event.pubkey === data.winner.pk || validDefeated.some(d => d.pk === event.pubkey);
+    if (!isParticipant) return null;
+
+    // Timestamp sanity check (cannot be from the future)
+    const timestamp = data.timestamp || (event.created_at * 1000);
+    if (timestamp > Date.now() + 120000) return null;
+
+    return {
+      matchId: data.matchId || event.id,
+      roomCode,
+      winner: data.winner,
+      defeated: validDefeated,
+      timestamp
+    };
+  } catch (e) {
+    return null;
+  }
+};
+
+/**
  * Query Nostr Relays for match record events to build/sync the global scoreboard
  */
 export const fetchGlobalScoreboard = ({ relays = DEFAULT_RELAYS, onUpdate } = {}) => {
@@ -232,23 +275,14 @@ export const fetchGlobalScoreboard = ({ relays = DEFAULT_RELAYS, onUpdate } = {}
         let hasNew = false;
 
         sortedEvents.forEach(event => {
-          try {
-            const data = JSON.parse(event.content);
-            if (!data || !data.winner || !data.winner.pk) return;
+          const validated = validateMatchRecordEvent(event);
+          if (!validated) return;
 
-            const matchId = data.matchId || event.id;
-            const processedSet = getProcessedMatchIds();
-            if (!processedSet.has(matchId)) {
-              activeScoreboard = processMatchRecord(activeScoreboard, {
-                matchId,
-                roomCode: data.roomCode,
-                winner: data.winner,
-                defeated: data.defeated || [],
-                timestamp: data.timestamp || (event.created_at * 1000)
-              });
-              hasNew = true;
-            }
-          } catch (e) {}
+          const processedSet = getProcessedMatchIds();
+          if (!processedSet.has(validated.matchId)) {
+            activeScoreboard = processMatchRecord(activeScoreboard, validated);
+            hasNew = true;
+          }
         });
 
         if (hasNew && typeof onUpdate === 'function') {
@@ -271,27 +305,16 @@ export const fetchGlobalScoreboard = ({ relays = DEFAULT_RELAYS, onUpdate } = {}
       },
       {
         onevent(event) {
-          try {
-            const data = JSON.parse(event.content);
-            if (!data || !data.winner || !data.winner.pk) return;
+          const validated = validateMatchRecordEvent(event);
+          if (!validated) return;
 
-            const matchId = data.matchId || event.id;
-            const processedSet = getProcessedMatchIds();
-            if (!processedSet.has(matchId)) {
-              activeScoreboard = processMatchRecord(activeScoreboard, {
-                matchId,
-                roomCode: data.roomCode,
-                winner: data.winner,
-                defeated: data.defeated || [],
-                timestamp: data.timestamp || (event.created_at * 1000)
-              });
+          const processedSet = getProcessedMatchIds();
+          if (!processedSet.has(validated.matchId)) {
+            activeScoreboard = processMatchRecord(activeScoreboard, validated);
 
-              if (typeof onUpdate === 'function') {
-                onUpdate(activeScoreboard);
-              }
+            if (typeof onUpdate === 'function') {
+              onUpdate(activeScoreboard);
             }
-          } catch (err) {
-            console.warn('[Scoreboard] Failed to parse match event:', err);
           }
         },
         oneose() {
