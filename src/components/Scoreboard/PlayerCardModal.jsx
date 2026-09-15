@@ -432,11 +432,10 @@ export const PlayerCardModal = ({ player, onClose }) => {
                   }}
                 >
                   <span 
-                    className="text-[9.5px] sm:text-[10.5px] font-inter font-black uppercase tracking-[0.18em] leading-none select-none text-center"
+                    className="text-[10.5px] sm:text-[11.5px] font-inter font-bold leading-none select-none text-center"
                     style={{
                       color: '#261700',
-                      textShadow: '0 1px 0 rgba(255, 245, 210, 0.75), 0 -1px 0 rgba(0, 0, 0, 0.85)',
-                      paddingLeft: '0.18em'
+                      textShadow: '0 1px 0 rgba(255, 245, 210, 0.75), 0 -1px 0 rgba(0, 0, 0, 0.85)'
                     }}
                   >
                     Rank #{player.rank}
