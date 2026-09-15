@@ -60,7 +60,7 @@ export const RevolverCylinder = ({ chambersRemaining = 6, isActive = false, isSp
           {chambersRemaining} / 6 Chambers
         </span>
         <span className="text-[10px] font-mono text-white/40">
-          {Math.round((1 / chambersRemaining) * 100)}% Danger
+          {chambersRemaining > 0 ? `${Math.min(100, Math.round((1 / chambersRemaining) * 100))}% Danger` : '0% (Spent)'}
         </span>
       </div>
     </div>

@@ -1072,7 +1072,7 @@ export const GameProvider = ({ children }) => {
       });
     }
 
-    dealNewRound(1, playersRef.current, 6);
+    dealNewRound(1, playersRef.current, null);
   }, [displayName, broadcastRoomBeacon, dealNewRound]);
 
   useEffect(() => { startGameRef.current = startGame; }, [startGame]);
@@ -1661,12 +1661,17 @@ export const GameProvider = ({ children }) => {
 
     // If host, calculate dynamic 1-in-chambers odds on the victim's personal gun immediately so the sequence runs in sync on both peers
     if (isHostRef.current) {
-      const isDead = Math.random() < (1 / victimChambers);
-      const nextChambers = isDead ? 0 : Math.max(1, victimChambers - 1);
-      console.log(`[Deceit:Roulette:Roll] Host rolled ${victimName}'s revolver: isDead=${isDead}, chambers: ${victimChambers} -> ${nextChambers}`);
+      const randomArray = new Uint32Array(1);
+      const cryptoObj = typeof window !== 'undefined' ? window.crypto : globalThis.crypto;
+      cryptoObj.getRandomValues(randomArray);
+      const safeChambers = Math.max(1, victimChambers);
+      // Cryptographically uniform chamber roll: 1 in safeChambers chance of firing
+      const isDead = (randomArray[0] % safeChambers) === 0;
+      const nextChambers = isDead ? 0 : Math.max(1, safeChambers - 1);
+      console.log(`[Deceit:Roulette:Roll] Host rolled ${victimName}'s revolver: isDead=${isDead}, chambers: ${safeChambers} -> ${nextChambers}`);
 
       if (executeRouletteOutcomeRef.current) {
-        executeRouletteOutcomeRef.current(victimPk, isDead, victimChambers, nextChambers);
+        executeRouletteOutcomeRef.current(victimPk, isDead, safeChambers, nextChambers);
       }
     }
   }, [triggerBanner]);
