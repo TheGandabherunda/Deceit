@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { pool, getOrCreateKeys, getUserRelays, DEFAULT_RELAYS, publishEvent } from '../services/nostr';
+import { pool, getOrCreateKeys, getUserRelays, DEFAULT_RELAYS, publishEvent, hexToBytes } from '../services/nostr';
 import { KINDS, createBeaconEvent } from '../services/nostrProtocol';
 
 const NostrContext = createContext(null);
@@ -46,6 +46,30 @@ export const NostrProvider = ({ children }) => {
     };
 
     initAuth();
+  }, []);
+
+  // Sync state on account restoration
+  useEffect(() => {
+    const handleAccountRestored = (e) => {
+      if (e.detail && e.detail.identity) {
+        const { privKeyHex: hex, pubkey: pk } = e.detail.identity;
+        try {
+          const sk = hexToBytes(hex);
+          setPrivKeyHex(hex);
+          setSecretKey(sk);
+          setPubkey(pk);
+          setIsExtension(false);
+          if (e.detail.profile?.name) {
+            setDisplayName(e.detail.profile.name);
+          }
+          console.log(`[Deceit:Auth] Account restored in memory: pubkey=${pk.slice(0, 8)}... name="${e.detail.profile?.name}"`);
+        } catch (err) {
+          console.error('[Deceit:Auth] Failed to apply restored account keys in NostrContext:', err);
+        }
+      }
+    };
+    window.addEventListener('deceit:account-restored', handleAccountRestored);
+    return () => window.removeEventListener('deceit:account-restored', handleAccountRestored);
   }, []);
 
   // Update display name

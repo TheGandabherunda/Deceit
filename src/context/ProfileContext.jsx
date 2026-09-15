@@ -63,6 +63,33 @@ export const ProfileProvider = ({ children }) => {
     return () => window.removeEventListener('deceit:name-change', handleNameEvent);
   }, [profile.name]);
 
+  useEffect(() => {
+    const handleAccountRestored = (e) => {
+      if (e.detail && e.detail.profile) {
+        setProfile({
+          name: e.detail.profile.name || '',
+          color: e.detail.profile.color || DEFAULT_COLOR,
+          shape: e.detail.profile.shape || DEFAULT_SHAPE
+        });
+      }
+    };
+    const handleProfileChange = (e) => {
+      if (e.detail) {
+        setProfile(prev => ({
+          name: e.detail.name !== undefined ? e.detail.name : prev.name,
+          color: e.detail.color || prev.color,
+          shape: e.detail.shape || prev.shape
+        }));
+      }
+    };
+    window.addEventListener('deceit:account-restored', handleAccountRestored);
+    window.addEventListener('deceit:profile-change', handleProfileChange);
+    return () => {
+      window.removeEventListener('deceit:account-restored', handleAccountRestored);
+      window.removeEventListener('deceit:profile-change', handleProfileChange);
+    };
+  }, []);
+
   // Update profile
   const updateProfile = ({ name, color, shape }) => {
     setProfile((prev) => {
