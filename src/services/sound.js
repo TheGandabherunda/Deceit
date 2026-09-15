@@ -1190,8 +1190,8 @@ if (typeof window !== 'undefined') {
     const target = e.target.closest(CLICK_SELECTOR);
     if (!target) return;
 
-    // Exclude cards from default click sound (user explicitly requested: "remove card click sound not card-take sound")
-    if (target.closest('.playing-card, [data-card]')) {
+    // Exclude cards and card flip triggers from default click sound
+    if (target.closest('.playing-card, [data-card], [data-card-flip], [data-no-click-sound]')) {
       return;
     }
 

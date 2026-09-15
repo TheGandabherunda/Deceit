@@ -216,6 +216,7 @@ export const PlayerCardModal = ({ player, onClose }) => {
         <div
           ref={cardRef}
           onClick={handleCardClick}
+          data-card-flip="true"
           className="relative select-none rounded-xl sm:rounded-2xl shadow-[0_12px_32px_rgba(0,0,0,0.45)] cursor-pointer group"
           style={{
             width: windowSize.isMobile ? '215px' : (windowSize.isLaptop ? '235px' : '255px'),
@@ -578,6 +579,7 @@ export const PlayerCardModal = ({ player, onClose }) => {
         <button
           type="button"
           onClick={handleCardClick}
+          data-card-flip="true"
           aria-label={isFlipped ? 'Flip card to character' : 'Flip card to stats'}
           className="mt-3 sm:mt-4 p-2 text-white/50 hover:text-white transition-all hover:scale-110 active:scale-95 cursor-pointer flex items-center justify-center select-none"
         >
