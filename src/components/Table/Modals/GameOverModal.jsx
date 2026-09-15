@@ -4,6 +4,8 @@ import { useNostr } from '../../../context/NostrContext';
 import { useProfile } from '../../../context/ProfileContext';
 import { sound } from '../../../services/sound';
 import { BloubEmblemIcon } from '../../Bloub/BloubEmblemIcon';
+import goldWallpaper from '../../../assets/cards/gold-texture-wallpaper.jpg';
+import leatherTexture from '../../../assets/cards/leather-macro-shot.jpg';
 
 
 const hexToHsl = (hex) => {
@@ -131,8 +133,19 @@ export const GameOverModal = () => {
       {/* SVG DEFS FOR 3D METAL GOLD PATTERN & EMBLEM FILTERS */}
       <svg width="0" height="0" className="absolute pointer-events-none opacity-0 overflow-hidden" aria-hidden="true">
         <defs>
+          <linearGradient id="card-gold-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#FFF1B8" />
+            <stop offset="18%" stopColor="#F5D061" />
+            <stop offset="38%" stopColor="#D49E24" />
+            <stop offset="58%" stopColor="#9E6D0D" />
+            <stop offset="78%" stopColor="#E5B942" />
+            <stop offset="90%" stopColor="#BA8918" />
+            <stop offset="100%" stopColor="#FFEAA0" />
+          </linearGradient>
+
           <pattern id="card-gold-pattern" patternUnits="userSpaceOnUse" width="160" height="160">
-            <image href="/cards/gold-texture-wallpaper.jpg" x="0" y="0" width="160" height="160" preserveAspectRatio="xMidYMid slice" />
+            <rect width="160" height="160" fill="url(#card-gold-gradient)" />
+            <image href={goldWallpaper} xlinkHref={goldWallpaper} x="0" y="0" width="160" height="160" preserveAspectRatio="xMidYMid slice" />
           </pattern>
 
           {/* 3D Metal Gold Filter FOR EMBLEM (Exactly matching metal.svg) */}
@@ -285,21 +298,14 @@ export const GameOverModal = () => {
               margin: '2px',
               width: 'calc(100% - 4px)',
               height: 'calc(100% - 4px)',
-              backgroundColor: displayColor,
-              transformStyle: 'flat',
-              WebkitTransformStyle: 'flat',
-              transform: 'translateZ(1px)',
-              backfaceVisibility: 'hidden',
-              WebkitBackfaceVisibility: 'hidden',
-              WebkitFontSmoothing: 'antialiased',
-              contain: 'paint'
+              backgroundColor: displayColor
             }}
           >
             {/* Real Leather Macro Texture Overlay */}
             <div 
               className="absolute inset-0 pointer-events-none z-0 bg-cover bg-center"
               style={{
-                backgroundImage: 'url("/cards/leather-macro-shot.jpg")',
+                backgroundImage: `url("${leatherTexture}")`,
                 opacity: 0.22,
                 mixBlendMode: 'overlay'
               }}

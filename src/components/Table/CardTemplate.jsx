@@ -1,4 +1,6 @@
 import React from 'react';
+import goldWallpaper from '../../assets/cards/gold-texture-wallpaper.jpg';
+import leatherTexture from '../../assets/cards/leather-macro-shot.jpg';
 
 // King Icon (from public/cards/King.svg with 3D metal gold effect)
 const KingIcon = ({ className = "w-12 h-12" }) => (
@@ -158,9 +160,21 @@ export const CardTemplate = ({
       {/* SHARED SVG DEFS FOR GOLD PATTERN & 3D METAL EMBLEMS (FLUSH STAMPED / STICKED TO CARD) */}
       <svg width="0" height="0" className="absolute pointer-events-none opacity-0 overflow-hidden" aria-hidden="true">
         <defs>
+          {/* Universal Rich Multi-Stop Vector Gold Gradient Fallback (Zero Load Delay, 100% Mobile GPU Safe) */}
+          <linearGradient id="card-gold-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#FFF1B8" />
+            <stop offset="18%" stopColor="#F5D061" />
+            <stop offset="38%" stopColor="#D49E24" />
+            <stop offset="58%" stopColor="#9E6D0D" />
+            <stop offset="78%" stopColor="#E5B942" />
+            <stop offset="90%" stopColor="#BA8918" />
+            <stop offset="100%" stopColor="#FFEAA0" />
+          </linearGradient>
+
           {/* Real Gold Wallpaper Pattern (from kannadiga-master) */}
           <pattern id="card-gold-pattern" patternUnits="userSpaceOnUse" width="160" height="160">
-            <image href="/cards/gold-texture-wallpaper.jpg" x="0" y="0" width="160" height="160" preserveAspectRatio="xMidYMid slice" />
+            <rect width="160" height="160" fill="url(#card-gold-gradient)" />
+            <image href={goldWallpaper} xlinkHref={goldWallpaper} x="0" y="0" width="160" height="160" preserveAspectRatio="xMidYMid slice" />
           </pattern>
 
           {/* 3D Metal Gold Filter FOR ICONS (Stuck flush to card surface, no floating drop shadow) */}
@@ -253,15 +267,15 @@ export const CardTemplate = ({
             backgroundColor: config.bg 
           }}
         >
-          {/* Real Leather Macro Texture Overlay (from kannadiga-master) */}
-          <div 
-            className="absolute inset-0 pointer-events-none z-0 bg-cover bg-center"
-            style={{
-              backgroundImage: 'url("/cards/leather-macro-shot.jpg")',
-              opacity: config.textureOpacity ?? 0.22,
-              mixBlendMode: config.textureBlend ?? 'overlay'
-            }}
-          />
+            {/* Real Leather Macro Texture Overlay (from kannadiga-master) */}
+            <div 
+              className="absolute inset-0 pointer-events-none z-0 bg-cover bg-center"
+              style={{
+                backgroundImage: `url("${leatherTexture}")`,
+                opacity: config.textureOpacity ?? 0.22,
+                mixBlendMode: config.textureBlend ?? 'overlay'
+              }}
+            />
 
           {/* Interactive Mouse & Central Ambient Lighting Sheen */}
           <div 
