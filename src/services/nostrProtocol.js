@@ -76,7 +76,7 @@ export const createMatchRecordEvent = ({ roomCode, winner, defeated = [], timest
   const matchId = `deceit-match-${roomCode}-${timestamp}`;
   const tags = [
     ['d', matchId],
-    ['t', 'deceit-scoreboard'],
+    ['t', 'deceit-scoreboard-v1'],
     ['t', 'deceit-public-match'],
     ['p', winner.pk, 'winner']
   ];

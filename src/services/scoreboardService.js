@@ -1,8 +1,15 @@
 import { pool, DEFAULT_RELAYS } from './nostr';
 import { KINDS } from './nostrProtocol';
 
-const SCOREBOARD_STORAGE_KEY = 'deceit_global_scoreboard';
-const PROCESSED_MATCHES_KEY = 'deceit_processed_matches';
+export const SCOREBOARD_TAG = 'deceit-scoreboard-v1';
+const SCOREBOARD_STORAGE_KEY = 'deceit_global_scoreboard_v1';
+const PROCESSED_MATCHES_KEY = 'deceit_processed_matches_v1';
+
+// Automatically purge legacy test caches
+try {
+  localStorage.removeItem('deceit_global_scoreboard');
+  localStorage.removeItem('deceit_processed_matches');
+} catch (e) {}
 
 /**
  * Scoreboard Entry Model:
@@ -213,7 +220,7 @@ export const fetchGlobalScoreboard = ({ relays = DEFAULT_RELAYS, onUpdate } = {}
     try {
       const events = await pool.querySync(relays, {
         kinds: [KINDS.MATCH_RECORD],
-        '#t': ['deceit-scoreboard'],
+        '#t': [SCOREBOARD_TAG],
         limit: 500
       });
 
@@ -259,7 +266,7 @@ export const fetchGlobalScoreboard = ({ relays = DEFAULT_RELAYS, onUpdate } = {}
       relays,
       {
         kinds: [KINDS.MATCH_RECORD],
-        '#t': ['deceit-scoreboard'],
+        '#t': [SCOREBOARD_TAG],
         limit: 100
       },
       {
