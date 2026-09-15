@@ -199,7 +199,7 @@ export const GameOverModal = () => {
             : (isEliminatedInProgress ? 'Got Eliminated' : 'Defeat')}
         </h1>
 
-        <span className="text-xs sm:text-sm font-mono uppercase tracking-[0.25em] text-white/50 mt-2 sm:mt-3">
+        <span className="text-xs sm:text-sm font-inter font-medium uppercase tracking-[0.25em] text-white/50 mt-2 sm:mt-3">
           {isWinner 
             ? 'Table Champion' 
             : (isEliminatedInProgress 

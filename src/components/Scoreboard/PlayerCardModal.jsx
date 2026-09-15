@@ -179,7 +179,7 @@ export const PlayerCardModal = ({ player, onClose }) => {
           {isFirst ? 'Victory' : `Rank #${player.rank}`}
         </h1>
 
-        <span className="text-xs sm:text-sm font-mono uppercase tracking-[0.25em] text-white/50 mt-2 sm:mt-3">
+        <span className="text-xs sm:text-sm font-inter font-medium uppercase tracking-[0.25em] text-white/50 mt-2 sm:mt-3">
           {isFirst 
             ? 'Leaderboard Champion' 
             : `Contender • ${player.wins || 0} ${(player.wins || 0) === 1 ? 'Victory' : 'Victories'}`}
@@ -438,7 +438,7 @@ export const PlayerCardModal = ({ player, onClose }) => {
               <div className="flex items-center gap-2 mt-1 select-none">
                 <span className="w-5 h-[1px] bg-gradient-to-r from-transparent to-[#D4AF37]/60" />
                 <p 
-                  className="text-[10px] sm:text-[11px] font-mono uppercase tracking-[0.25em] font-semibold select-none"
+                  className="text-[10px] sm:text-[11px] font-inter uppercase tracking-[0.25em] font-semibold select-none"
                   style={{ color: '#F7E4A8' }}
                 >
                   Rank #{player.rank}
@@ -457,11 +457,11 @@ export const PlayerCardModal = ({ player, onClose }) => {
                   border: '1px solid rgba(229, 184, 66, 0.40)'
                 }}
               >
-                <span className="text-2xl sm:text-3xl font-extrabold font-mono leading-none tracking-tight select-none text-[#F6CE55]">
+                <span className="text-2xl sm:text-3xl font-black font-inter leading-none tracking-tight select-none text-[#F6CE55]">
                   {player.wins || 0}
                 </span>
                 <span 
-                  className="text-[10px] sm:text-[11px] font-mono font-semibold uppercase tracking-[0.22em] mt-2 select-none"
+                  className="text-[10px] sm:text-[11px] font-inter font-semibold uppercase tracking-[0.22em] mt-2 select-none"
                   style={{ color: '#F7E4A8' }}
                 >
                   Wins
@@ -476,11 +476,11 @@ export const PlayerCardModal = ({ player, onClose }) => {
                   border: '1px solid rgba(229, 184, 66, 0.40)'
                 }}
               >
-                <span className="text-2xl sm:text-3xl font-extrabold font-mono leading-none tracking-tight select-none text-[#F6CE55]">
+                <span className="text-2xl sm:text-3xl font-black font-inter leading-none tracking-tight select-none text-[#F6CE55]">
                   {player.defeats || 0}
                 </span>
                 <span 
-                  className="text-[10px] sm:text-[11px] font-mono font-semibold uppercase tracking-[0.22em] mt-2 select-none"
+                  className="text-[10px] sm:text-[11px] font-inter font-semibold uppercase tracking-[0.22em] mt-2 select-none"
                   style={{ color: '#F7E4A8' }}
                 >
                   Defeats
@@ -495,11 +495,11 @@ export const PlayerCardModal = ({ player, onClose }) => {
                   border: '1px solid rgba(229, 184, 66, 0.40)'
                 }}
               >
-                <span className="text-2xl sm:text-3xl font-extrabold font-mono leading-none tracking-tight select-none text-[#F6CE55]">
+                <span className="text-2xl sm:text-3xl font-black font-inter leading-none tracking-tight select-none text-[#F6CE55]">
                   {winRate}%
                 </span>
                 <span 
-                  className="text-[10px] sm:text-[11px] font-mono font-semibold uppercase tracking-[0.22em] mt-2 select-none"
+                  className="text-[10px] sm:text-[11px] font-inter font-semibold uppercase tracking-[0.22em] mt-2 select-none"
                   style={{ color: '#F7E4A8' }}
                 >
                   Win Rate
@@ -514,11 +514,11 @@ export const PlayerCardModal = ({ player, onClose }) => {
                   border: '1px solid rgba(229, 184, 66, 0.40)'
                 }}
               >
-                <span className="text-2xl sm:text-3xl font-extrabold font-mono leading-none tracking-tight select-none text-[#F6CE55]">
+                <span className="text-2xl sm:text-3xl font-black font-inter leading-none tracking-tight select-none text-[#F6CE55]">
                   {totalMatches}
                 </span>
                 <span 
-                  className="text-[10px] sm:text-[11px] font-mono font-semibold uppercase tracking-[0.22em] mt-2 select-none"
+                  className="text-[10px] sm:text-[11px] font-inter font-semibold uppercase tracking-[0.22em] mt-2 select-none"
                   style={{ color: '#F7E4A8' }}
                 >
                   Matches
