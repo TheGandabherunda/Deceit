@@ -415,24 +415,24 @@ export const PlayerCardModal = ({ player, onClose }) => {
             </svg>
 
             {/* Top: Rank Chip above Player Name */}
-            <div className="relative z-20 flex flex-col items-center select-none pt-1.5 sm:pt-2">
-              {/* Complete Metal Emblem Pill with Engraved Rank Text */}
+            <div className="relative z-20 flex flex-col items-center select-none pt-2 sm:pt-2.5">
+              {/* Complete Metal Emblem Pill with Engraved Rank Text (Refined smaller size with even spacing) */}
               <div 
-                className="inline-flex items-center justify-center p-[1px] rounded-full select-none"
+                className="inline-flex items-center justify-center p-[1px] rounded-full select-none shadow-sm"
                 style={{
                   background: 'linear-gradient(180deg, #FFE89E 0%, #D4AF37 35%, #8A5805 75%, #C2931D 100%)',
-                  boxShadow: '0 2px 5px rgba(0, 0, 0, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.75), inset 0 -1px 1px rgba(0, 0, 0, 0.45)'
+                  boxShadow: '0 1.5px 3px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.75), inset 0 -0.5px 1px rgba(0, 0, 0, 0.45)'
                 }}
               >
                 <div 
-                  className="h-5 sm:h-6 px-3 sm:px-3.5 rounded-full flex items-center justify-center"
+                  className="h-[19px] sm:h-[21px] px-2.5 sm:px-3 rounded-full flex items-center justify-center"
                   style={{
                     background: 'linear-gradient(180deg, #E5B842 0%, #C9971D 40%, #9E6B08 80%, #B88514 100%)',
-                    boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.55), inset 0 -0.5px 1px rgba(255, 255, 255, 0.35)'
+                    boxShadow: 'inset 0 1px 1.5px rgba(0, 0, 0, 0.55), inset 0 -0.5px 0.5px rgba(255, 255, 255, 0.35)'
                   }}
                 >
                   <span 
-                    className="text-[10.5px] sm:text-[11.5px] font-inter font-bold leading-none select-none text-center"
+                    className="text-[9.5px] sm:text-[10px] font-inter font-bold leading-none select-none text-center"
                     style={{
                       color: '#261700',
                       textShadow: '0 1px 0 rgba(255, 245, 210, 0.75), 0 -1px 0 rgba(0, 0, 0, 0.85)'
