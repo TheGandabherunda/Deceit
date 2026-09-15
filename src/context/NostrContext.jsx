@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { pool, getOrCreateKeys, getUserRelays, DEFAULT_RELAYS, publishEvent, hexToBytes } from '../services/nostr';
 import { KINDS, createBeaconEvent } from '../services/nostrProtocol';
+import { fetchGlobalScoreboard } from '../services/scoreboardService';
 
 const NostrContext = createContext(null);
 
@@ -19,6 +20,7 @@ export const NostrProvider = ({ children }) => {
   // Initialize identity
   useEffect(() => {
     const initAuth = async () => {
+      let activeRelays = DEFAULT_RELAYS;
       const storedExt = localStorage.getItem('deceit_nip07');
       if (storedExt && window.nostr) {
         try {
@@ -26,9 +28,12 @@ export const NostrProvider = ({ children }) => {
           setPubkey(pk);
           setIsExtension(true);
           const r = await getUserRelays();
+          activeRelays = r;
           setRelays(r);
           setIsRelayConnected(true);
           console.log(`[Deceit:Auth] Logged in via NIP-07 extension: pubkey=${pk.slice(0, 8)}... name="${displayName}"`);
+          // Warm global scoreboard cache
+          fetchGlobalScoreboard({ relays: activeRelays });
           return;
         } catch (e) {
           console.warn('[Deceit:Auth] Extension login failed, falling back to guest keys:', e);
@@ -43,6 +48,8 @@ export const NostrProvider = ({ children }) => {
       setRelays(DEFAULT_RELAYS);
       setIsRelayConnected(true);
       console.log(`[Deceit:Auth] Initialized guest keys: pubkey=${pk.slice(0, 8)}... name="${displayName}"`);
+      // Warm global scoreboard cache
+      fetchGlobalScoreboard({ relays: DEFAULT_RELAYS });
     };
 
     initAuth();

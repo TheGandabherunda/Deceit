@@ -60,11 +60,15 @@ export const clearScoreboard = () => {
   return [];
 };
 
-// Load cached scoreboard from localStorage (strictly real public match records only)
+// Load cached scoreboard from localStorage (strictly real match records only)
 export const getStoredScoreboard = () => {
   try {
     const raw = localStorage.getItem(SCOREBOARD_STORAGE_KEY);
-    if (!raw) return [];
+    if (!raw) {
+      // If scoreboard cache is empty, also clear processed match IDs so initial relay sync ingests all records
+      localStorage.removeItem(PROCESSED_MATCHES_KEY);
+      return [];
+    }
     const parsed = JSON.parse(raw);
     const cleaned = filterRealPlayers(parsed);
     if (cleaned.length !== parsed.length) {
@@ -98,7 +102,7 @@ export const sortScoreboard = (list) => {
 };
 
 /**
- * Process a single public match record and update the scoreboard mapping
+ * Process a single match record and update the scoreboard mapping
  */
 export const processMatchRecord = (currentScoreboard, matchData) => {
   const { matchId, winner, defeated = [], timestamp = Date.now() } = matchData;
@@ -171,7 +175,7 @@ export const processMatchRecord = (currentScoreboard, matchData) => {
 };
 
 /**
- * Record a locally concluded public table match outcome
+ * Record a locally concluded table match outcome
  */
 export const recordPublicMatchOutcome = ({ winner, defeated = [], roomCode, timestamp = Date.now() }) => {
   if (!winner || !winner.pk) return;
@@ -186,7 +190,7 @@ export const recordPublicMatchOutcome = ({ winner, defeated = [], roomCode, time
     timestamp
   });
 
-  console.log(`[Scoreboard] Recorded public match outcome. Winner: ${winner.name}, Defeated: ${defeated.length}`);
+  console.log(`[Scoreboard] Recorded match outcome. Winner: ${winner.name}, Defeated: ${defeated.length}`);
   return updated;
 };
 
@@ -201,16 +205,63 @@ export const fetchGlobalScoreboard = ({ relays = DEFAULT_RELAYS, onUpdate } = {}
     onUpdate(activeScoreboard);
   }
 
-  try {
-    const sub = pool.subscribeMany(
-      relays,
-      [
-        {
-          kinds: [KINDS.MATCH_RECORD],
-          '#t': ['deceit-scoreboard'],
-          limit: 300
+  let isClosed = false;
+  let sub = null;
+
+  // 1. Immediate fast querySync across all relays to pull historical matches
+  (async () => {
+    try {
+      const events = await pool.querySync(relays, {
+        kinds: [KINDS.MATCH_RECORD],
+        '#t': ['deceit-scoreboard'],
+        limit: 500
+      });
+
+      if (isClosed) return;
+
+      if (Array.isArray(events) && events.length > 0) {
+        // Sort chronologically ascending
+        const sortedEvents = [...events].sort((a, b) => (a.created_at || 0) - (b.created_at || 0));
+        let hasNew = false;
+
+        sortedEvents.forEach(event => {
+          try {
+            const data = JSON.parse(event.content);
+            if (!data || !data.winner || !data.winner.pk) return;
+
+            const matchId = data.matchId || event.id;
+            const processedSet = getProcessedMatchIds();
+            if (!processedSet.has(matchId)) {
+              activeScoreboard = processMatchRecord(activeScoreboard, {
+                matchId,
+                roomCode: data.roomCode,
+                winner: data.winner,
+                defeated: data.defeated || [],
+                timestamp: data.timestamp || (event.created_at * 1000)
+              });
+              hasNew = true;
+            }
+          } catch (e) {}
+        });
+
+        if (hasNew && typeof onUpdate === 'function') {
+          onUpdate(activeScoreboard);
         }
-      ],
+      }
+    } catch (err) {
+      console.warn('[Scoreboard] querySync error:', err);
+    }
+  })();
+
+  // 2. Real-time subscription for ongoing matches (object filter for nostr-tools v2)
+  try {
+    sub = pool.subscribeMany(
+      relays,
+      {
+        kinds: [KINDS.MATCH_RECORD],
+        '#t': ['deceit-scoreboard'],
+        limit: 100
+      },
       {
         onevent(event) {
           try {
@@ -218,16 +269,19 @@ export const fetchGlobalScoreboard = ({ relays = DEFAULT_RELAYS, onUpdate } = {}
             if (!data || !data.winner || !data.winner.pk) return;
 
             const matchId = data.matchId || event.id;
-            activeScoreboard = processMatchRecord(activeScoreboard, {
-              matchId,
-              roomCode: data.roomCode,
-              winner: data.winner,
-              defeated: data.defeated || [],
-              timestamp: data.timestamp || (event.created_at * 1000)
-            });
+            const processedSet = getProcessedMatchIds();
+            if (!processedSet.has(matchId)) {
+              activeScoreboard = processMatchRecord(activeScoreboard, {
+                matchId,
+                roomCode: data.roomCode,
+                winner: data.winner,
+                defeated: data.defeated || [],
+                timestamp: data.timestamp || (event.created_at * 1000)
+              });
 
-            if (typeof onUpdate === 'function') {
-              onUpdate(activeScoreboard);
+              if (typeof onUpdate === 'function') {
+                onUpdate(activeScoreboard);
+              }
             }
           } catch (err) {
             console.warn('[Scoreboard] Failed to parse match event:', err);
@@ -241,14 +295,14 @@ export const fetchGlobalScoreboard = ({ relays = DEFAULT_RELAYS, onUpdate } = {}
         }
       }
     );
-
-    return () => {
-      try {
-        sub.close();
-      } catch (e) {}
-    };
   } catch (err) {
     console.error('[Scoreboard] Failed to subscribe to scoreboard events:', err);
-    return () => {};
   }
+
+  return () => {
+    isClosed = true;
+    try {
+      if (sub && typeof sub.close === 'function') sub.close();
+    } catch (e) {}
+  };
 };

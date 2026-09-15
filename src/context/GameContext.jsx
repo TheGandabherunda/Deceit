@@ -1204,8 +1204,8 @@ export const GameProvider = ({ children }) => {
       localScore
     });
 
-    // Record to Global Scoreboard if this was a Public table match
-    if (isPublicRef.current && winner) {
+    // Record to Global Scoreboard
+    if (winner) {
       const defeatedList = playersRef.current.filter(p => p.pk !== winner.pk);
       recordPublicMatchOutcome({
         winner: {
@@ -1560,8 +1560,8 @@ export const GameProvider = ({ children }) => {
             });
           }
 
-          // Record to Global Scoreboard if this was a Public table match
-          if (isPublicRef.current && winner) {
+          // Record to Global Scoreboard
+          if (winner) {
             const defeatedList = updated.filter(p => p.pk !== winner.pk);
             recordPublicMatchOutcome({
               winner: {

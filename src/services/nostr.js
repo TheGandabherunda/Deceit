@@ -6,9 +6,10 @@ export const hexToBytes = (hex) => new Uint8Array(hex.match(/.{1,2}/g).map(byte 
 export const pool = new SimplePool();
 
 export const DEFAULT_RELAYS = [
-  'wss://relay.damus.io',
   'wss://nos.lol',
-  'wss://relay.primal.net'
+  'wss://relay.primal.net',
+  'wss://nostr.mom',
+  'wss://relay.damus.io'
 ];
 
 export const getOrCreateKeys = () => {

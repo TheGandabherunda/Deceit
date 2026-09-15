@@ -371,6 +371,12 @@ export const ScoreboardView = ({ onBack }) => {
                   </div>
                 );
               })
+            ) : isSyncing ? (
+              /* Syncing State */
+              <div className="flex flex-col items-center justify-center text-center py-20 px-4 space-y-4">
+                <div className="w-12 h-12 rounded-full border-2 border-white/10 border-t-amber-400 animate-spin" />
+                <p className="text-white/60 text-sm font-medium">Syncing global rankings from relays...</p>
+              </div>
             ) : (
               /* Empty State */
               <div className="flex flex-col items-center justify-center text-center py-20 px-4 space-y-4">
@@ -378,12 +384,12 @@ export const ScoreboardView = ({ onBack }) => {
                   <span className="material-symbols-rounded text-4xl">leaderboard</span>
                 </div>
                 <h3 className="text-white font-semibold text-lg">
-                  {searchQuery ? 'No matching players found' : 'No public table records yet'}
+                  {searchQuery ? 'No matching players found' : 'No match records yet'}
                 </h3>
                 <p className="text-white/50 text-xs sm:text-sm max-w-sm font-sans leading-relaxed">
                   {searchQuery 
                     ? 'Try searching with a different player name or Nostr pubkey ID.' 
-                    : 'Play matches on public tables to record wins, eliminate opponents, and claim the #1 spot on the global scoreboard!'}
+                    : 'Play matches to record wins, eliminate opponents, and claim the #1 spot on the global scoreboard!'}
                 </p>
                 {!searchQuery && (
                   <button
@@ -391,7 +397,7 @@ export const ScoreboardView = ({ onBack }) => {
                     onClick={onBack}
                     className="mt-2 px-8 h-11 bg-white hover:bg-white/90 text-black font-semibold rounded-full text-sm transition-all shadow-xl active:scale-95 cursor-pointer"
                   >
-                    Play a Public Match
+                    Play a Match
                   </button>
                 )}
               </div>
