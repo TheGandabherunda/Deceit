@@ -30,7 +30,6 @@ const hexToHsl = (hex) => {
 
 export const PlayerCardModal = ({ player, onClose }) => {
   const [isFlipped, setIsFlipped] = useState(false);
-  const [copiedPk, setCopiedPk] = useState(false);
   const [windowSize, setWindowSize] = useState({
     isMobile: typeof window !== 'undefined' ? window.innerWidth < 640 : false,
     isLaptop: typeof window !== 'undefined' ? window.innerWidth >= 768 && (window.innerHeight <= 860 || (window.innerWidth <= 1440 && window.innerHeight <= 900)) : false,
@@ -80,14 +79,6 @@ export const PlayerCardModal = ({ player, onClose }) => {
       sound.playCardFlip();
     } catch (err) {}
     setIsFlipped(prev => !prev);
-  };
-
-  const handleCopyId = (e) => {
-    e.stopPropagation();
-    if (!player.pk) return;
-    navigator.clipboard.writeText(player.pk);
-    setCopiedPk(true);
-    setTimeout(() => setCopiedPk(false), 2000);
   };
 
   return (
@@ -348,7 +339,7 @@ export const PlayerCardModal = ({ player, onClose }) => {
 
           {/* ================= CARD BACK FACE (LUXURY GOLD PLATED STATS CARD) ================= */}
           <div 
-            className="absolute inset-0 rounded-[8px] sm:rounded-[12px] overflow-hidden z-20 flex flex-col justify-between px-6 sm:px-7 pt-4 pb-3.5 select-none pointer-events-auto text-white"
+            className="absolute inset-0 rounded-[8px] sm:rounded-[12px] overflow-hidden z-20 flex flex-col justify-center gap-6 sm:gap-7 px-6 sm:px-7 py-6 select-none pointer-events-auto text-white"
             style={{ 
               margin: '2px',
               width: 'calc(100% - 4px)',
@@ -531,34 +522,6 @@ export const PlayerCardModal = ({ player, onClose }) => {
                   style={{ color: '#F7E4A8' }}
                 >
                   Matches
-                </span>
-              </div>
-            </div>
-
-            {/* Bottom: Clean Nostr ID Bar in Gold Plated Styling with Breathing Space (Flush to Card) */}
-            <div className="relative z-20 w-full pb-0.5">
-              <div
-                onClick={handleCopyId}
-                className="w-full py-1.5 px-2.5 sm:px-3 rounded-xl flex items-center justify-between transition-all cursor-pointer group select-none"
-                style={{
-                  background: 'linear-gradient(180deg, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.30) 100%)',
-                  border: '1px solid rgba(212, 175, 55, 0.45)'
-                }}
-                title="Click to copy Nostr Pubkey ID"
-              >
-                <span className="material-symbols-rounded text-xs text-[#E5B544] shrink-0 mr-1.5">
-                  key
-                </span>
-                <span 
-                  className="font-mono text-[9px] sm:text-[9.5px] tracking-wider truncate flex-1 text-center"
-                  style={{ color: '#F7E4A8' }}
-                >
-                  {copiedPk 
-                    ? 'Copied to clipboard!' 
-                    : (player.pk ? `${player.pk.slice(0, 8)}...${player.pk.slice(-6)}` : 'Identity Unknown')}
-                </span>
-                <span className="material-symbols-rounded text-xs sm:text-sm text-[#E5B544]/75 group-hover:text-[#FFF5C6] shrink-0 ml-1.5 transition-colors">
-                  {copiedPk ? 'check' : 'content_copy'}
                 </span>
               </div>
             </div>
