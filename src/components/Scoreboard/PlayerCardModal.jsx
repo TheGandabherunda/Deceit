@@ -65,14 +65,14 @@ export const PlayerCardModal = ({ player, onClose }) => {
   const totalMatches = player.totalMatches || ((player.wins || 0) + (player.defeats || 0)) || 0;
   const winRate = player.winRate !== undefined ? player.winRate : (totalMatches > 0 ? Math.round(((player.wins || 0) / totalMatches) * 100) : 0);
 
-  // Dynamic sizing for backside player name (reduced a bit for refined balance)
+  // Dynamic sizing for backside player name (increased a bit for bold prominence)
   const charCount = displayName.length || 4;
-  const nameFontSize = charCount <= 4 ? 32 : charCount <= 7 ? 28 : charCount <= 10 ? 24 : charCount <= 13 ? 20 : 18;
+  const nameFontSize = charCount <= 4 ? 42 : charCount <= 7 ? 36 : charCount <= 10 ? 30 : charCount <= 13 ? 25 : 22;
   const approxCharWidth = nameFontSize * 0.58;
-  const nameViewBoxW = Math.max(90, Math.round(charCount * approxCharWidth + 20));
-  const nameViewBoxH = 38;
+  const nameViewBoxW = Math.max(95, Math.round(charCount * approxCharWidth + 24));
+  const nameViewBoxH = 44;
   const nameX = Math.round(nameViewBoxW / 2);
-  const nameY = 28;
+  const nameY = 34;
 
   // Generate dynamic shine and border track matched to character's color theme
   const [h, s] = hexToHsl(displayColor);
@@ -415,28 +415,40 @@ export const PlayerCardModal = ({ player, onClose }) => {
             </svg>
 
             {/* Top: Rank Chip above Player Name */}
-            <div className="relative z-20 flex flex-col items-center select-none pt-2 sm:pt-2.5">
-              {/* Chip containing rank text */}
+            <div className="relative z-20 flex flex-col items-center select-none pt-1.5 sm:pt-2">
+              {/* Complete Metal Emblem Pill with Engraved Rank Text */}
               <div 
-                className="inline-flex items-center justify-center px-3 py-0.5 rounded-full select-none"
+                className="inline-flex items-center justify-center p-[1px] rounded-full select-none"
                 style={{
-                  background: 'linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.35) 100%)',
-                  border: '1px solid rgba(229, 184, 66, 0.45)'
+                  background: 'linear-gradient(180deg, #FFE89E 0%, #D4AF37 35%, #8A5805 75%, #C2931D 100%)',
+                  boxShadow: '0 2px 5px rgba(0, 0, 0, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.75), inset 0 -1px 1px rgba(0, 0, 0, 0.45)'
                 }}
               >
-                <span 
-                  className="text-[10px] sm:text-[11px] font-inter font-semibold uppercase tracking-[0.22em] select-none leading-none"
-                  style={{ color: '#F7E4A8' }}
+                <div 
+                  className="h-5 sm:h-6 px-3 sm:px-3.5 rounded-full flex items-center justify-center"
+                  style={{
+                    background: 'linear-gradient(180deg, #E5B842 0%, #C9971D 40%, #9E6B08 80%, #B88514 100%)',
+                    boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.55), inset 0 -0.5px 1px rgba(255, 255, 255, 0.35)'
+                  }}
                 >
-                  Rank #{player.rank}
-                </span>
+                  <span 
+                    className="text-[9.5px] sm:text-[10.5px] font-inter font-black uppercase tracking-[0.18em] leading-none select-none text-center"
+                    style={{
+                      color: '#261700',
+                      textShadow: '0 1px 0 rgba(255, 245, 210, 0.75), 0 -1px 0 rgba(0, 0, 0, 0.85)',
+                      paddingLeft: '0.18em'
+                    }}
+                  >
+                    Rank #{player.rank}
+                  </span>
+                </div>
               </div>
 
-              {/* Player Name in 3D Gold Emblem Style (Reduced size a bit) */}
-              <div className="flex items-center justify-center max-w-[95%] text-center card-gold-label mt-1.5 sm:mt-2">
+              {/* Player Name in 3D Gold Emblem Style (Increased size for bold presence) */}
+              <div className="flex items-center justify-center max-w-[95%] text-center card-gold-label mt-2 sm:mt-2.5">
                 <svg 
                   viewBox={`0 0 ${nameViewBoxW} ${nameViewBoxH}`} 
-                  className="h-8 sm:h-9 w-auto max-w-full overflow-visible pointer-events-none"
+                  className="h-10 sm:h-11 w-auto max-w-full overflow-visible pointer-events-none"
                 >
                   <text
                     x={nameX}
@@ -460,17 +472,17 @@ export const PlayerCardModal = ({ player, onClose }) => {
               <div className="grid grid-cols-2 gap-2.5 w-full">
                 {/* Wins */}
                 <div 
-                  className="flex flex-col items-center justify-center aspect-[1.25/1] rounded-2xl select-none"
+                  className="flex flex-col items-center justify-center aspect-[1.12/1] rounded-2xl select-none px-2 py-2.5"
                   style={{
-                    background: 'linear-gradient(180deg, rgba(0,0,0,0.50) 0%, rgba(0,0,0,0.32) 100%)',
+                    background: 'linear-gradient(180deg, rgba(0,0,0,0.52) 0%, rgba(0,0,0,0.34) 100%)',
                     border: '1px solid rgba(229, 184, 66, 0.40)'
                   }}
                 >
-                  <span className="text-2xl sm:text-3xl font-black font-inter leading-none tracking-tight select-none text-[#F6CE55]">
+                  <span className="text-xl sm:text-2xl font-black font-inter leading-none tracking-tight select-none text-[#F6CE55]">
                     {player.wins || 0}
                   </span>
                   <span 
-                    className="text-[10px] sm:text-[11px] font-inter font-semibold uppercase tracking-[0.22em] mt-1.5 select-none"
+                    className="text-[9.5px] sm:text-[10.5px] font-inter font-semibold uppercase tracking-[0.14em] mt-2 select-none"
                     style={{ color: '#F7E4A8' }}
                   >
                     Wins
@@ -479,17 +491,17 @@ export const PlayerCardModal = ({ player, onClose }) => {
 
                 {/* Defeats */}
                 <div 
-                  className="flex flex-col items-center justify-center aspect-[1.25/1] rounded-2xl select-none"
+                  className="flex flex-col items-center justify-center aspect-[1.12/1] rounded-2xl select-none px-2 py-2.5"
                   style={{
-                    background: 'linear-gradient(180deg, rgba(0,0,0,0.50) 0%, rgba(0,0,0,0.32) 100%)',
+                    background: 'linear-gradient(180deg, rgba(0,0,0,0.52) 0%, rgba(0,0,0,0.34) 100%)',
                     border: '1px solid rgba(229, 184, 66, 0.40)'
                   }}
                 >
-                  <span className="text-2xl sm:text-3xl font-black font-inter leading-none tracking-tight select-none text-[#F6CE55]">
+                  <span className="text-xl sm:text-2xl font-black font-inter leading-none tracking-tight select-none text-[#F6CE55]">
                     {player.defeats || 0}
                   </span>
                   <span 
-                    className="text-[10px] sm:text-[11px] font-inter font-semibold uppercase tracking-[0.22em] mt-1.5 select-none"
+                    className="text-[9.5px] sm:text-[10.5px] font-inter font-semibold uppercase tracking-[0.14em] mt-2 select-none"
                     style={{ color: '#F7E4A8' }}
                   >
                     Defeats
@@ -498,17 +510,17 @@ export const PlayerCardModal = ({ player, onClose }) => {
 
                 {/* Win Rate */}
                 <div 
-                  className="flex flex-col items-center justify-center aspect-[1.25/1] rounded-2xl select-none"
+                  className="flex flex-col items-center justify-center aspect-[1.12/1] rounded-2xl select-none px-2 py-2.5"
                   style={{
-                    background: 'linear-gradient(180deg, rgba(0,0,0,0.50) 0%, rgba(0,0,0,0.32) 100%)',
+                    background: 'linear-gradient(180deg, rgba(0,0,0,0.52) 0%, rgba(0,0,0,0.34) 100%)',
                     border: '1px solid rgba(229, 184, 66, 0.40)'
                   }}
                 >
-                  <span className="text-2xl sm:text-3xl font-black font-inter leading-none tracking-tight select-none text-[#F6CE55]">
+                  <span className="text-xl sm:text-2xl font-black font-inter leading-none tracking-tight select-none text-[#F6CE55]">
                     {winRate}%
                   </span>
                   <span 
-                    className="text-[10px] sm:text-[11px] font-inter font-semibold uppercase tracking-[0.22em] mt-1.5 select-none"
+                    className="text-[9.5px] sm:text-[10.5px] font-inter font-semibold uppercase tracking-[0.14em] mt-2 select-none"
                     style={{ color: '#F7E4A8' }}
                   >
                     Win Rate
@@ -517,17 +529,17 @@ export const PlayerCardModal = ({ player, onClose }) => {
 
                 {/* Matches */}
                 <div 
-                  className="flex flex-col items-center justify-center aspect-[1.25/1] rounded-2xl select-none"
+                  className="flex flex-col items-center justify-center aspect-[1.12/1] rounded-2xl select-none px-2 py-2.5"
                   style={{
-                    background: 'linear-gradient(180deg, rgba(0,0,0,0.50) 0%, rgba(0,0,0,0.32) 100%)',
+                    background: 'linear-gradient(180deg, rgba(0,0,0,0.52) 0%, rgba(0,0,0,0.34) 100%)',
                     border: '1px solid rgba(229, 184, 66, 0.40)'
                   }}
                 >
-                  <span className="text-2xl sm:text-3xl font-black font-inter leading-none tracking-tight select-none text-[#F6CE55]">
+                  <span className="text-xl sm:text-2xl font-black font-inter leading-none tracking-tight select-none text-[#F6CE55]">
                     {totalMatches}
                   </span>
                   <span 
-                    className="text-[10px] sm:text-[11px] font-inter font-semibold uppercase tracking-[0.22em] mt-1.5 select-none"
+                    className="text-[9.5px] sm:text-[10.5px] font-inter font-semibold uppercase tracking-[0.14em] mt-2 select-none"
                     style={{ color: '#F7E4A8' }}
                   >
                     Matches
