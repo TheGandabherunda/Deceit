@@ -481,7 +481,7 @@ export const PlayerCardModal = ({ player, onClose }) => {
                     {player.wins || 0}
                   </span>
                   <span 
-                    className="text-[11px] sm:text-xs font-inter font-semibold mt-1.5 sm:mt-2 select-none"
+                    className="text-[11px] sm:text-xs font-inter font-semibold mt-0.5 select-none"
                     style={{ color: '#F7E4A8' }}
                   >
                     Wins
@@ -500,7 +500,7 @@ export const PlayerCardModal = ({ player, onClose }) => {
                     {player.defeats || 0}
                   </span>
                   <span 
-                    className="text-[11px] sm:text-xs font-inter font-semibold mt-1.5 sm:mt-2 select-none"
+                    className="text-[11px] sm:text-xs font-inter font-semibold mt-0.5 select-none"
                     style={{ color: '#F7E4A8' }}
                   >
                     Defeats
@@ -519,7 +519,7 @@ export const PlayerCardModal = ({ player, onClose }) => {
                     {winRate}%
                   </span>
                   <span 
-                    className="text-[11px] sm:text-xs font-inter font-semibold mt-1.5 sm:mt-2 select-none"
+                    className="text-[11px] sm:text-xs font-inter font-semibold mt-0.5 select-none"
                     style={{ color: '#F7E4A8' }}
                   >
                     Win Rate
@@ -538,7 +538,7 @@ export const PlayerCardModal = ({ player, onClose }) => {
                     {totalMatches}
                   </span>
                   <span 
-                    className="text-[11px] sm:text-xs font-inter font-semibold mt-1.5 sm:mt-2 select-none"
+                    className="text-[11px] sm:text-xs font-inter font-semibold mt-0.5 select-none"
                     style={{ color: '#F7E4A8' }}
                   >
                     Matches
