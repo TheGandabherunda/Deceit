@@ -398,75 +398,89 @@ export const PlayerCardModal = ({ player, onClose }) => {
               />
             </svg>
 
-            {/* Top: Player Name & Clean Rank Tag */}
-            <div className="relative z-20 text-center pt-2">
-              <h3 
-                className="text-2xl sm:text-3xl text-white font-normal truncate tracking-tight"
-                style={{ fontFamily: '"Gloock", serif' }}
-              >
-                {displayName}
-              </h3>
-              <p className="text-xs text-white/60 font-mono tracking-widest mt-1 uppercase">
+            {/* Top: Player Name in Emblem Style & Clean Golden Rank Tag */}
+            <div className="relative z-20 flex flex-col items-center pt-2 select-none">
+              <div className="flex items-center justify-center max-w-[90%] text-center card-gold-label">
+                <svg 
+                  viewBox="0 0 280 38" 
+                  className="h-7 sm:h-8 w-auto max-w-full overflow-visible pointer-events-none"
+                >
+                  <text
+                    x="140"
+                    y="28"
+                    textAnchor="middle"
+                    fontFamily="'Gloock', serif"
+                    fontSize={displayName.length > 14 ? "24" : displayName.length > 10 ? "28" : "34"}
+                    fontWeight="400"
+                    fill="url(#card-gold-pattern)"
+                    filter="url(#card-metal-name)"
+                    letterSpacing="0.02em"
+                  >
+                    {displayName}
+                  </text>
+                </svg>
+              </div>
+              <p className="text-xs text-amber-200/70 font-mono tracking-widest mt-1 uppercase">
                 Rank #{player.rank}
               </p>
             </div>
 
-            {/* Middle: Clean 4-Metric Grid */}
+            {/* Middle: Clean 4-Metric Grid in Golden Theme (No Emblem) */}
             <div className="relative z-20 grid grid-cols-2 gap-2.5 my-auto px-1 py-2">
               {/* Wins */}
-              <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-black/30 border border-white/10">
-                <span className="text-2xl sm:text-3xl font-extrabold text-emerald-400 leading-none">
+              <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-black/40 border border-amber-400/20 backdrop-blur-sm shadow-inner">
+                <span className="text-2xl sm:text-3xl font-extrabold text-amber-300 leading-none">
                   {player.wins || 0}
                 </span>
-                <span className="text-[11px] text-white/60 font-medium tracking-wide mt-1.5">
+                <span className="text-[11px] text-amber-200/70 font-medium tracking-wide mt-1.5 uppercase">
                   Wins
                 </span>
               </div>
 
               {/* Defeats */}
-              <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-black/30 border border-white/10">
-                <span className="text-2xl sm:text-3xl font-extrabold text-rose-400 leading-none">
+              <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-black/40 border border-amber-400/20 backdrop-blur-sm shadow-inner">
+                <span className="text-2xl sm:text-3xl font-extrabold text-amber-300 leading-none">
                   {player.defeats || 0}
                 </span>
-                <span className="text-[11px] text-white/60 font-medium tracking-wide mt-1.5">
+                <span className="text-[11px] text-amber-200/70 font-medium tracking-wide mt-1.5 uppercase">
                   Defeats
                 </span>
               </div>
 
               {/* Win Rate */}
-              <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-black/30 border border-white/10">
+              <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-black/40 border border-amber-400/20 backdrop-blur-sm shadow-inner">
                 <span className="text-2xl sm:text-3xl font-extrabold text-amber-300 leading-none">
                   {winRate}%
                 </span>
-                <span className="text-[11px] text-white/60 font-medium tracking-wide mt-1.5">
+                <span className="text-[11px] text-amber-200/70 font-medium tracking-wide mt-1.5 uppercase">
                   Win Rate
                 </span>
               </div>
 
               {/* Matches */}
-              <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-black/30 border border-white/10">
-                <span className="text-2xl sm:text-3xl font-extrabold text-white leading-none">
+              <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-black/40 border border-amber-400/20 backdrop-blur-sm shadow-inner">
+                <span className="text-2xl sm:text-3xl font-extrabold text-amber-300 leading-none">
                   {totalMatches}
                 </span>
-                <span className="text-[11px] text-white/60 font-medium tracking-wide mt-1.5">
+                <span className="text-[11px] text-amber-200/70 font-medium tracking-wide mt-1.5 uppercase">
                   Matches
                 </span>
               </div>
             </div>
 
-            {/* Bottom: Clean Nostr ID Bar */}
+            {/* Bottom: Clean Nostr ID Bar in Golden Theme (No Emblem) */}
             <div className="relative z-20 px-1 pb-1">
               <div
                 onClick={handleCopyId}
-                className="w-full py-2 px-3 rounded-xl bg-black/35 hover:bg-black/55 border border-white/10 flex items-center justify-between text-xs text-white/70 hover:text-white transition-colors cursor-pointer group"
+                className="w-full py-2 px-3 rounded-xl bg-black/40 hover:bg-black/60 border border-amber-400/20 hover:border-amber-400/40 flex items-center justify-between text-xs transition-colors cursor-pointer group shadow-inner"
                 title="Click to copy Nostr Pubkey ID"
               >
-                <span className="font-mono text-[10px] text-white/80 tracking-wider truncate pr-2">
+                <span className="font-mono text-[10px] text-amber-200/80 tracking-wider truncate pr-2">
                   {copiedPk 
                     ? 'Copied to clipboard!' 
                     : (player.pk ? `${player.pk.slice(0, 10)}...${player.pk.slice(-6)}` : 'Identity Unknown')}
                 </span>
-                <span className="material-symbols-rounded text-sm text-white/40 group-hover:text-white shrink-0">
+                <span className="material-symbols-rounded text-sm text-amber-300/60 group-hover:text-amber-200 shrink-0">
                   {copiedPk ? 'check' : 'content_copy'}
                 </span>
               </div>
