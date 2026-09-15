@@ -74,6 +74,13 @@ export const PlayerCardModal = ({ player, onClose }) => {
   const nameX = Math.round(nameViewBoxW / 2);
   const nameY = 34;
 
+  // Luxury warm obsidian & gold specular rim style for 2x2 stat boxes
+  const statBoxStyle = {
+    background: 'radial-gradient(ellipse at 50% 0%, rgba(246, 206, 85, 0.12) 0%, transparent 75%), linear-gradient(180deg, #181512 0%, #0C0A09 100%)',
+    border: '1px solid rgba(229, 184, 66, 0.42)',
+    boxShadow: 'inset 0 1px 1px rgba(255, 245, 205, 0.20), inset 0 -1px 2px rgba(0, 0, 0, 0.7), 0 2px 6px rgba(0, 0, 0, 0.35)'
+  };
+
   // Generate dynamic shine and border track matched to character's color theme
   const [h, s] = hexToHsl(displayColor);
   const themeStrokeBase = `hsl(${h}, ${Math.max(s, 45)}%, 16%)`;
@@ -472,10 +479,7 @@ export const PlayerCardModal = ({ player, onClose }) => {
                 {/* Wins */}
                 <div 
                   className="flex flex-col items-center justify-center aspect-[1.12/1] rounded-2xl select-none px-2 py-2.5"
-                  style={{
-                    background: 'linear-gradient(180deg, rgba(0,0,0,0.52) 0%, rgba(0,0,0,0.34) 100%)',
-                    border: '1px solid rgba(229, 184, 66, 0.40)'
-                  }}
+                  style={statBoxStyle}
                 >
                   <span className="text-xl sm:text-2xl font-black font-inter leading-none select-none text-[#F6CE55]">
                     {player.wins || 0}
@@ -491,10 +495,7 @@ export const PlayerCardModal = ({ player, onClose }) => {
                 {/* Defeats */}
                 <div 
                   className="flex flex-col items-center justify-center aspect-[1.12/1] rounded-2xl select-none px-2 py-2.5"
-                  style={{
-                    background: 'linear-gradient(180deg, rgba(0,0,0,0.52) 0%, rgba(0,0,0,0.34) 100%)',
-                    border: '1px solid rgba(229, 184, 66, 0.40)'
-                  }}
+                  style={statBoxStyle}
                 >
                   <span className="text-xl sm:text-2xl font-black font-inter leading-none select-none text-[#F6CE55]">
                     {player.defeats || 0}
@@ -510,10 +511,7 @@ export const PlayerCardModal = ({ player, onClose }) => {
                 {/* Win Rate */}
                 <div 
                   className="flex flex-col items-center justify-center aspect-[1.12/1] rounded-2xl select-none px-2 py-2.5"
-                  style={{
-                    background: 'linear-gradient(180deg, rgba(0,0,0,0.52) 0%, rgba(0,0,0,0.34) 100%)',
-                    border: '1px solid rgba(229, 184, 66, 0.40)'
-                  }}
+                  style={statBoxStyle}
                 >
                   <span className="text-xl sm:text-2xl font-black font-inter leading-none select-none text-[#F6CE55]">
                     {winRate}%
@@ -529,10 +527,7 @@ export const PlayerCardModal = ({ player, onClose }) => {
                 {/* Matches */}
                 <div 
                   className="flex flex-col items-center justify-center aspect-[1.12/1] rounded-2xl select-none px-2 py-2.5"
-                  style={{
-                    background: 'linear-gradient(180deg, rgba(0,0,0,0.52) 0%, rgba(0,0,0,0.34) 100%)',
-                    border: '1px solid rgba(229, 184, 66, 0.40)'
-                  }}
+                  style={statBoxStyle}
                 >
                   <span className="text-xl sm:text-2xl font-black font-inter leading-none select-none text-[#F6CE55]">
                     {totalMatches}
