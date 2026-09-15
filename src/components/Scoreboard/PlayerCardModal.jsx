@@ -478,11 +478,11 @@ export const PlayerCardModal = ({ player, onClose }) => {
                     border: '1px solid rgba(229, 184, 66, 0.40)'
                   }}
                 >
-                  <span className="text-xl sm:text-2xl font-black font-inter leading-none tracking-tight select-none text-[#F6CE55]">
+                  <span className="text-xl sm:text-2xl font-black font-inter leading-none select-none text-[#F6CE55]">
                     {player.wins || 0}
                   </span>
                   <span 
-                    className="text-[9.5px] sm:text-[10.5px] font-inter font-semibold uppercase tracking-[0.14em] mt-2 select-none"
+                    className="text-[11px] sm:text-xs font-inter font-semibold mt-1.5 sm:mt-2 select-none"
                     style={{ color: '#F7E4A8' }}
                   >
                     Wins
@@ -497,11 +497,11 @@ export const PlayerCardModal = ({ player, onClose }) => {
                     border: '1px solid rgba(229, 184, 66, 0.40)'
                   }}
                 >
-                  <span className="text-xl sm:text-2xl font-black font-inter leading-none tracking-tight select-none text-[#F6CE55]">
+                  <span className="text-xl sm:text-2xl font-black font-inter leading-none select-none text-[#F6CE55]">
                     {player.defeats || 0}
                   </span>
                   <span 
-                    className="text-[9.5px] sm:text-[10.5px] font-inter font-semibold uppercase tracking-[0.14em] mt-2 select-none"
+                    className="text-[11px] sm:text-xs font-inter font-semibold mt-1.5 sm:mt-2 select-none"
                     style={{ color: '#F7E4A8' }}
                   >
                     Defeats
@@ -516,11 +516,11 @@ export const PlayerCardModal = ({ player, onClose }) => {
                     border: '1px solid rgba(229, 184, 66, 0.40)'
                   }}
                 >
-                  <span className="text-xl sm:text-2xl font-black font-inter leading-none tracking-tight select-none text-[#F6CE55]">
+                  <span className="text-xl sm:text-2xl font-black font-inter leading-none select-none text-[#F6CE55]">
                     {winRate}%
                   </span>
                   <span 
-                    className="text-[9.5px] sm:text-[10.5px] font-inter font-semibold uppercase tracking-[0.14em] mt-2 select-none"
+                    className="text-[11px] sm:text-xs font-inter font-semibold mt-1.5 sm:mt-2 select-none"
                     style={{ color: '#F7E4A8' }}
                   >
                     Win Rate
@@ -535,11 +535,11 @@ export const PlayerCardModal = ({ player, onClose }) => {
                     border: '1px solid rgba(229, 184, 66, 0.40)'
                   }}
                 >
-                  <span className="text-xl sm:text-2xl font-black font-inter leading-none tracking-tight select-none text-[#F6CE55]">
+                  <span className="text-xl sm:text-2xl font-black font-inter leading-none select-none text-[#F6CE55]">
                     {totalMatches}
                   </span>
                   <span 
-                    className="text-[9.5px] sm:text-[10.5px] font-inter font-semibold uppercase tracking-[0.14em] mt-2 select-none"
+                    className="text-[11px] sm:text-xs font-inter font-semibold mt-1.5 sm:mt-2 select-none"
                     style={{ color: '#F7E4A8' }}
                   >
                     Matches
