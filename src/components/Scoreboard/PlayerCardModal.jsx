@@ -65,6 +65,15 @@ export const PlayerCardModal = ({ player, onClose }) => {
   const totalMatches = player.totalMatches || ((player.wins || 0) + (player.defeats || 0)) || 0;
   const winRate = player.winRate !== undefined ? player.winRate : (totalMatches > 0 ? Math.round(((player.wins || 0) / totalMatches) * 100) : 0);
 
+  // Dynamic sizing for backside player name so it is big, bold, and fills the header proportionally
+  const charCount = displayName.length || 4;
+  const nameFontSize = charCount <= 4 ? 48 : charCount <= 7 ? 40 : charCount <= 10 ? 34 : charCount <= 13 ? 28 : 24;
+  const approxCharWidth = nameFontSize * 0.58;
+  const nameViewBoxW = Math.max(100, Math.round(charCount * approxCharWidth + 24));
+  const nameViewBoxH = 50;
+  const nameX = Math.round(nameViewBoxW / 2);
+  const nameY = 38;
+
   // Generate dynamic shine and border track matched to character's color theme
   const [h, s] = hexToHsl(displayColor);
   const themeStrokeBase = `hsl(${h}, ${Math.max(s, 45)}%, 16%)`;
@@ -133,6 +142,21 @@ export const PlayerCardModal = ({ player, onClose }) => {
             </feDiffuseLighting>
             <feSpecularLighting in="blur" surfaceScale="1.8" specularConstant="1.15" specularExponent="24" lightingColor="#fffadb" result="specular">
               <fePointLight x="140" y="18" z="44" />
+            </feSpecularLighting>
+            <feComposite operator="arithmetic" k1="1" k2="0" k3="0" k4="0" in="diffuse" in2="SourceGraphic" result="shadedTexture" />
+            <feComposite operator="arithmetic" k1="0" k2="1" k3="1" k4="0" in="shadedTexture" in2="specular" result="litPaint" />
+            <feComposite operator="in" in="litPaint" in2="SourceAlpha" result="finalMetal" />
+            <feDropShadow dx="0" dy="0.12" stdDeviation="0.07" floodColor="#000000" floodOpacity="0.28" />
+          </filter>
+
+          {/* 3D Metal Gold Filter FOR BACKSIDE PLAYER NAME (Distant light for uniform luster at any size) */}
+          <filter id="card-metal-back-name" x="-30%" y="-30%" width="160%" height="160%" colorInterpolationFilters="sRGB">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="0.25" result="blur" />
+            <feDiffuseLighting in="blur" surfaceScale="1.8" diffuseConstant="1.2" lightingColor="#ffffff" result="diffuse">
+              <feDistantLight azimuth="240" elevation="50" />
+            </feDiffuseLighting>
+            <feSpecularLighting in="blur" surfaceScale="1.8" specularConstant="1.2" specularExponent="24" lightingColor="#fffadb" result="specular">
+              <feDistantLight azimuth="240" elevation="50" />
             </feSpecularLighting>
             <feComposite operator="arithmetic" k1="1" k2="0" k3="0" k4="0" in="diffuse" in2="SourceGraphic" result="shadedTexture" />
             <feComposite operator="arithmetic" k1="0" k2="1" k3="1" k4="0" in="shadedTexture" in2="specular" result="litPaint" />
@@ -393,18 +417,18 @@ export const PlayerCardModal = ({ player, onClose }) => {
             <div className="relative z-20 flex flex-col items-center pt-1 select-none">
               <div className="flex items-center justify-center max-w-[95%] text-center card-gold-label">
                 <svg 
-                  viewBox="0 0 280 44" 
-                  className="h-10 sm:h-11 md:h-12 w-auto max-w-full overflow-visible pointer-events-none"
+                  viewBox={`0 0 ${nameViewBoxW} ${nameViewBoxH}`} 
+                  className="h-12 sm:h-14 md:h-16 w-auto max-w-full overflow-visible pointer-events-none"
                 >
                   <text
-                    x="140"
-                    y="33"
+                    x={nameX}
+                    y={nameY}
                     textAnchor="middle"
                     fontFamily="'Gloock', serif"
-                    fontSize={displayName.length > 14 ? "30" : displayName.length > 10 ? "36" : "42"}
+                    fontSize={nameFontSize}
                     fontWeight="400"
                     fill="url(#card-gold-pattern)"
-                    filter="url(#card-metal-name)"
+                    filter="url(#card-metal-back-name)"
                     letterSpacing="0.03em"
                   >
                     {displayName}
@@ -412,7 +436,7 @@ export const PlayerCardModal = ({ player, onClose }) => {
                 </svg>
               </div>
               <p 
-                className="text-[10px] sm:text-[11px] font-mono uppercase tracking-[0.25em] mt-0.5 font-medium"
+                className="text-[11px] sm:text-xs font-mono uppercase tracking-[0.25em] mt-1 font-semibold"
                 style={{ color: '#F7E4A8' }}
               >
                 Rank #{player.rank}
