@@ -538,13 +538,17 @@ export const PlayerCardModal = ({ player, onClose }) => {
           </div>
         </div>
 
-        {/* Card Flip Hint */}
-        <div className="mt-3.5 flex items-center gap-1.5 text-xs text-white/50 bg-white/5 px-3.5 py-1 rounded-full border border-white/10 pointer-events-none">
-          <span className="material-symbols-rounded text-sm">
-            {isFlipped ? 'flip_camera_android' : 'touch_app'}
+        {/* Tap Gesture Icon Button */}
+        <button
+          type="button"
+          onClick={handleCardClick}
+          aria-label={isFlipped ? 'Flip card to character' : 'Flip card to stats'}
+          className="mt-3 sm:mt-4 p-2 text-white/50 hover:text-white transition-all hover:scale-110 active:scale-95 cursor-pointer flex items-center justify-center select-none"
+        >
+          <span className="material-symbols-rounded text-2xl sm:text-3xl">
+            touch_app
           </span>
-          <span>{isFlipped ? 'Click card to view character' : 'Click card to view player stats'}</span>
-        </div>
+        </button>
       </div>
 
       {/* 3. BOTTOM: Actions */}
