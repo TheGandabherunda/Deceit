@@ -346,9 +346,9 @@ export const PlayerCardModal = ({ player, onClose }) => {
             </div>
           </div>
 
-          {/* ================= CARD BACK FACE (CLEAN, UNCLUTTERED STATS CARD) ================= */}
+          {/* ================= CARD BACK FACE (LUXURY GOLD PLATED STATS CARD) ================= */}
           <div 
-            className="absolute inset-0 rounded-[8px] sm:rounded-[12px] overflow-hidden z-20 flex flex-col justify-between p-5 sm:p-6 select-none pointer-events-auto text-white"
+            className="absolute inset-0 rounded-[8px] sm:rounded-[12px] overflow-hidden z-20 flex flex-col justify-between px-6 sm:px-7 pt-4 pb-3.5 select-none pointer-events-auto text-white"
             style={{ 
               margin: '2px',
               width: 'calc(100% - 4px)',
@@ -363,16 +363,16 @@ export const PlayerCardModal = ({ player, onClose }) => {
               className="absolute inset-0 pointer-events-none z-0 bg-cover bg-center"
               style={{
                 backgroundImage: 'url("/cards/leather-macro-shot.jpg")',
-                opacity: 0.22,
+                opacity: 0.26,
                 mixBlendMode: 'overlay'
               }}
             />
 
-            {/* Mouse Ambient Lighting Sheen */}
+            {/* Mouse Ambient Lighting Sheen (Warm Champagne Sheen) */}
             <div 
               className="absolute inset-0 pointer-events-none z-0 transition-opacity duration-200"
               style={{
-                background: 'radial-gradient(circle 140px at var(--mouse-x, 50%) var(--mouse-y, 35%), rgba(255,255,255,0.3) 0%, transparent 100%)',
+                background: 'radial-gradient(circle 140px at var(--mouse-x, 50%) var(--mouse-y, 35%), rgba(255, 238, 180, 0.32) 0%, transparent 100%)',
                 mixBlendMode: 'screen'
               }}
             />
@@ -394,93 +394,188 @@ export const PlayerCardModal = ({ player, onClose }) => {
                 fill="none" 
                 stroke="url(#card-gold-pattern)" 
                 strokeWidth="0.7" 
-                opacity="0.6" 
+                opacity="0.65" 
               />
             </svg>
 
             {/* Top: Player Name in Emblem Style & Clean Golden Rank Tag */}
-            <div className="relative z-20 flex flex-col items-center pt-2 select-none">
-              <div className="flex items-center justify-center max-w-[90%] text-center card-gold-label">
+            <div className="relative z-20 flex flex-col items-center pt-1 select-none">
+              <div 
+                className="flex items-center justify-center max-w-[95%] text-center card-gold-label"
+                style={{
+                  filter: 'drop-shadow(0 2px 5px rgba(0,0,0,0.7)) drop-shadow(0 1px 2px rgba(0,0,0,0.9))'
+                }}
+              >
                 <svg 
-                  viewBox="0 0 280 38" 
-                  className="h-7 sm:h-8 w-auto max-w-full overflow-visible pointer-events-none"
+                  viewBox="0 0 280 44" 
+                  className="h-10 sm:h-11 md:h-12 w-auto max-w-full overflow-visible pointer-events-none"
                 >
                   <text
                     x="140"
-                    y="28"
+                    y="33"
                     textAnchor="middle"
                     fontFamily="'Gloock', serif"
-                    fontSize={displayName.length > 14 ? "24" : displayName.length > 10 ? "28" : "34"}
+                    fontSize={displayName.length > 14 ? "30" : displayName.length > 10 ? "36" : "42"}
                     fontWeight="400"
                     fill="url(#card-gold-pattern)"
                     filter="url(#card-metal-name)"
-                    letterSpacing="0.02em"
+                    letterSpacing="0.03em"
                   >
                     {displayName}
                   </text>
                 </svg>
               </div>
-              <p className="text-xs text-amber-200/70 font-mono tracking-widest mt-1 uppercase">
+              <p 
+                className="text-[10px] sm:text-[11px] font-mono uppercase tracking-[0.25em] mt-0.5 drop-shadow-sm font-medium"
+                style={{ color: '#F7E4A8', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}
+              >
                 Rank #{player.rank}
               </p>
             </div>
 
-            {/* Middle: Clean 4-Metric Grid in Golden Theme (No Emblem) */}
-            <div className="relative z-20 grid grid-cols-2 gap-2.5 my-auto px-1 py-2">
+            {/* Middle: 4-Metric Grid in Respective Gold-Plated Inset Containers with Breathing Space */}
+            <div className="relative z-20 grid grid-cols-2 gap-2 sm:gap-2.5 my-auto w-full">
               {/* Wins */}
-              <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-black/40 border border-amber-400/20 backdrop-blur-sm shadow-inner">
-                <span className="text-2xl sm:text-3xl font-extrabold text-amber-300 leading-none">
+              <div 
+                className="flex flex-col items-center justify-center py-2 px-1 sm:py-2.5 rounded-xl transition-transform"
+                style={{
+                  background: 'linear-gradient(180deg, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.30) 100%)',
+                  border: '1px solid rgba(212, 175, 55, 0.45)',
+                  boxShadow: 'inset 0 1px 2px rgba(255, 235, 160, 0.2), 0 2px 8px rgba(0, 0, 0, 0.35)',
+                  backdropFilter: 'blur(2px)'
+                }}
+              >
+                <span 
+                  className="text-xl sm:text-2xl font-black font-serif leading-none tracking-tight select-none"
+                  style={{
+                    background: 'linear-gradient(180deg, #FFF8DB 0%, #FFDF73 22%, #F3BA35 50%, #C98B1B 78%, #FFEAA0 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    filter: 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.9))'
+                  }}
+                >
                   {player.wins || 0}
                 </span>
-                <span className="text-[11px] text-amber-200/70 font-medium tracking-wide mt-1.5 uppercase">
+                <span 
+                  className="text-[9px] sm:text-[10px] font-mono font-semibold uppercase tracking-[0.2em] mt-1 sm:mt-1.5 select-none"
+                  style={{ color: '#F7E4A8', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}
+                >
                   Wins
                 </span>
               </div>
 
               {/* Defeats */}
-              <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-black/40 border border-amber-400/20 backdrop-blur-sm shadow-inner">
-                <span className="text-2xl sm:text-3xl font-extrabold text-amber-300 leading-none">
+              <div 
+                className="flex flex-col items-center justify-center py-2 px-1 sm:py-2.5 rounded-xl transition-transform"
+                style={{
+                  background: 'linear-gradient(180deg, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.30) 100%)',
+                  border: '1px solid rgba(212, 175, 55, 0.45)',
+                  boxShadow: 'inset 0 1px 2px rgba(255, 235, 160, 0.2), 0 2px 8px rgba(0, 0, 0, 0.35)',
+                  backdropFilter: 'blur(2px)'
+                }}
+              >
+                <span 
+                  className="text-xl sm:text-2xl font-black font-serif leading-none tracking-tight select-none"
+                  style={{
+                    background: 'linear-gradient(180deg, #FFF8DB 0%, #FFDF73 22%, #F3BA35 50%, #C98B1B 78%, #FFEAA0 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    filter: 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.9))'
+                  }}
+                >
                   {player.defeats || 0}
                 </span>
-                <span className="text-[11px] text-amber-200/70 font-medium tracking-wide mt-1.5 uppercase">
+                <span 
+                  className="text-[9px] sm:text-[10px] font-mono font-semibold uppercase tracking-[0.2em] mt-1 sm:mt-1.5 select-none"
+                  style={{ color: '#F7E4A8', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}
+                >
                   Defeats
                 </span>
               </div>
 
               {/* Win Rate */}
-              <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-black/40 border border-amber-400/20 backdrop-blur-sm shadow-inner">
-                <span className="text-2xl sm:text-3xl font-extrabold text-amber-300 leading-none">
+              <div 
+                className="flex flex-col items-center justify-center py-2 px-1 sm:py-2.5 rounded-xl transition-transform"
+                style={{
+                  background: 'linear-gradient(180deg, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.30) 100%)',
+                  border: '1px solid rgba(212, 175, 55, 0.45)',
+                  boxShadow: 'inset 0 1px 2px rgba(255, 235, 160, 0.2), 0 2px 8px rgba(0, 0, 0, 0.35)',
+                  backdropFilter: 'blur(2px)'
+                }}
+              >
+                <span 
+                  className="text-xl sm:text-2xl font-black font-serif leading-none tracking-tight select-none"
+                  style={{
+                    background: 'linear-gradient(180deg, #FFF8DB 0%, #FFDF73 22%, #F3BA35 50%, #C98B1B 78%, #FFEAA0 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    filter: 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.9))'
+                  }}
+                >
                   {winRate}%
                 </span>
-                <span className="text-[11px] text-amber-200/70 font-medium tracking-wide mt-1.5 uppercase">
+                <span 
+                  className="text-[9px] sm:text-[10px] font-mono font-semibold uppercase tracking-[0.2em] mt-1 sm:mt-1.5 select-none"
+                  style={{ color: '#F7E4A8', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}
+                >
                   Win Rate
                 </span>
               </div>
 
               {/* Matches */}
-              <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-black/40 border border-amber-400/20 backdrop-blur-sm shadow-inner">
-                <span className="text-2xl sm:text-3xl font-extrabold text-amber-300 leading-none">
+              <div 
+                className="flex flex-col items-center justify-center py-2 px-1 sm:py-2.5 rounded-xl transition-transform"
+                style={{
+                  background: 'linear-gradient(180deg, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.30) 100%)',
+                  border: '1px solid rgba(212, 175, 55, 0.45)',
+                  boxShadow: 'inset 0 1px 2px rgba(255, 235, 160, 0.2), 0 2px 8px rgba(0, 0, 0, 0.35)',
+                  backdropFilter: 'blur(2px)'
+                }}
+              >
+                <span 
+                  className="text-xl sm:text-2xl font-black font-serif leading-none tracking-tight select-none"
+                  style={{
+                    background: 'linear-gradient(180deg, #FFF8DB 0%, #FFDF73 22%, #F3BA35 50%, #C98B1B 78%, #FFEAA0 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    filter: 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.9))'
+                  }}
+                >
                   {totalMatches}
                 </span>
-                <span className="text-[11px] text-amber-200/70 font-medium tracking-wide mt-1.5 uppercase">
+                <span 
+                  className="text-[9px] sm:text-[10px] font-mono font-semibold uppercase tracking-[0.2em] mt-1 sm:mt-1.5 select-none"
+                  style={{ color: '#F7E4A8', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}
+                >
                   Matches
                 </span>
               </div>
             </div>
 
-            {/* Bottom: Clean Nostr ID Bar in Golden Theme (No Emblem) */}
-            <div className="relative z-20 px-1 pb-1">
+            {/* Bottom: Clean Nostr ID Bar in Gold Plated Styling with Breathing Space */}
+            <div className="relative z-20 w-full pb-0.5">
               <div
                 onClick={handleCopyId}
-                className="w-full py-2 px-3 rounded-xl bg-black/40 hover:bg-black/60 border border-amber-400/20 hover:border-amber-400/40 flex items-center justify-between text-xs transition-colors cursor-pointer group shadow-inner"
+                className="w-full py-1.5 px-2.5 sm:px-3 rounded-xl flex items-center justify-between transition-all cursor-pointer group select-none"
+                style={{
+                  background: 'linear-gradient(180deg, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.30) 100%)',
+                  border: '1px solid rgba(212, 175, 55, 0.45)',
+                  boxShadow: 'inset 0 1px 2px rgba(255, 235, 160, 0.15), 0 2px 6px rgba(0, 0, 0, 0.35)'
+                }}
                 title="Click to copy Nostr Pubkey ID"
               >
-                <span className="font-mono text-[10px] text-amber-200/80 tracking-wider truncate pr-2">
+                <span className="material-symbols-rounded text-xs text-[#E5B544] shrink-0 mr-1.5">
+                  key
+                </span>
+                <span 
+                  className="font-mono text-[9px] sm:text-[9.5px] tracking-wider truncate flex-1 text-center"
+                  style={{ color: '#F7E4A8', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}
+                >
                   {copiedPk 
                     ? 'Copied to clipboard!' 
-                    : (player.pk ? `${player.pk.slice(0, 10)}...${player.pk.slice(-6)}` : 'Identity Unknown')}
+                    : (player.pk ? `${player.pk.slice(0, 8)}...${player.pk.slice(-6)}` : 'Identity Unknown')}
                 </span>
-                <span className="material-symbols-rounded text-sm text-amber-300/60 group-hover:text-amber-200 shrink-0">
+                <span className="material-symbols-rounded text-xs sm:text-sm text-[#E5B544]/75 group-hover:text-[#FFF5C6] shrink-0 ml-1.5 transition-colors">
                   {copiedPk ? 'check' : 'content_copy'}
                 </span>
               </div>
