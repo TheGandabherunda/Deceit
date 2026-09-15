@@ -74,11 +74,18 @@ export const PlayerCardModal = ({ player, onClose }) => {
   const nameX = Math.round(nameViewBoxW / 2);
   const nameY = 34;
 
-  // Luxury warm obsidian & gold specular rim style for 2x2 stat boxes
+  // Backside flip: Refined luxury 24K gold shimmer and deep obsidian-gold border track
+  const goldStrokeBase = '#141109';
+  const goldPeak = '#FFF7D6';
+  const goldMid = 'rgba(246, 206, 85, 0.6)';
+  const goldLow = 'rgba(212, 175, 55, 0.15)';
+  const goldShimmerGradient = `conic-gradient(from 0deg, ${goldPeak} 0deg, ${goldMid} 12deg, ${goldLow} 24deg, transparent 32deg, transparent 328deg, ${goldLow} 336deg, ${goldMid} 348deg, ${goldPeak} 360deg)`;
+
+  // Luxury obsidian & refined gold specular rim style for 2x2 stat boxes
   const statBoxStyle = {
-    background: 'radial-gradient(ellipse at 50% 0%, rgba(246, 206, 85, 0.12) 0%, transparent 75%), linear-gradient(180deg, #181512 0%, #0C0A09 100%)',
-    border: '1px solid rgba(229, 184, 66, 0.42)',
-    boxShadow: 'inset 0 1px 1px rgba(255, 245, 205, 0.20), inset 0 -1px 2px rgba(0, 0, 0, 0.7), 0 2px 6px rgba(0, 0, 0, 0.35)'
+    background: 'radial-gradient(ellipse at 50% 0%, rgba(246, 206, 85, 0.08) 0%, transparent 70%), linear-gradient(180deg, #131211 0%, #090808 100%)',
+    border: '1px solid rgba(246, 206, 85, 0.24)',
+    boxShadow: 'inset 0 1px 0 rgba(255, 242, 200, 0.22), inset 0 -1px 2px rgba(0, 0, 0, 0.8), 0 4px 12px rgba(0, 0, 0, 0.5)'
   };
 
   // Generate dynamic shine and border track matched to character's color theme
@@ -232,30 +239,54 @@ export const PlayerCardModal = ({ player, onClose }) => {
         >
           {/* Outer Ambient Glow Blooming */}
           <div 
-            className="absolute -inset-1 sm:-inset-1.5 rounded-xl sm:rounded-2xl pointer-events-none z-0 overflow-hidden"
+            className="absolute -inset-1 sm:-inset-1.5 rounded-xl sm:rounded-2xl pointer-events-none z-0 overflow-hidden transition-opacity duration-500"
             style={{
-              filter: 'blur(5px)',
-              opacity: 0.22,
+              filter: 'blur(6px)',
+              opacity: isFlipped ? 0.30 : 0.22,
               willChange: 'transform'
             }}
           >
+            {/* Front character glow */}
             <div 
-              className="card-border-beam"
-              style={{ background: themeShimmerGradient }}
+              className="card-border-beam transition-opacity duration-500"
+              style={{ 
+                background: themeShimmerGradient,
+                opacity: isFlipped ? 0 : 1
+              }}
+            />
+            {/* Back gold glow */}
+            <div 
+              className="card-border-beam transition-opacity duration-500"
+              style={{ 
+                background: goldShimmerGradient,
+                opacity: isFlipped ? 1 : 0
+              }}
             />
           </div>
 
           {/* Crisp Shimmer Track Layer */}
           <div 
-            className="absolute inset-0 rounded-[inherit] overflow-hidden pointer-events-none z-10"
+            className="absolute inset-0 rounded-[inherit] overflow-hidden pointer-events-none z-10 transition-colors duration-500"
             style={{
-              backgroundColor: themeStrokeBase,
+              backgroundColor: isFlipped ? goldStrokeBase : themeStrokeBase,
               padding: '2px'
             }}
           >
+            {/* Front character shimmer beam */}
             <div 
-              className="card-border-beam"
-              style={{ background: themeShimmerGradient }}
+              className="card-border-beam transition-opacity duration-500"
+              style={{ 
+                background: themeShimmerGradient,
+                opacity: isFlipped ? 0 : 1
+              }}
+            />
+            {/* Back gold shimmer beam */}
+            <div 
+              className="card-border-beam transition-opacity duration-500"
+              style={{ 
+                background: goldShimmerGradient,
+                opacity: isFlipped ? 1 : 0
+              }}
             />
           </div>
 
@@ -381,21 +412,21 @@ export const PlayerCardModal = ({ player, onClose }) => {
               padding: '14px'
             }}
           >
-            {/* Real Leather Macro Texture Overlay */}
+            {/* Real Leather Macro Texture Overlay (Subtle matte black grain) */}
             <div 
               className="absolute inset-0 pointer-events-none z-0 bg-cover bg-center"
               style={{
                 backgroundImage: 'url("/cards/leather-macro-shot.jpg")',
-                opacity: 0.14,
+                opacity: 0.08,
                 mixBlendMode: 'screen'
               }}
             />
 
-            {/* Mouse Ambient Lighting Sheen (Warm Champagne Sheen) */}
+            {/* Mouse Ambient Lighting Sheen (Refined soft champagne highlight) */}
             <div 
               className="absolute inset-0 pointer-events-none z-0 transition-opacity duration-200"
               style={{
-                background: 'radial-gradient(circle 140px at var(--mouse-x, 50%) var(--mouse-y, 35%), rgba(255, 238, 180, 0.32) 0%, transparent 100%)',
+                background: 'radial-gradient(circle 170px at var(--mouse-x, 50%) var(--mouse-y, 35%), rgba(255, 245, 220, 0.10) 0%, transparent 100%)',
                 mixBlendMode: 'screen'
               }}
             />
@@ -427,22 +458,22 @@ export const PlayerCardModal = ({ player, onClose }) => {
               <div 
                 className="inline-flex items-center justify-center p-[1px] rounded-full select-none shadow-sm"
                 style={{
-                  background: 'linear-gradient(180deg, #FFE89E 0%, #D4AF37 35%, #8A5805 75%, #C2931D 100%)',
+                  background: 'linear-gradient(180deg, #FFF1B8 0%, #E2B742 35%, #8A5B08 75%, #C9971D 100%)',
                   boxShadow: '0 1.5px 3px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.75), inset 0 -0.5px 1px rgba(0, 0, 0, 0.45)'
                 }}
               >
                 <div 
                   className="h-[19px] sm:h-[21px] px-2.5 sm:px-3 rounded-full flex items-center justify-center"
                   style={{
-                    background: 'linear-gradient(180deg, #E5B842 0%, #C9971D 40%, #9E6B08 80%, #B88514 100%)',
+                    background: 'linear-gradient(180deg, #F5CF60 0%, #D9A524 45%, #9E6D0D 85%, #BA8918 100%)',
                     boxShadow: 'inset 0 1px 1.5px rgba(0, 0, 0, 0.55), inset 0 -0.5px 0.5px rgba(255, 255, 255, 0.35)'
                   }}
                 >
                   <span 
                     className="text-[9.5px] sm:text-[10px] font-inter font-bold leading-none select-none text-center"
                     style={{
-                      color: '#261700',
-                      textShadow: '0 1px 0 rgba(255, 245, 210, 0.75), 0 -1px 0 rgba(0, 0, 0, 0.85)'
+                      color: '#1F1400',
+                      textShadow: '0 1px 0 rgba(255, 248, 220, 0.85), 0 -0.5px 0 rgba(0, 0, 0, 0.9)'
                     }}
                   >
                     Rank #{player.rank}
@@ -481,13 +512,10 @@ export const PlayerCardModal = ({ player, onClose }) => {
                   className="flex flex-col items-center justify-center aspect-[1.12/1] rounded-2xl select-none px-2 py-2.5"
                   style={statBoxStyle}
                 >
-                  <span className="text-xl sm:text-2xl font-black font-inter leading-none select-none text-[#F6CE55]">
+                  <span className="text-xl sm:text-2xl font-black font-inter leading-none select-none text-[#FADB6B] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">
                     {player.wins || 0}
                   </span>
-                  <span 
-                    className="text-[11px] sm:text-xs font-inter font-semibold mt-0.5 select-none"
-                    style={{ color: '#F7E4A8' }}
-                  >
+                  <span className="text-[11px] sm:text-xs font-inter font-semibold mt-0.5 select-none text-[#C5B48B]">
                     Wins
                   </span>
                 </div>
@@ -497,13 +525,10 @@ export const PlayerCardModal = ({ player, onClose }) => {
                   className="flex flex-col items-center justify-center aspect-[1.12/1] rounded-2xl select-none px-2 py-2.5"
                   style={statBoxStyle}
                 >
-                  <span className="text-xl sm:text-2xl font-black font-inter leading-none select-none text-[#F6CE55]">
+                  <span className="text-xl sm:text-2xl font-black font-inter leading-none select-none text-[#FADB6B] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">
                     {player.defeats || 0}
                   </span>
-                  <span 
-                    className="text-[11px] sm:text-xs font-inter font-semibold mt-0.5 select-none"
-                    style={{ color: '#F7E4A8' }}
-                  >
+                  <span className="text-[11px] sm:text-xs font-inter font-semibold mt-0.5 select-none text-[#C5B48B]">
                     Defeats
                   </span>
                 </div>
@@ -513,13 +538,10 @@ export const PlayerCardModal = ({ player, onClose }) => {
                   className="flex flex-col items-center justify-center aspect-[1.12/1] rounded-2xl select-none px-2 py-2.5"
                   style={statBoxStyle}
                 >
-                  <span className="text-xl sm:text-2xl font-black font-inter leading-none select-none text-[#F6CE55]">
+                  <span className="text-xl sm:text-2xl font-black font-inter leading-none select-none text-[#FADB6B] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">
                     {winRate}%
                   </span>
-                  <span 
-                    className="text-[11px] sm:text-xs font-inter font-semibold mt-0.5 select-none"
-                    style={{ color: '#F7E4A8' }}
-                  >
+                  <span className="text-[11px] sm:text-xs font-inter font-semibold mt-0.5 select-none text-[#C5B48B]">
                     Win Rate
                   </span>
                 </div>
@@ -529,13 +551,10 @@ export const PlayerCardModal = ({ player, onClose }) => {
                   className="flex flex-col items-center justify-center aspect-[1.12/1] rounded-2xl select-none px-2 py-2.5"
                   style={statBoxStyle}
                 >
-                  <span className="text-xl sm:text-2xl font-black font-inter leading-none select-none text-[#F6CE55]">
+                  <span className="text-xl sm:text-2xl font-black font-inter leading-none select-none text-[#FADB6B] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">
                     {totalMatches}
                   </span>
-                  <span 
-                    className="text-[11px] sm:text-xs font-inter font-semibold mt-0.5 select-none"
-                    style={{ color: '#F7E4A8' }}
-                  >
+                  <span className="text-[11px] sm:text-xs font-inter font-semibold mt-0.5 select-none text-[#C5B48B]">
                     Matches
                   </span>
                 </div>
