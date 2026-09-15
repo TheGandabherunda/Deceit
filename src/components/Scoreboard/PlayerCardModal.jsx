@@ -361,9 +361,9 @@ export const PlayerCardModal = ({ player, onClose }) => {
             </div>
           </div>
 
-          {/* ================= CARD BACK FACE (LUXURY GOLD PLATED STATS CARD) ================= */}
+          {/* ================= CARD BACK FACE ================= */}
           <div 
-            className="absolute inset-0 rounded-[8px] sm:rounded-[12px] overflow-hidden z-20 flex flex-col justify-between px-5 sm:px-6 py-5 sm:py-6 select-none pointer-events-auto text-white"
+            className="absolute inset-0 rounded-[8px] sm:rounded-[12px] overflow-hidden z-20 flex flex-col justify-center gap-6 sm:gap-7 p-6 sm:p-7 select-none pointer-events-auto text-white"
             style={{ 
               margin: '2px',
               width: 'calc(100% - 4px)',
@@ -448,25 +448,16 @@ export const PlayerCardModal = ({ player, onClose }) => {
             </div>
 
             {/* Middle: 4-Metric Grid in Respective Gold-Plated Inset Containers (Flush to Card) */}
-            <div className="relative z-20 grid grid-cols-2 gap-2.5 sm:gap-3 my-auto w-full">
+            <div className="relative z-20 grid grid-cols-2 gap-2.5 sm:gap-3 w-full">
               {/* Wins */}
               <div 
                 className="flex flex-col items-center justify-center py-3 sm:py-3.5 px-2 rounded-2xl"
                 style={{
                   background: 'linear-gradient(180deg, rgba(0,0,0,0.50) 0%, rgba(0,0,0,0.32) 100%)',
-                  border: '1px solid rgba(229, 184, 66, 0.40)',
-                  boxShadow: 'inset 0 1px 1px rgba(255, 245, 200, 0.15)'
+                  border: '1px solid rgba(229, 184, 66, 0.40)'
                 }}
               >
-                <span 
-                  className="text-2xl sm:text-3xl font-normal tracking-tight select-none leading-none"
-                  style={{
-                    fontFamily: "'Gloock', serif",
-                    background: 'linear-gradient(180deg, #FFFDF0 0%, #F5C95C 30%, #E0A026 65%, #A36B10 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent'
-                  }}
-                >
+                <span className="text-2xl sm:text-3xl font-extrabold font-mono leading-none tracking-tight select-none text-[#F6CE55]">
                   {player.wins || 0}
                 </span>
                 <span 
@@ -482,19 +473,10 @@ export const PlayerCardModal = ({ player, onClose }) => {
                 className="flex flex-col items-center justify-center py-3 sm:py-3.5 px-2 rounded-2xl"
                 style={{
                   background: 'linear-gradient(180deg, rgba(0,0,0,0.50) 0%, rgba(0,0,0,0.32) 100%)',
-                  border: '1px solid rgba(229, 184, 66, 0.40)',
-                  boxShadow: 'inset 0 1px 1px rgba(255, 245, 200, 0.15)'
+                  border: '1px solid rgba(229, 184, 66, 0.40)'
                 }}
               >
-                <span 
-                  className="text-2xl sm:text-3xl font-normal tracking-tight select-none leading-none"
-                  style={{
-                    fontFamily: "'Gloock', serif",
-                    background: 'linear-gradient(180deg, #FFFDF0 0%, #F5C95C 30%, #E0A026 65%, #A36B10 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent'
-                  }}
-                >
+                <span className="text-2xl sm:text-3xl font-extrabold font-mono leading-none tracking-tight select-none text-[#F6CE55]">
                   {player.defeats || 0}
                 </span>
                 <span 
@@ -510,19 +492,10 @@ export const PlayerCardModal = ({ player, onClose }) => {
                 className="flex flex-col items-center justify-center py-3 sm:py-3.5 px-2 rounded-2xl"
                 style={{
                   background: 'linear-gradient(180deg, rgba(0,0,0,0.50) 0%, rgba(0,0,0,0.32) 100%)',
-                  border: '1px solid rgba(229, 184, 66, 0.40)',
-                  boxShadow: 'inset 0 1px 1px rgba(255, 245, 200, 0.15)'
+                  border: '1px solid rgba(229, 184, 66, 0.40)'
                 }}
               >
-                <span 
-                  className="text-2xl sm:text-3xl font-normal tracking-tight select-none leading-none"
-                  style={{
-                    fontFamily: "'Gloock', serif",
-                    background: 'linear-gradient(180deg, #FFFDF0 0%, #F5C95C 30%, #E0A026 65%, #A36B10 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent'
-                  }}
-                >
+                <span className="text-2xl sm:text-3xl font-extrabold font-mono leading-none tracking-tight select-none text-[#F6CE55]">
                   {winRate}%
                 </span>
                 <span 
@@ -538,19 +511,10 @@ export const PlayerCardModal = ({ player, onClose }) => {
                 className="flex flex-col items-center justify-center py-3 sm:py-3.5 px-2 rounded-2xl"
                 style={{
                   background: 'linear-gradient(180deg, rgba(0,0,0,0.50) 0%, rgba(0,0,0,0.32) 100%)',
-                  border: '1px solid rgba(229, 184, 66, 0.40)',
-                  boxShadow: 'inset 0 1px 1px rgba(255, 245, 200, 0.15)'
+                  border: '1px solid rgba(229, 184, 66, 0.40)'
                 }}
               >
-                <span 
-                  className="text-2xl sm:text-3xl font-normal tracking-tight select-none leading-none"
-                  style={{
-                    fontFamily: "'Gloock', serif",
-                    background: 'linear-gradient(180deg, #FFFDF0 0%, #F5C95C 30%, #E0A026 65%, #A36B10 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent'
-                  }}
-                >
+                <span className="text-2xl sm:text-3xl font-extrabold font-mono leading-none tracking-tight select-none text-[#F6CE55]">
                   {totalMatches}
                 </span>
                 <span 
@@ -560,18 +524,6 @@ export const PlayerCardModal = ({ player, onClose }) => {
                   Matches
                 </span>
               </div>
-            </div>
-
-            {/* Bottom Subtitle / Identity Accent */}
-            <div className="relative z-20 flex items-center justify-center gap-2 select-none pb-0.5">
-              <span className="text-[8px] text-[#E5B842]/50">✦</span>
-              <span 
-                className="text-[9px] font-mono tracking-[0.28em] uppercase font-medium"
-                style={{ color: '#F7E4A8', opacity: 0.65 }}
-              >
-                Match Records
-              </span>
-              <span className="text-[8px] text-[#E5B842]/50">✦</span>
             </div>
           </div>
         </div>
