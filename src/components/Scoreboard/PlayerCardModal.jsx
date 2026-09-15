@@ -117,11 +117,11 @@ export const PlayerCardModal = ({ player, onClose }) => {
     card.style.setProperty('--mouse-x', `${(x * 100).toFixed(1)}%`);
     card.style.setProperty('--mouse-y', `${(y * 100).toFixed(1)}%`);
 
-    const rotX = ((0.5 - y) * 20).toFixed(2);
-    const rotY = ((x - 0.5) * 20).toFixed(2);
+    const rotX = ((0.5 - y) * 12).toFixed(2);
+    const rotY = ((x - 0.5) * 12).toFixed(2);
 
     card.style.transition = 'transform 0.1s ease-out, box-shadow 0.2s ease';
-    card.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg) scale3d(1.04, 1.04, 1.04)`;
+    card.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg) scale3d(1.03, 1.03, 1.03)`;
     card.style.boxShadow = '0 24px 48px -8px rgba(0,0,0,0.55)';
   };
 
@@ -242,7 +242,7 @@ export const PlayerCardModal = ({ player, onClose }) => {
           ref={tiltRef}
           onClick={handleCardClick}
           data-card-flip="true"
-          className="relative select-none rounded-xl sm:rounded-2xl shadow-[0_12px_32px_rgba(0,0,0,0.45)] cursor-pointer group"
+          className="relative select-none rounded-[20px] sm:rounded-[24px] shadow-[0_12px_32px_rgba(0,0,0,0.45)] cursor-pointer group"
           style={{
             width: windowSize.isMobile ? '215px' : (windowSize.isLaptop ? '235px' : '255px'),
             aspectRatio: '250 / 350',
@@ -257,7 +257,7 @@ export const PlayerCardModal = ({ player, onClose }) => {
           {/* Flip Element: Handles the 180deg flip between front and back */}
           <div
             data-card-flip="true"
-            className="w-full h-full relative"
+            className="w-full h-full relative rounded-[20px] sm:rounded-[24px]"
             style={{
               transformStyle: 'preserve-3d',
               transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
@@ -267,7 +267,7 @@ export const PlayerCardModal = ({ player, onClose }) => {
           >
           {/* Outer Ambient Glow Blooming */}
           <div 
-            className="absolute -inset-1 sm:-inset-1.5 rounded-xl sm:rounded-2xl pointer-events-none z-0 overflow-hidden transition-opacity duration-500"
+            className="absolute -inset-1 sm:-inset-1.5 rounded-[22px] sm:rounded-[26px] pointer-events-none z-0 overflow-hidden transition-opacity duration-500"
             style={{
               filter: 'blur(6px)',
               opacity: isFlipped ? 0.30 : 0.22,
@@ -294,7 +294,7 @@ export const PlayerCardModal = ({ player, onClose }) => {
 
           {/* Crisp Shimmer Track Layer */}
           <div 
-            className="absolute inset-0 rounded-[inherit] overflow-hidden pointer-events-none z-10 transition-colors duration-500"
+            className="absolute inset-0 rounded-[20px] sm:rounded-[24px] overflow-hidden pointer-events-none z-10 transition-colors duration-500"
             style={{
               backgroundColor: isFlipped ? goldStrokeBase : themeStrokeBase,
               padding: '2px'
@@ -320,14 +320,19 @@ export const PlayerCardModal = ({ player, onClose }) => {
 
           {/* ================= CARD FRONT FACE ================= */}
           <div 
-            className="absolute inset-0 rounded-[10px] sm:rounded-[14px] overflow-hidden z-20 flex flex-col justify-between p-2.5"
+            className="absolute inset-0 rounded-[18px] sm:rounded-[22px] overflow-hidden z-20 flex flex-col justify-between p-2.5"
             style={{ 
               margin: '2px',
               width: 'calc(100% - 4px)',
               height: 'calc(100% - 4px)',
               backgroundColor: displayColor,
               backfaceVisibility: 'hidden',
-              transform: 'rotateY(0deg)'
+              WebkitBackfaceVisibility: 'hidden',
+              transformStyle: 'flat',
+              WebkitTransformStyle: 'flat',
+              transform: 'rotateY(0deg) translateZ(1px)',
+              WebkitFontSmoothing: 'antialiased',
+              contain: 'paint'
             }}
           >
             {/* Real Leather Macro Texture Overlay */}
@@ -429,14 +434,19 @@ export const PlayerCardModal = ({ player, onClose }) => {
 
           {/* ================= CARD BACK FACE ================= */}
           <div 
-            className="absolute inset-0 rounded-[10px] sm:rounded-[14px] overflow-hidden z-20 flex flex-col justify-between select-none pointer-events-auto text-white"
+            className="absolute inset-0 rounded-[18px] sm:rounded-[22px] overflow-hidden z-20 flex flex-col justify-between select-none pointer-events-auto text-white"
             style={{ 
               margin: '2px',
               width: 'calc(100% - 4px)',
               height: 'calc(100% - 4px)',
               backgroundColor: '#000000',
               backfaceVisibility: 'hidden',
-              transform: 'rotateY(180deg)',
+              WebkitBackfaceVisibility: 'hidden',
+              transformStyle: 'flat',
+              WebkitTransformStyle: 'flat',
+              transform: 'rotateY(180deg) translateZ(1px)',
+              WebkitFontSmoothing: 'antialiased',
+              contain: 'paint',
               padding: '14px'
             }}
           >
@@ -459,20 +469,20 @@ export const PlayerCardModal = ({ player, onClose }) => {
               }}
             />
 
-            {/* Elegant 3D Gold Inset Outline Frame */}
+            {/* Elegant 3D Gold Inset Outline Frame with Rounded Playing Card Corners */}
             <svg 
               viewBox="0 0 250 350" 
               className="absolute inset-0 w-full h-full pointer-events-none z-10 overflow-visible"
             >
               <rect 
-                x="10" y="10" width="230" height="330" rx="18" 
+                x="10" y="10" width="230" height="330" rx="26" 
                 fill="none" 
                 stroke="url(#card-gold-pattern)" 
                 strokeWidth="1.6" 
                 filter="url(#card-metal-text)" 
               />
               <rect 
-                x="14" y="14" width="222" height="322" rx="14" 
+                x="14" y="14" width="222" height="322" rx="22" 
                 fill="none" 
                 stroke="url(#card-gold-pattern)" 
                 strokeWidth="0.7" 

@@ -211,10 +211,10 @@ export const GameOverModal = () => {
       {/* 2. MIDDLE: Victory / Defeat Card with 3D Perspective Hover Effect */}
       <div 
         className="flex flex-col items-center justify-center my-auto py-4 sm:py-6 z-20 animate-slide-up" 
-        style={{ perspective: '1000px' }}
+        style={{ perspective: '1200px' }}
       >
         <div 
-          className="relative select-none rounded-xl sm:rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.35)] cursor-pointer"
+          className="relative select-none rounded-[20px] sm:rounded-[24px] shadow-[0_12px_32px_rgba(0,0,0,0.45)] cursor-pointer"
           style={{
             width: windowSize.isMobile ? '215px' : (windowSize.isLaptop ? '235px' : '255px'),
             aspectRatio: '250 / 350',
@@ -226,14 +226,14 @@ export const GameOverModal = () => {
           onMouseMove={(e) => {
             const card = e.currentTarget;
             const rect = card.getBoundingClientRect();
-            const x = (e.clientX - rect.left) / rect.width;
-            const y = (e.clientY - rect.top) / rect.height;
+            const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+            const y = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
             card.style.setProperty('--mouse-x', `${(x * 100).toFixed(1)}%`);
             card.style.setProperty('--mouse-y', `${(y * 100).toFixed(1)}%`);
-            const rotX = ((0.5 - y) * 24).toFixed(2);
-            const rotY = ((x - 0.5) * 24).toFixed(2);
-            card.style.transition = 'transform 0.08s ease-out, box-shadow 0.2s ease';
-            card.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg) scale3d(1.05, 1.05, 1.05)`;
+            const rotX = ((0.5 - y) * 12).toFixed(2);
+            const rotY = ((x - 0.5) * 12).toFixed(2);
+            card.style.transition = 'transform 0.1s ease-out, box-shadow 0.2s ease';
+            card.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg) scale3d(1.03, 1.03, 1.03)`;
             card.style.boxShadow = '0 24px 48px -8px rgba(0,0,0,0.55)';
           }}
           onMouseLeave={(e) => {
@@ -247,7 +247,7 @@ export const GameOverModal = () => {
         >
           {/* Tight, natural subtle ambient glow blooming outside card in character color theme */}
           <div 
-            className="absolute -inset-1 sm:-inset-1.5 rounded-xl sm:rounded-2xl pointer-events-none z-0 overflow-hidden"
+            className="absolute -inset-1 sm:-inset-1.5 rounded-[22px] sm:rounded-[26px] pointer-events-none z-0 overflow-hidden"
             style={{
               filter: 'blur(5px)',
               opacity: 0.22,
@@ -264,7 +264,7 @@ export const GameOverModal = () => {
 
           {/* Crisp Shimmer Track Layer in character color theme */}
           <div 
-            className="absolute inset-0 rounded-[inherit] overflow-hidden pointer-events-none z-10"
+            className="absolute inset-0 rounded-[20px] sm:rounded-[24px] overflow-hidden pointer-events-none z-10"
             style={{
               backgroundColor: themeStrokeBase,
               padding: '2px'
@@ -280,12 +280,19 @@ export const GameOverModal = () => {
 
           {/* Card Inner Face - Concentric rounded corners in Character Color */}
           <div 
-            className="relative w-full h-full rounded-[8px] sm:rounded-[12px] overflow-hidden z-20 flex flex-col justify-between p-2.5"
+            className="relative w-full h-full rounded-[18px] sm:rounded-[22px] overflow-hidden z-20 flex flex-col justify-between p-2.5"
             style={{ 
               margin: '2px',
               width: 'calc(100% - 4px)',
               height: 'calc(100% - 4px)',
-              backgroundColor: displayColor 
+              backgroundColor: displayColor,
+              transformStyle: 'flat',
+              WebkitTransformStyle: 'flat',
+              transform: 'translateZ(1px)',
+              backfaceVisibility: 'hidden',
+              WebkitBackfaceVisibility: 'hidden',
+              WebkitFontSmoothing: 'antialiased',
+              contain: 'paint'
             }}
           >
             {/* Real Leather Macro Texture Overlay */}
