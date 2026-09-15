@@ -31,6 +31,22 @@ const hexToHsl = (hex) => {
 export const PlayerCardModal = ({ player, onClose }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const cardRef = useRef(null);
+  const containerRef = useRef(null);
+  const isFlippedRef = useRef(false);
+  const isFlippingRef = useRef(false);
+  const flipTimeoutRef = useRef(null);
+
+  // Sync ref with state
+  useEffect(() => {
+    isFlippedRef.current = isFlipped;
+  }, [isFlipped]);
+
+  useEffect(() => {
+    return () => {
+      if (flipTimeoutRef.current) clearTimeout(flipTimeoutRef.current);
+    };
+  }, []);
+
   const [windowSize, setWindowSize] = useState({
     isMobile: typeof window !== 'undefined' ? window.innerWidth < 640 : false,
     isLaptop: typeof window !== 'undefined' ? window.innerWidth >= 768 && (window.innerHeight <= 860 || (window.innerWidth <= 1440 && window.innerHeight <= 900)) : false,
@@ -99,17 +115,61 @@ export const PlayerCardModal = ({ player, onClose }) => {
 
   const handleCardClick = (e) => {
     e.stopPropagation();
+    if (isFlippingRef.current) return;
     try {
       sound.playCardFlip();
     } catch (err) {}
-    setIsFlipped(prev => {
-      const next = !prev;
-      if (cardRef.current) {
-        cardRef.current.style.transform = next ? 'rotateY(180deg)' : 'rotateY(0deg)';
-        cardRef.current.style.boxShadow = '0 12px 32px rgba(0,0,0,0.45)';
-      }
-      return next;
-    });
+
+    isFlippingRef.current = true;
+    const nextFlipped = !isFlippedRef.current;
+    isFlippedRef.current = nextFlipped;
+    setIsFlipped(nextFlipped);
+
+    if (cardRef.current) {
+      cardRef.current.style.transition = 'transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease';
+      cardRef.current.style.transform = nextFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)';
+      cardRef.current.style.boxShadow = '0 12px 32px rgba(0,0,0,0.45)';
+    }
+
+    if (flipTimeoutRef.current) clearTimeout(flipTimeoutRef.current);
+    flipTimeoutRef.current = setTimeout(() => {
+      isFlippingRef.current = false;
+    }, 650);
+  };
+
+  const handleMouseMove = (e) => {
+    if (isFlippingRef.current) return;
+    const container = containerRef.current;
+    const card = cardRef.current;
+    if (!container || !card) return;
+
+    const rect = container.getBoundingClientRect();
+    const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    const y = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
+
+    const lightX = isFlippedRef.current ? (1 - x) : x;
+    card.style.setProperty('--mouse-x', `${(lightX * 100).toFixed(1)}%`);
+    card.style.setProperty('--mouse-y', `${(y * 100).toFixed(1)}%`);
+
+    const rotX = ((0.5 - y) * 18).toFixed(2);
+    const rotY = ((x - 0.5) * 18).toFixed(2);
+    const targetRotY = isFlippedRef.current ? (180 + parseFloat(rotY)).toFixed(2) : rotY;
+
+    card.style.transition = 'transform 0.08s ease-out, box-shadow 0.2s ease';
+    card.style.transform = `rotateX(${rotX}deg) rotateY(${targetRotY}deg) scale3d(1.035, 1.035, 1.035)`;
+    card.style.boxShadow = '0 24px 48px -8px rgba(0,0,0,0.55)';
+  };
+
+  const handleMouseLeave = () => {
+    if (isFlippingRef.current) return;
+    const card = cardRef.current;
+    if (!card) return;
+
+    card.style.setProperty('--mouse-x', '50%');
+    card.style.setProperty('--mouse-y', '35%');
+    card.style.transition = 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s ease';
+    card.style.transform = isFlippedRef.current ? 'rotateY(180deg)' : 'rotateY(0deg)';
+    card.style.boxShadow = '0 12px 32px rgba(0,0,0,0.45)';
   };
 
   return (
@@ -213,42 +273,31 @@ export const PlayerCardModal = ({ player, onClose }) => {
         className="flex flex-col items-center justify-center my-auto py-4 sm:py-6 z-20 animate-slide-up" 
         style={{ perspective: '1200px' }}
       >
+        {/* Outer stable interaction anchor (un-rotated 2D boundary prevents coordinate feedback loop) */}
         <div
-          ref={cardRef}
+          ref={containerRef}
           onClick={handleCardClick}
           data-card-flip="true"
-          className="relative select-none rounded-xl sm:rounded-2xl shadow-[0_12px_32px_rgba(0,0,0,0.45)] cursor-pointer group"
+          className="relative select-none cursor-pointer group"
           style={{
             width: windowSize.isMobile ? '215px' : (windowSize.isLaptop ? '235px' : '255px'),
             aspectRatio: '250 / 350',
-            transformStyle: 'preserve-3d',
-            transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
-            transition: 'transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease',
-            willChange: 'transform'
           }}
-          onMouseMove={(e) => {
-            const card = cardRef.current || e.currentTarget;
-            const rect = card.getBoundingClientRect();
-            const x = (e.clientX - rect.left) / rect.width;
-            const y = (e.clientY - rect.top) / rect.height;
-            const lightX = isFlipped ? (1 - x) : x;
-            card.style.setProperty('--mouse-x', `${(lightX * 100).toFixed(1)}%`);
-            card.style.setProperty('--mouse-y', `${(y * 100).toFixed(1)}%`);
-            const rotX = ((0.5 - y) * 20).toFixed(2);
-            const rotY = ((x - 0.5) * 20).toFixed(2);
-            const baseRotY = isFlipped ? (180 + parseFloat(rotY)).toFixed(2) : rotY;
-            card.style.transform = `rotateX(${rotX}deg) rotateY(${baseRotY}deg) scale3d(1.04, 1.04, 1.04)`;
-            card.style.boxShadow = '0 24px 48px -8px rgba(0,0,0,0.55)';
-          }}
-          onMouseLeave={() => {
-            const card = cardRef.current;
-            if (!card) return;
-            card.style.setProperty('--mouse-x', '50%');
-            card.style.setProperty('--mouse-y', '35%');
-            card.style.transform = isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)';
-            card.style.boxShadow = '0 12px 32px rgba(0,0,0,0.45)';
-          }}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
         >
+          {/* 3D Transforming Card Element */}
+          <div
+            ref={cardRef}
+            data-card-flip="true"
+            className="w-full h-full relative rounded-xl sm:rounded-2xl shadow-[0_12px_32px_rgba(0,0,0,0.45)]"
+            style={{
+              transformStyle: 'preserve-3d',
+              transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+              transition: 'transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease',
+              willChange: 'transform'
+            }}
+          >
           {/* Outer Ambient Glow Blooming */}
           <div 
             className="absolute -inset-1 sm:-inset-1.5 rounded-xl sm:rounded-2xl pointer-events-none z-0 overflow-hidden transition-opacity duration-500"
@@ -574,6 +623,7 @@ export const PlayerCardModal = ({ player, onClose }) => {
             </div>
           </div>
         </div>
+      </div>
 
         {/* Tap Gesture Icon Button */}
         <button
