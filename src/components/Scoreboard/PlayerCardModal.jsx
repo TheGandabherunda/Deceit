@@ -375,7 +375,7 @@ export const PlayerCardModal = ({ player, onClose }) => {
               margin: '2px',
               width: 'calc(100% - 4px)',
               height: 'calc(100% - 4px)',
-              backgroundColor: displayColor,
+              backgroundColor: '#000000',
               backfaceVisibility: 'hidden',
               transform: 'rotateY(180deg)',
               padding: '14px'
@@ -386,8 +386,8 @@ export const PlayerCardModal = ({ player, onClose }) => {
               className="absolute inset-0 pointer-events-none z-0 bg-cover bg-center"
               style={{
                 backgroundImage: 'url("/cards/leather-macro-shot.jpg")',
-                opacity: 0.26,
-                mixBlendMode: 'overlay'
+                opacity: 0.14,
+                mixBlendMode: 'screen'
               }}
             />
 
