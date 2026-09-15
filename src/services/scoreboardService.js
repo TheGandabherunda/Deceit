@@ -1,14 +1,16 @@
 import { pool, DEFAULT_RELAYS } from './nostr';
-import { KINDS } from './nostrProtocol';
+import { KINDS, SCOREBOARD_TAG } from './nostrProtocol';
 
-export const SCOREBOARD_TAG = 'deceit-scoreboard-v1';
-const SCOREBOARD_STORAGE_KEY = 'deceit_global_scoreboard_v1';
-const PROCESSED_MATCHES_KEY = 'deceit_processed_matches_v1';
+export { SCOREBOARD_TAG };
+const SCOREBOARD_STORAGE_KEY = import.meta.env.DEV ? 'deceit_scoreboard_dev' : 'deceit_scoreboard_prod';
+const PROCESSED_MATCHES_KEY = import.meta.env.DEV ? 'deceit_matches_dev' : 'deceit_matches_prod';
 
 // Automatically purge legacy test caches
 try {
   localStorage.removeItem('deceit_global_scoreboard');
   localStorage.removeItem('deceit_processed_matches');
+  localStorage.removeItem('deceit_global_scoreboard_v1');
+  localStorage.removeItem('deceit_processed_matches_v1');
 } catch (e) {}
 
 /**

@@ -72,11 +72,13 @@ export const createGameEvent = ({ roomCode, senderPk, targetPk, type, payload = 
   };
 };
 
+export const SCOREBOARD_TAG = import.meta.env.DEV ? 'deceit-scoreboard-dev' : 'deceit-scoreboard-prod';
+
 export const createMatchRecordEvent = ({ roomCode, winner, defeated = [], timestamp = Date.now() }) => {
   const matchId = `deceit-match-${roomCode}-${timestamp}`;
   const tags = [
     ['d', matchId],
-    ['t', 'deceit-scoreboard-v1'],
+    ['t', SCOREBOARD_TAG],
     ['t', 'deceit-public-match'],
     ['p', winner.pk, 'winner']
   ];

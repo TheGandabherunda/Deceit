@@ -177,6 +177,13 @@ export const ScoreboardView = ({ onBack }) => {
             >
               Global Scoreboard
             </h1>
+            {import.meta.env.DEV && (
+              <div className="mt-1">
+                <span className="inline-block px-2.5 py-0.5 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-400 text-[10px] font-bold tracking-wider uppercase">
+                  Test Sandbox (Dev DB)
+                </span>
+              </div>
+            )}
             <p 
               className="text-white/50 text-xs sm:text-sm font-normal mt-1.5 sm:mt-2 tracking-normal"
               style={{ fontFamily: "'Inter', sans-serif" }}
