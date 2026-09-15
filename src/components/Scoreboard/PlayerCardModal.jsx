@@ -65,14 +65,14 @@ export const PlayerCardModal = ({ player, onClose }) => {
   const totalMatches = player.totalMatches || ((player.wins || 0) + (player.defeats || 0)) || 0;
   const winRate = player.winRate !== undefined ? player.winRate : (totalMatches > 0 ? Math.round(((player.wins || 0) / totalMatches) * 100) : 0);
 
-  // Dynamic sizing for backside player name so it is big, bold, and fills the header proportionally
+  // Dynamic sizing for backside player name (reduced a bit for refined balance)
   const charCount = displayName.length || 4;
-  const nameFontSize = charCount <= 4 ? 48 : charCount <= 7 ? 40 : charCount <= 10 ? 34 : charCount <= 13 ? 28 : 24;
+  const nameFontSize = charCount <= 4 ? 32 : charCount <= 7 ? 28 : charCount <= 10 ? 24 : charCount <= 13 ? 20 : 18;
   const approxCharWidth = nameFontSize * 0.58;
-  const nameViewBoxW = Math.max(100, Math.round(charCount * approxCharWidth + 24));
-  const nameViewBoxH = 50;
+  const nameViewBoxW = Math.max(90, Math.round(charCount * approxCharWidth + 20));
+  const nameViewBoxH = 38;
   const nameX = Math.round(nameViewBoxW / 2);
-  const nameY = 38;
+  const nameY = 28;
 
   // Generate dynamic shine and border track matched to character's color theme
   const [h, s] = hexToHsl(displayColor);
@@ -176,7 +176,7 @@ export const PlayerCardModal = ({ player, onClose }) => {
           }`}
           style={{ fontFamily: '"Gloock", serif', fontWeight: 400 }}
         >
-          {isFirst ? 'Victory' : `Rank #${player.rank}`}
+          {isFirst ? 'Champion' : `Rank #${player.rank}`}
         </h1>
 
         <span className="text-xs sm:text-sm font-inter font-medium uppercase tracking-[0.25em] text-white/50 mt-2 sm:mt-3">
@@ -293,13 +293,13 @@ export const PlayerCardModal = ({ player, onClose }) => {
                   x="0"
                   y="19"
                   fontFamily="'Gloock', serif"
-                  fontSize={isFirst ? "22" : "18"}
+                  fontSize={isFirst ? "20" : "18"}
                   fontWeight="400"
                   fill="url(#card-gold-pattern)"
                   filter="url(#card-metal-text)"
                   letterSpacing="0.02em"
                 >
-                  {isFirst ? 'Winner' : `#${player.rank}`}
+                  {isFirst ? 'Champion' : `#${player.rank}`}
                 </text>
               </svg>
             </div>
@@ -349,13 +349,13 @@ export const PlayerCardModal = ({ player, onClose }) => {
                   y="19"
                   textAnchor="end"
                   fontFamily="'Gloock', serif"
-                  fontSize={isFirst ? "22" : "18"}
+                  fontSize={isFirst ? "20" : "18"}
                   fontWeight="400"
                   fill="url(#card-gold-pattern)"
                   filter="url(#card-metal-text)"
                   letterSpacing="0.02em"
                 >
-                  {isFirst ? 'Winner' : `#${player.rank}`}
+                  {isFirst ? 'Champion' : `#${player.rank}`}
                 </text>
               </svg>
             </div>
@@ -363,14 +363,15 @@ export const PlayerCardModal = ({ player, onClose }) => {
 
           {/* ================= CARD BACK FACE ================= */}
           <div 
-            className="absolute inset-0 rounded-[8px] sm:rounded-[12px] overflow-hidden z-20 flex flex-col justify-center gap-6 sm:gap-7 p-6 sm:p-7 select-none pointer-events-auto text-white"
+            className="absolute inset-0 rounded-[8px] sm:rounded-[12px] overflow-hidden z-20 flex flex-col justify-between select-none pointer-events-auto text-white"
             style={{ 
               margin: '2px',
               width: 'calc(100% - 4px)',
               height: 'calc(100% - 4px)',
               backgroundColor: displayColor,
               backfaceVisibility: 'hidden',
-              transform: 'rotateY(180deg)'
+              transform: 'rotateY(180deg)',
+              padding: '14px'
             }}
           >
             {/* Real Leather Macro Texture Overlay */}
@@ -413,12 +414,29 @@ export const PlayerCardModal = ({ player, onClose }) => {
               />
             </svg>
 
-            {/* Top: Player Name in Emblem Style & Clean Golden Rank Tag */}
-            <div className="relative z-20 flex flex-col items-center select-none pt-0.5">
-              <div className="flex items-center justify-center max-w-[95%] text-center card-gold-label">
+            {/* Top: Rank Chip above Player Name */}
+            <div className="relative z-20 flex flex-col items-center select-none pt-2 sm:pt-2.5">
+              {/* Chip containing rank text */}
+              <div 
+                className="inline-flex items-center justify-center px-3 py-0.5 rounded-full select-none"
+                style={{
+                  background: 'linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.35) 100%)',
+                  border: '1px solid rgba(229, 184, 66, 0.45)'
+                }}
+              >
+                <span 
+                  className="text-[10px] sm:text-[11px] font-inter font-semibold uppercase tracking-[0.22em] select-none leading-none"
+                  style={{ color: '#F7E4A8' }}
+                >
+                  Rank #{player.rank}
+                </span>
+              </div>
+
+              {/* Player Name in 3D Gold Emblem Style (Reduced size a bit) */}
+              <div className="flex items-center justify-center max-w-[95%] text-center card-gold-label mt-1.5 sm:mt-2">
                 <svg 
                   viewBox={`0 0 ${nameViewBoxW} ${nameViewBoxH}`} 
-                  className="h-10 sm:h-12 md:h-14 w-auto max-w-full overflow-visible pointer-events-none"
+                  className="h-8 sm:h-9 w-auto max-w-full overflow-visible pointer-events-none"
                 >
                   <text
                     x={nameX}
@@ -435,94 +453,86 @@ export const PlayerCardModal = ({ player, onClose }) => {
                   </text>
                 </svg>
               </div>
-              <div className="flex items-center gap-2 mt-1 select-none">
-                <span className="w-5 h-[1px] bg-gradient-to-r from-transparent to-[#D4AF37]/60" />
-                <p 
-                  className="text-[10px] sm:text-[11px] font-inter uppercase tracking-[0.25em] font-semibold select-none"
-                  style={{ color: '#F7E4A8' }}
-                >
-                  Rank #{player.rank}
-                </p>
-                <span className="w-5 h-[1px] bg-gradient-to-l from-transparent to-[#D4AF37]/60" />
-              </div>
             </div>
 
-            {/* Middle: 4-Metric Grid in Respective Gold-Plated Inset Containers (Flush to Card) */}
-            <div className="relative z-20 grid grid-cols-2 gap-2.5 sm:gap-3 w-full">
-              {/* Wins */}
-              <div 
-                className="flex flex-col items-center justify-center py-3 sm:py-3.5 px-2 rounded-2xl"
-                style={{
-                  background: 'linear-gradient(180deg, rgba(0,0,0,0.50) 0%, rgba(0,0,0,0.32) 100%)',
-                  border: '1px solid rgba(229, 184, 66, 0.40)'
-                }}
-              >
-                <span className="text-2xl sm:text-3xl font-black font-inter leading-none tracking-tight select-none text-[#F6CE55]">
-                  {player.wins || 0}
-                </span>
-                <span 
-                  className="text-[10px] sm:text-[11px] font-inter font-semibold uppercase tracking-[0.22em] mt-2 select-none"
-                  style={{ color: '#F7E4A8' }}
+            {/* Bottom: 2x2 Grid within the border with space around it same as gutter */}
+            <div className="relative z-20 p-2.5 w-full">
+              <div className="grid grid-cols-2 gap-2.5 w-full">
+                {/* Wins */}
+                <div 
+                  className="flex flex-col items-center justify-center aspect-[1.25/1] rounded-2xl select-none"
+                  style={{
+                    background: 'linear-gradient(180deg, rgba(0,0,0,0.50) 0%, rgba(0,0,0,0.32) 100%)',
+                    border: '1px solid rgba(229, 184, 66, 0.40)'
+                  }}
                 >
-                  Wins
-                </span>
-              </div>
+                  <span className="text-2xl sm:text-3xl font-black font-inter leading-none tracking-tight select-none text-[#F6CE55]">
+                    {player.wins || 0}
+                  </span>
+                  <span 
+                    className="text-[10px] sm:text-[11px] font-inter font-semibold uppercase tracking-[0.22em] mt-1.5 select-none"
+                    style={{ color: '#F7E4A8' }}
+                  >
+                    Wins
+                  </span>
+                </div>
 
-              {/* Defeats */}
-              <div 
-                className="flex flex-col items-center justify-center py-3 sm:py-3.5 px-2 rounded-2xl"
-                style={{
-                  background: 'linear-gradient(180deg, rgba(0,0,0,0.50) 0%, rgba(0,0,0,0.32) 100%)',
-                  border: '1px solid rgba(229, 184, 66, 0.40)'
-                }}
-              >
-                <span className="text-2xl sm:text-3xl font-black font-inter leading-none tracking-tight select-none text-[#F6CE55]">
-                  {player.defeats || 0}
-                </span>
-                <span 
-                  className="text-[10px] sm:text-[11px] font-inter font-semibold uppercase tracking-[0.22em] mt-2 select-none"
-                  style={{ color: '#F7E4A8' }}
+                {/* Defeats */}
+                <div 
+                  className="flex flex-col items-center justify-center aspect-[1.25/1] rounded-2xl select-none"
+                  style={{
+                    background: 'linear-gradient(180deg, rgba(0,0,0,0.50) 0%, rgba(0,0,0,0.32) 100%)',
+                    border: '1px solid rgba(229, 184, 66, 0.40)'
+                  }}
                 >
-                  Defeats
-                </span>
-              </div>
+                  <span className="text-2xl sm:text-3xl font-black font-inter leading-none tracking-tight select-none text-[#F6CE55]">
+                    {player.defeats || 0}
+                  </span>
+                  <span 
+                    className="text-[10px] sm:text-[11px] font-inter font-semibold uppercase tracking-[0.22em] mt-1.5 select-none"
+                    style={{ color: '#F7E4A8' }}
+                  >
+                    Defeats
+                  </span>
+                </div>
 
-              {/* Win Rate */}
-              <div 
-                className="flex flex-col items-center justify-center py-3 sm:py-3.5 px-2 rounded-2xl"
-                style={{
-                  background: 'linear-gradient(180deg, rgba(0,0,0,0.50) 0%, rgba(0,0,0,0.32) 100%)',
-                  border: '1px solid rgba(229, 184, 66, 0.40)'
-                }}
-              >
-                <span className="text-2xl sm:text-3xl font-black font-inter leading-none tracking-tight select-none text-[#F6CE55]">
-                  {winRate}%
-                </span>
-                <span 
-                  className="text-[10px] sm:text-[11px] font-inter font-semibold uppercase tracking-[0.22em] mt-2 select-none"
-                  style={{ color: '#F7E4A8' }}
+                {/* Win Rate */}
+                <div 
+                  className="flex flex-col items-center justify-center aspect-[1.25/1] rounded-2xl select-none"
+                  style={{
+                    background: 'linear-gradient(180deg, rgba(0,0,0,0.50) 0%, rgba(0,0,0,0.32) 100%)',
+                    border: '1px solid rgba(229, 184, 66, 0.40)'
+                  }}
                 >
-                  Win Rate
-                </span>
-              </div>
+                  <span className="text-2xl sm:text-3xl font-black font-inter leading-none tracking-tight select-none text-[#F6CE55]">
+                    {winRate}%
+                  </span>
+                  <span 
+                    className="text-[10px] sm:text-[11px] font-inter font-semibold uppercase tracking-[0.22em] mt-1.5 select-none"
+                    style={{ color: '#F7E4A8' }}
+                  >
+                    Win Rate
+                  </span>
+                </div>
 
-              {/* Matches */}
-              <div 
-                className="flex flex-col items-center justify-center py-3 sm:py-3.5 px-2 rounded-2xl"
-                style={{
-                  background: 'linear-gradient(180deg, rgba(0,0,0,0.50) 0%, rgba(0,0,0,0.32) 100%)',
-                  border: '1px solid rgba(229, 184, 66, 0.40)'
-                }}
-              >
-                <span className="text-2xl sm:text-3xl font-black font-inter leading-none tracking-tight select-none text-[#F6CE55]">
-                  {totalMatches}
-                </span>
-                <span 
-                  className="text-[10px] sm:text-[11px] font-inter font-semibold uppercase tracking-[0.22em] mt-2 select-none"
-                  style={{ color: '#F7E4A8' }}
+                {/* Matches */}
+                <div 
+                  className="flex flex-col items-center justify-center aspect-[1.25/1] rounded-2xl select-none"
+                  style={{
+                    background: 'linear-gradient(180deg, rgba(0,0,0,0.50) 0%, rgba(0,0,0,0.32) 100%)',
+                    border: '1px solid rgba(229, 184, 66, 0.40)'
+                  }}
                 >
-                  Matches
-                </span>
+                  <span className="text-2xl sm:text-3xl font-black font-inter leading-none tracking-tight select-none text-[#F6CE55]">
+                    {totalMatches}
+                  </span>
+                  <span 
+                    className="text-[10px] sm:text-[11px] font-inter font-semibold uppercase tracking-[0.22em] mt-1.5 select-none"
+                    style={{ color: '#F7E4A8' }}
+                  >
+                    Matches
+                  </span>
+                </div>
               </div>
             </div>
           </div>
