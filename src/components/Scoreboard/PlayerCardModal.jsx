@@ -320,7 +320,7 @@ export const PlayerCardModal = ({ player, onClose }) => {
 
           {/* ================= CARD FRONT FACE ================= */}
           <div 
-            className="absolute inset-0 rounded-[8px] sm:rounded-[12px] overflow-hidden z-20 flex flex-col justify-between p-2.5"
+            className="absolute inset-0 rounded-[10px] sm:rounded-[14px] overflow-hidden z-20 flex flex-col justify-between p-2.5"
             style={{ 
               margin: '2px',
               width: 'calc(100% - 4px)',
@@ -429,7 +429,7 @@ export const PlayerCardModal = ({ player, onClose }) => {
 
           {/* ================= CARD BACK FACE ================= */}
           <div 
-            className="absolute inset-0 rounded-[8px] sm:rounded-[12px] overflow-hidden z-20 flex flex-col justify-between select-none pointer-events-auto text-white"
+            className="absolute inset-0 rounded-[10px] sm:rounded-[14px] overflow-hidden z-20 flex flex-col justify-between select-none pointer-events-auto text-white"
             style={{ 
               margin: '2px',
               width: 'calc(100% - 4px)',
@@ -465,14 +465,14 @@ export const PlayerCardModal = ({ player, onClose }) => {
               className="absolute inset-0 w-full h-full pointer-events-none z-10 overflow-visible"
             >
               <rect 
-                x="10" y="10" width="230" height="330" rx="9" 
+                x="10" y="10" width="230" height="330" rx="18" 
                 fill="none" 
                 stroke="url(#card-gold-pattern)" 
                 strokeWidth="1.6" 
                 filter="url(#card-metal-text)" 
               />
               <rect 
-                x="14" y="14" width="222" height="322" rx="6" 
+                x="14" y="14" width="222" height="322" rx="14" 
                 fill="none" 
                 stroke="url(#card-gold-pattern)" 
                 strokeWidth="0.7" 
