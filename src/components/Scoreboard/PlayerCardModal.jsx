@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { sound } from '../../services/sound';
 import { BloubEmblemIcon } from '../Bloub/BloubEmblemIcon';
 import { BloubAvatar } from '../Bloub/BloubAvatar';
@@ -30,6 +30,7 @@ const hexToHsl = (hex) => {
 
 export const PlayerCardModal = ({ player, onClose }) => {
   const [isFlipped, setIsFlipped] = useState(false);
+  const cardRef = useRef(null);
   const [windowSize, setWindowSize] = useState({
     isMobile: typeof window !== 'undefined' ? window.innerWidth < 640 : false,
     isLaptop: typeof window !== 'undefined' ? window.innerWidth >= 768 && (window.innerHeight <= 860 || (window.innerWidth <= 1440 && window.innerHeight <= 900)) : false,
@@ -101,7 +102,14 @@ export const PlayerCardModal = ({ player, onClose }) => {
     try {
       sound.playCardFlip();
     } catch (err) {}
-    setIsFlipped(prev => !prev);
+    setIsFlipped(prev => {
+      const next = !prev;
+      if (cardRef.current) {
+        cardRef.current.style.transform = next ? 'rotateY(180deg)' : 'rotateY(0deg)';
+        cardRef.current.style.boxShadow = '0 12px 32px rgba(0,0,0,0.45)';
+      }
+      return next;
+    });
   };
 
   return (
@@ -206,6 +214,7 @@ export const PlayerCardModal = ({ player, onClose }) => {
         style={{ perspective: '1200px' }}
       >
         <div
+          ref={cardRef}
           onClick={handleCardClick}
           className="relative select-none rounded-xl sm:rounded-2xl shadow-[0_12px_32px_rgba(0,0,0,0.45)] cursor-pointer group"
           style={{
@@ -217,20 +226,22 @@ export const PlayerCardModal = ({ player, onClose }) => {
             willChange: 'transform'
           }}
           onMouseMove={(e) => {
-            if (isFlipped) return; // disable hover tilt on stats back face
-            const card = e.currentTarget;
+            const card = cardRef.current || e.currentTarget;
             const rect = card.getBoundingClientRect();
             const x = (e.clientX - rect.left) / rect.width;
             const y = (e.clientY - rect.top) / rect.height;
-            card.style.setProperty('--mouse-x', `${(x * 100).toFixed(1)}%`);
+            const lightX = isFlipped ? (1 - x) : x;
+            card.style.setProperty('--mouse-x', `${(lightX * 100).toFixed(1)}%`);
             card.style.setProperty('--mouse-y', `${(y * 100).toFixed(1)}%`);
             const rotX = ((0.5 - y) * 20).toFixed(2);
             const rotY = ((x - 0.5) * 20).toFixed(2);
-            card.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg) scale3d(1.04, 1.04, 1.04)`;
+            const baseRotY = isFlipped ? (180 + parseFloat(rotY)).toFixed(2) : rotY;
+            card.style.transform = `rotateX(${rotX}deg) rotateY(${baseRotY}deg) scale3d(1.04, 1.04, 1.04)`;
             card.style.boxShadow = '0 24px 48px -8px rgba(0,0,0,0.55)';
           }}
-          onMouseLeave={(e) => {
-            const card = e.currentTarget;
+          onMouseLeave={() => {
+            const card = cardRef.current;
+            if (!card) return;
             card.style.setProperty('--mouse-x', '50%');
             card.style.setProperty('--mouse-y', '35%');
             card.style.transform = isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)';
